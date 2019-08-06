@@ -1,5 +1,6 @@
 <template>
 <v-container fluid>
+
   <v-layout wrap>
     <v-flex v-for="(classInfo, className) in classes" v-bind:key="className" xs3 class="pa-1">
       <v-card outlined>
@@ -27,6 +28,19 @@
       </v-card>
     </v-flex>
   </v-layout>
+
+  <v-layout>
+    <v-flex xs12>
+      <v-list>
+        <v-list-item v-for="(member, index) in sortedMembers" v-bind:key="index">
+          <img :src="classIcon(member.className)" class="mr-2" />
+          <img :src="specIcon(classes[member.className].specs[member.specName])" class="mx-2" />
+          {{member.name}}
+        </v-list-item>
+      </v-list>
+    </v-flex>
+  </v-layout>
+
 </v-container>
 </template>
 <script>
@@ -130,6 +144,17 @@ export default {
         s.push(m)
         return ms
       }, [])
+    },
+
+    sortedMembers() {
+      return [...this.members].sort((a, b) => {
+        let c = a.className.localeCompare(b.className)
+        if (c != 0) return c
+        c = a.specName.localeCompare(b.specName)
+        if (c != 0) return c
+        c = (a.name || "").localeCompare(b.name || "")
+        return c
+      })
     },
   },
 
