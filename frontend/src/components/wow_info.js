@@ -4,12 +4,15 @@ export const classes = {
     specs: {
       blood: {
         icon: "spell_deathknight_bloodpresence",
+        spells: [],
       },
       frost: {
         icon: "spell_deathknight_frostpresence.gif",
+        spells: [],
       },
       unholy: {
         icon: "spell_deathknight_unholypresence.gif",
+        spells: [],
       },
     },
   },
@@ -18,9 +21,11 @@ export const classes = {
     specs: {
       havoc: {
         icon: "ability_demonhunter_specdps",
+        spells: [],
       },
       vengeance: {
         icon: "ability_demonhunter_spectank",
+        spells: [],
       },
     },
   },
@@ -29,15 +34,19 @@ export const classes = {
     specs: {
       balance: {
         icon: "spell_nature_starfall",
+        spells: [],
       },
       feral: {
         icon: "ability_druid_catform",
+        spells: [],
       },
       guardian: {
         icon: "ability_racial_bearform",
+        spells: [],
       },
       restoration: {
         icon: "spell_nature_healingtouch",
+        spells: [],
       },
     },
   },
@@ -46,12 +55,15 @@ export const classes = {
     specs: {
       beastmastery: {
         icon: "ability_hunter_bestialdiscipline",
+        spells: [],
       },
       marksmanship: {
         icon: "ability_hunter_focusedaim",
+        spells: [],
       },
       survival: {
         icon: "ability_hunter_camouflage",
+        spells: [],
       },
     },
   },
@@ -60,12 +72,15 @@ export const classes = {
     specs: {
       arcane: {
         icon: "spell_holy_magicalsentry",
+        spells: [],
       },
       fire: {
         icon: "spell_fire_firebolt02",
+        spells: [],
       },
       frost: {
         icon: "spell_frost_frostbolt02",
+        spells: [],
       },
     },
   },
@@ -74,12 +89,15 @@ export const classes = {
     specs: {
       brewmaster: {
         icon: "monk_stance_drunkenox",
+        spells: [],
       },
       mistweaver: {
         icon: "monk_stance_wiseserpent",
+        spells: [],
       },
       windwalker: {
-        icon: "",
+        icon: "monk_stance_whitetiger",
+        spells: [],
       },
     },
   },
@@ -88,12 +106,15 @@ export const classes = {
     specs: {
       holy: {
         icon: "spell_holy_holybolt",
+        spells: [],
       },
       protection: {
         icon: "ability_paladin_shieldofthetemplar",
+        spells: [],
       },
       retribution: {
         icon: "spell_holy_auraoflight",
+        spells: [],
       },
     },
   },
@@ -102,12 +123,15 @@ export const classes = {
     specs: {
       discipline: {
         icon: "spell_holy_powerwordshield",
+        spells: [],
       },
       holy: {
         icon: "spell_holy_guardianspirit",
+        spells: [],
       },
       shadow: {
         icon: "spell_shadow_shadowwordpain",
+        spells: [],
       },
     },
   },
@@ -116,12 +140,15 @@ export const classes = {
     specs: {
       assassination: {
         icon: "ability_rogue_eviscerate",
+        spells: [],
       },
       outlaw: {
         icon: "ability_backstab",
+        spells: [],
       },
       subtlety: {
         icon: "ability_stealth",
+        spells: [],
       },
     },
   },
@@ -130,12 +157,15 @@ export const classes = {
     specs: {
       elemental: {
         icon: "spell_nature_lightning",
+        spells: [],
       },
       enhancement: {
         icon: "spell_nature_lightningshield",
+        spells: [],
       },
       restoration: {
         icon: "spell_nature_magicimmunity",
+        spells: [],
       },
     },
   },
@@ -144,12 +174,15 @@ export const classes = {
     specs: {
       affliction: {
         icon: "spell_shadow_deathcoil",
+        spells: [],
       },
       demonology: {
         icon: "spell_shadow_metamorphosis",
+        spells: [],
       },
       destruction: {
         icon: "spell_shadow_rainoffire",
+        spells: [],
       },
     },
   },
@@ -158,12 +191,15 @@ export const classes = {
     specs: {
       arms: {
         icon: "ability_warrior_savageblow",
+        spells: [],
       },
       fury: {
         icon: "ability_warrior_innerrage",
+        spells: [],
       },
       protection: {
         icon: "ability_warrior_defensivestance",
+        spells: [],
       },
     },
   },

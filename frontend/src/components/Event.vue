@@ -31,7 +31,10 @@
       <v-chip v-if="draggedOver" label disabled class="grey lighten-4" />
     </v-layout>
   </td>
-  <td></td>
+  <td style="border-left: solid 1px rgba(255, 255, 255, 0.12); white-space: nowrap;">
+    <v-icon small @click="clear">mdi-arrow-collapse-left</v-icon>
+    <v-icon small class="pl-1" @click="remove">mdi-delete</v-icon>
+  </td>
 </tr>
 </template>
 <script>
@@ -107,6 +110,14 @@ export default {
         this.$store.commit('events/addAssignment', {id: this.eventId, assignId: assignId})
         this.draggedOver = false
       }
+    },
+
+    clear() {
+      this.$store.commit('events/set', {id: this.eventId, time: this.time, label: this.label})
+    },
+
+    remove() {
+      this.$store.commit('events/delete', this.eventId)
     },
   },
 
