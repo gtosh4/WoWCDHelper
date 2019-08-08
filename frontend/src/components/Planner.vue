@@ -14,6 +14,27 @@
           <Event :eventId="item.id" />
         </template>
 
+        <template v-slot:footer>
+          <v-footer>
+            <v-edit-dialog :return-value.sync="addItem"><v-icon>mdi-plus-circle</v-icon>
+              <template v-slot:input>
+                <v-text-field
+                  placeholder="time"
+                  single-line
+                />
+              </template>
+            </v-edit-dialog>
+            <v-spacer />
+            <v-dialog persistent v-model="showExport">
+              <template v-slot:activator="{ on }">
+                <v-icon @click="on.click">mdi-export</v-icon>
+              </template>
+
+              <Export @close="showExport = false" />
+            </v-dialog>
+          </v-footer>
+        </template>
+
       </v-data-table>
     </v-flex>
     <v-flex xs4>
@@ -25,6 +46,7 @@
 <script>
 import Cooldowns from './Cooldowns'
 import Event from './Event'
+import Export from './Export'
 
 import moment from 'moment'
 
@@ -37,6 +59,7 @@ export default {
         { text: '',            value: 'clear',   align: 'right', width: '1px'   },
     ],
     assignees: {},
+    showExport: false,
   }),
 
   computed: {
@@ -47,6 +70,16 @@ export default {
         return a.label > b.label
       })
     },
+
+    addItem: {
+      get() {
+        return undefined
+      },
+      set(v) {
+        const [mins, secs] = v.split(":")
+        this.$store.commit('events/set', {time: moment.duration(+mins, 'minutes').add(+secs, 'seconds')})
+      },
+    }
   },
 
   methods: {
@@ -61,6 +94,7 @@ export default {
   components: {
     Event,
     Cooldowns,
+    Export,
   },
 };
 </script>

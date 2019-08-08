@@ -2,9 +2,9 @@
 <v-layout>
   <v-chip v-if="!ability" label :color="classColour" class="assignee" >
     <v-icon class="handle">mdi-drag</v-icon>
-    <v-avatar tile class="mx-1" size="18"><img :src="classIcon(className)" /></v-avatar>
-    <v-avatar tile class="mx-1" size="18"><img v-if="specName" :src="specIcon(spec(className, specName))" /></v-avatar>
-    <v-text-field v-model="name" solo flat placeholder="Name" hide-details background-color="transparent" />
+    <WowIcon :className="className" />
+    <WowIcon v-if="specName" :className="className" :specName="specName" />
+    <v-text-field v-model="name" solo flat placeholder="Name" hide-details background-color="transparent" width="100%" />
   </v-chip>
   <v-chip v-else label :color="classColour" draggable class="assignee">
     <v-icon class="handle">mdi-drag</v-icon>
@@ -14,6 +14,8 @@
 </v-layout>
 </template>
 <script>
+import WowIcon from './WowIcon'
+
 import {classes, classIcon, specIcon, spec} from './wow_info'
 import {assignProps} from '../store/utils'
 
@@ -64,11 +66,12 @@ export default {
       this.$store.commit('assigns/delete', this.assignId)
     },
   },
+
+  components: {
+    WowIcon,
+  },
 }
 </script>
-<style scoped>
-img {
-  pointer-events: none;
-}
+<style>
 </style>
 

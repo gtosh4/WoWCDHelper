@@ -14,6 +14,11 @@ const actions = {
 const mutations = {
   set(state, event) {
     if (!event) return
+    event = {
+      label: "",
+      assignments: [],
+      ...event,
+    }
 
     if (!event.id) {
       do {

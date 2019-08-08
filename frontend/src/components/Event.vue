@@ -1,7 +1,7 @@
 <template>
 <tr>
   <td class="text-right">
-    <v-edit-dialog>{{ timeStr }}
+    <v-edit-dialog :return-value.sync="timeStr">{{ timeStr }}
       <template v-slot:input>
         <v-text-field
           v-model="timeStr"
@@ -10,8 +10,8 @@
       </template>
     </v-edit-dialog>
   </td>
-  <td style="border-right: solid 1px rgba(255, 255, 255, 0.12)">
-    <v-edit-dialog>{{ label }}
+  <td style="border-right: solid 1px rgba(255, 255, 255, 0.12); white-space: nowrap;">
+    <v-edit-dialog :return-value.sync="label">{{ label || 'unnamed' }}
       <template v-slot:input>
         <v-text-field
           v-model="label"
@@ -27,7 +27,8 @@
       @dragover.prevent="handleDragOver"
       @dragleave.prevent="handleDragLeave"
     >
-      <Assignment :eventId="eventId" :index="index" v-for="(assign, index) in assignments" v-bind:key="index" />
+      <Assignment :eventId="eventId" :index="index" v-for="(assign, index) in assignments" :key="index" />
+      <v-chip v-if="draggedOver" label disabled class="grey lighten-4" />
     </v-layout>
   </td>
   <td></td>
@@ -42,6 +43,7 @@ import { eventProps } from '../store/utils';
 
 export default {
   data: () => ({
+    draggedOver: false,
   }),
 
   props: {
@@ -76,15 +78,20 @@ export default {
       const assignId = event.dataTransfer.getData("assignId")
       if (assignId) {
         const sourceId = event.dataTransfer.getData("eventId")
+        const sourceIdx = event.dataTransfer.getData("assignIndex")
         if (sourceId) {
           event.dataTransfer.dropEffect = "move"
         } else {
           event.dataTransfer.dropEffect = "link"
         }
+        if (sourceIdx == "" || +sourceIdx < this.assignments.length-1) {
+          this.draggedOver = true
+        }
       }
     },
 
     handleDragLeave() {
+      this.draggedOver = false
     },
 
     handleDrop(event) {
@@ -98,6 +105,7 @@ export default {
           this.$store.commit('events/removeAssignment', {id: sourceId, index: sourceIdx})
         }
         this.$store.commit('events/addAssignment', {id: this.eventId, assignId: assignId})
+        this.draggedOver = false
       }
     },
   },
@@ -107,8 +115,5 @@ export default {
   },
 };
 </script>
-<style scoped>
-td {
-  white-space: nowrap;
-}
+<style>
 </style>

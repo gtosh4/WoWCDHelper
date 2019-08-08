@@ -4,7 +4,7 @@
   @dragover.prevent="handleDragOver"
   @dragleave.prevent="handleDragLeave"
 >
-<v-chip v-if="draggedOver" label disabled class="insert-before grey lighten-4" />
+<v-chip v-if="draggedOver" label disabled class="grey lighten-4" />
 <v-chip
   v-if="!ability"
   label
@@ -102,6 +102,8 @@ export default {
       const assignId = event.dataTransfer.getData("assignId"),
             assignIndex = event.dataTransfer.getData("assignIndex"),
             sourceId = event.dataTransfer.getData("eventId")
+      event.stopPropagation();
+      
       if (sourceId == this.eventId && (assignIndex == this.index || +assignIndex+1 == this.index)) return
       if (assignId) {
         if (sourceId) {
@@ -109,8 +111,8 @@ export default {
         } else {
           event.dataTransfer.dropEffect = "link"
         }
+        this.draggedOver = true
       }
-      this.draggedOver = true
     },
 
     handleDragLeave() {
