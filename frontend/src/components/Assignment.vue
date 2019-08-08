@@ -1,4 +1,10 @@
 <template>
+<div
+  @drop="handleDrop"
+  @dragover.prevent="handleDragOver"
+  @dragleave.prevent="handleDragLeave"
+>
+<v-chip v-if="draggedOver" label disabled class="insert-before grey lighten-4" />
 <v-chip
   v-if="!ability"
   label
@@ -10,8 +16,15 @@
   <v-icon class="handle">mdi-drag</v-icon>
   <span>{{ name }}</span>
 </v-chip>
-<v-chip label class="assignment ability" v-else>
+<v-chip
+  v-else
+  label
+  class="assignment ability"
+  :color="classColour"
+  @click:close="remove"
+>
 </v-chip>
+</div>
 </template>
 <script>
 import {classes, classIcon, specIcon, spec} from './wow_info'
@@ -19,18 +32,43 @@ import { mapState } from 'vuex';
 
 export default {
   data: () => ({
+    draggedOver: false,
   }),
 
   props: {
     eventId: {
       required: true,
     },
-    assignId: {
+    index: {
       required: true,
     },
   },
 
+  mounted() {
+    const chip = this.$el
+    const handle = chip.querySelector(".handle")
+
+    handle.onmousedown = () => {
+      chip.setAttribute('draggable', 'true')
+    }
+    handle.onmouseup = () => {
+      chip.setAttribute('draggable', 'false')
+    }
+
+    chip.ondragstart = (e) => {
+      e.dataTransfer.setData("eventId", this.eventId)
+      e.dataTransfer.setData("assignId", this.assignId)
+      e.dataTransfer.setData("assignIndex", this.index)
+    }
+    chip.ondragend = () => {
+      chip.setAttribute('draggable', 'false')
+    }
+  },
+
   computed: {
+    assignId() {
+      return this.$store.state.events.events[this.eventId].assignments[this.index]
+    },
     ...mapState('assigns', {
       name(state) {
         return state.assigns[this.assignId].name
@@ -57,7 +95,42 @@ export default {
     spec,
 
     remove() {
-      this.$store.commit('events/removeAssignment', {id: this.eventId, assignId: this.assignId})
+      this.$store.commit('events/removeAssignment', {id: this.eventId, index: this.index})
+    },
+
+    handleDragOver(event) {
+      const assignId = event.dataTransfer.getData("assignId"),
+            assignIndex = event.dataTransfer.getData("assignIndex"),
+            sourceId = event.dataTransfer.getData("eventId")
+      if (sourceId == this.eventId && (assignIndex == this.index || +assignIndex+1 == this.index)) return
+      if (assignId) {
+        if (sourceId) {
+          event.dataTransfer.dropEffect = "move"
+        } else {
+          event.dataTransfer.dropEffect = "link"
+        }
+      }
+      this.draggedOver = true
+    },
+
+    handleDragLeave() {
+      this.draggedOver = false
+    },
+
+    handleDrop(event) {
+      const assignId = event.dataTransfer.getData("assignId")
+      if (assignId) {
+        event.preventDefault()
+        event.stopPropagation();
+        const sourceId = event.dataTransfer.getData("eventId")
+        const sourceIdx = event.dataTransfer.getData("assignIndex")
+        if (sourceId && sourceIdx) {
+          this.$store.commit('events/moveAssignment', {from: {id: sourceId, index: sourceIdx}, to: {id: this.eventId, index: this.index}})
+        } else {
+          this.$store.commit('events/addAssignment', {id: this.eventId, assignId: assignId, index: this.index})
+        }
+      }
+      this.draggedOver = false
     },
   },
 };

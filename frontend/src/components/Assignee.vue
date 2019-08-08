@@ -1,12 +1,12 @@
 <template>
 <v-layout>
-  <v-chip v-if="!ability" label :color="classColour" class="assign-chip" >
+  <v-chip v-if="!ability" label :color="classColour" class="assignee" >
     <v-icon class="handle">mdi-drag</v-icon>
     <v-avatar tile class="mx-1" size="18"><img :src="classIcon(className)" /></v-avatar>
     <v-avatar tile class="mx-1" size="18"><img v-if="specName" :src="specIcon(spec(className, specName))" /></v-avatar>
     <v-text-field v-model="name" solo flat placeholder="Name" hide-details background-color="transparent" />
   </v-chip>
-  <v-chip v-else label :color="classColour" draggable class="assign-chip">
+  <v-chip v-else label :color="classColour" draggable class="assignee">
     <v-icon class="handle">mdi-drag</v-icon>
     Empty
   </v-chip>
@@ -28,7 +28,7 @@ export default {
   },
 
   mounted() {
-    const chip = this.$el.querySelector(".assign-chip")
+    const chip = this.$el.querySelector(".assignee")
     const handle = chip.querySelector(".handle")
 
     handle.onmousedown = () => {
@@ -66,7 +66,7 @@ export default {
   },
 }
 </script>
-<style>
+<style scoped>
 img {
   pointer-events: none;
 }

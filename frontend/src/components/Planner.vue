@@ -64,8 +64,3 @@ export default {
   },
 };
 </script>
-<style>
-td {
-  white-space: nowrap;
-}
-</style>

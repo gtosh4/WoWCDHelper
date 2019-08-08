@@ -29,27 +29,76 @@ const mutations = {
     state.assigns = n
   },
 
-  addAssignment(state, {id, assignId}) {
+  addAssignment(state, {id, assignId, index}) {
     const event = state.events[id]
     if (!event) return
+    if (index === undefined) {
+      index = event.assignments.length
+    }
+    const assignments = [...event.assignments]
+    assignments.splice(index, 0, assignId)
+
     state.events = {
       ...state.events,
       [event.id]: {
         ...event,
-        assignments: [...event.assignments, assignId],
+        assignments,
       },
     }
   },
 
-  removeAssignment(state, {id, assignId}) {
+  removeAssignment(state, {id, index}) {
     const event = state.events[id]
     if (!event) return
+
+    const assignments = [...event.assignments]
+    assignments.splice(index, 1)
+
     state.events = {
       ...state.events,
       [id]: {
         ...event,
-        assignments: event.assignments.filter(a => a != assignId),
+        assignments,
       },
+    }
+  },
+
+  moveAssignment(state, {from, to}) {
+    if (from.id == to.id) {
+      const event = state.events[from.id]
+      const assignments = event.assignments
+      const assignId = assignments.splice(from.index, 1)[0]
+      if (from.index < to.index) {
+        to.index--
+      }
+      assignments.splice(to.index, 0, assignId)
+
+      state.events = {
+        ...state.events,
+        [event.id]: {
+          ...event,
+          assignments,
+        }
+      }
+    } else {
+      const fromE = state.events[from.id],
+            toE = state.events[to.id]
+      const fromAs = [...fromE.assignments],
+            toAs = [...toE.assignments]
+      const assignId = fromAs.splice(from.index, 1)[0]
+      toAs.splice(to.index, 0, assignId)
+
+      state.events = {
+        ...state.events,
+        [from.id]: {
+          ...fromE,
+          assignments: fromAs,
+        },
+        [to.id]: {
+          ...toE,
+          assignments: toAs,
+        }
+      }
     }
   },
 }

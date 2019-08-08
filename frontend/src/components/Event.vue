@@ -23,11 +23,11 @@
   <td>
     <v-layout fluid wrap fill-height align-center justify-start
       class="assignments"
-      v-sortable="sortable"
       @drop="handleDrop"
-      @dragover.prevent
+      @dragover.prevent="handleDragOver"
+      @dragleave.prevent="handleDragLeave"
     >
-      <Assignment :eventId="eventId" :assignId="assign" v-for="(assign, index) in assignments" v-bind:key="index" />
+      <Assignment :eventId="eventId" :index="index" v-for="(assign, index) in assignments" v-bind:key="index" />
     </v-layout>
   </td>
   <td></td>
@@ -65,39 +65,6 @@ export default {
         this.time = moment.duration(+mins, 'minutes').add(+secs, 'seconds')
       },
     },
-
-    sortable() {
-      const event = this
-      return {
-        group: {
-          name: `${this.label}-assignment`,
-          pull: to => {
-            return to.el.classList.contains("assignments")
-          },
-          put: to => {
-            return to.el.classList.contains("assignments")
-          },
-        },
-        handle: ".handle",
-        setData(dt, el) {
-          dt.setData("eventId", event.eventId)
-          dt.setData("assignId", el.__vue__.assignId)
-        },
-        onAdd(evt) {
-          const sourceId = evt.originalEvent.dataTransfer.getData("eventId")
-          const assignId = evt.originalEvent.dataTransfer.getData("assignId")
-          event.$store.commit('events/moveAssignment', {fromId: sourceId, toId: event.eventId, assignId: assignId})
-        },
-        onUpdate(evt) {
-          const oldI = evt.oldIndex
-          const newI = evt.newIndex
-          const assignments = [...event.assignments]
-          const old = assignments.splice(oldI, 1)[0]
-          assignments.splice(newI, 0, old)
-          event.assignments = assignments
-        },
-      }
-    },
   },
 
   methods: {
@@ -105,11 +72,31 @@ export default {
     specIcon,
     spec,
 
+    handleDragOver(event) {
+      const assignId = event.dataTransfer.getData("assignId")
+      if (assignId) {
+        const sourceId = event.dataTransfer.getData("eventId")
+        if (sourceId) {
+          event.dataTransfer.dropEffect = "move"
+        } else {
+          event.dataTransfer.dropEffect = "link"
+        }
+      }
+    },
+
+    handleDragLeave() {
+    },
+
     handleDrop(event) {
       const assignId = event.dataTransfer.getData("assignId")
-      const sourceId = event.dataTransfer.getData("eventId")
-      if (assignId && !sourceId) {
+      if (assignId) {
         event.preventDefault()
+        event.stopPropagation();
+        const sourceId = event.dataTransfer.getData("eventId")
+        const sourceIdx = event.dataTransfer.getData("assignIndex")
+        if (sourceId && sourceIdx) {
+          this.$store.commit('events/removeAssignment', {id: sourceId, index: sourceIdx})
+        }
         this.$store.commit('events/addAssignment', {id: this.eventId, assignId: assignId})
       }
     },
@@ -120,3 +107,8 @@ export default {
   },
 };
 </script>
+<style scoped>
+td {
+  white-space: nowrap;
+}
+</style>
