@@ -2,27 +2,33 @@
 <v-container fluid>
 
   <v-layout wrap>
-    <v-flex v-for="(classInfo, className) in classes" v-bind:key="className" xs3 class="pa-1">
+    <v-flex v-for="(classInfo, className) in classes" v-bind:key="className" class="pa-1">
       <v-card outlined>
         <v-chip
           label
-          :text-color="classInfo.colour"
+          :text-color="classColour(className)"
           color="transparent"
           @click="expanded = {...expanded, [className]: !expanded[className]}"
           style="width: 100%"
         >
-          <img :src="classIcon(className)" class="mr-2" />
-          {{ className }}
-          <v-spacer />
-          <v-icon :class="expandedClass(expanded[className])">$vuetify.icons.expand</v-icon>
+          <v-layout align-center fill-height>
+            <v-avatar tile class="mr-1" size="24"><img :src="classIcon(className)" draggable="false" ondragstart="return false;" /></v-avatar>
+            <span class="mx-1">{{ className }}</span>
+            <v-icon :class="expandedClass(expanded[className])">$vuetify.icons.expand</v-icon>
+          </v-layout>
         </v-chip>
-        <v-list v-if="expanded[className]">
-          <v-list-item v-for="(specInfo, specName) in classInfo.specs" v-bind:key="specName">
-            <v-chip outlined>{{ specCount(className, specName) }}</v-chip>
-            <v-icon @click="addSpec(className, specName)" class="ml-2">mdi-account-plus</v-icon>
-            <img :src="specIcon(specInfo)" class="mx-2" v-if="specInfo.icon" />
-            <v-icon v-else>mdi-account-alert-outline</v-icon>
-            <span :style="{color: classInfo.colour}">{{ specName }}</span>
+        <v-list v-if="expanded[className]" dense>
+          <v-list-item class="player-select">
+            <v-chip outlined small label class="mr-1">{{ classCount(className) }}</v-chip>
+            <v-icon @click="addPlayer(className)" class="mx-1" small>mdi-account-plus</v-icon>
+            <span :style="{color: classColour(className)}" class="mx-1">{{ className }}</span>
+          </v-list-item>
+          <v-divider class="mx-1" />
+          <v-list-item v-for="(specInfo, specName) in classInfo.specs" v-bind:key="specName" class="player-select">
+            <v-chip outlined small label class="mr-1">{{ specCount(className, specName) }}</v-chip>
+            <v-icon @click="addPlayer(className, specName)" class="mx-1" small>mdi-account-plus</v-icon>
+            <v-avatar tile class="mx-1" size="18"><img :src="specIcon(specInfo)" draggable="false" ondragstart="return false;" /></v-avatar>
+            <span :style="{color: classColour(className)}" class="mx-1">{{ specName }}</span>
           </v-list-item>
         </v-list>
       </v-card>
@@ -30,107 +36,47 @@
   </v-layout>
 
   <v-layout>
-    <v-flex xs12>
-      <v-list>
-        <v-list-item v-for="(member, index) in sortedMembers" v-bind:key="index">
-          <img :src="classIcon(member.className)" class="mr-2" />
-          <img :src="specIcon(classes[member.className].specs[member.specName])" class="mx-2" />
-          {{member.name}}
-        </v-list-item>
-      </v-list>
+    <v-flex grow class="pa-1">
+      <v-card outlined>
+
+        <v-list dense>
+          <v-list-item v-for="(player, index) in sortedPlayers" v-bind:key="index" min-height="20px">
+            <Assignee :assignId="player.id" />
+          </v-list-item>
+        </v-list>
+
+      </v-card>
     </v-flex>
   </v-layout>
 
 </v-container>
 </template>
 <script>
+import Assignee from './Assignee'
 
-const classes = {
-  deathknight: {
-    colour: "#C41F3B",
-    specs: {
-    },
-  },
-  demonhunter: {
-    colour: "#A330C9",
-    specs: {
-    },
-  },
-  druid: {
-    colour: "#FF7D0A",
-    specs: {
-      resto: {
-        icon: "talentspec_druid_restoration",
-      },
-    },
-  },
-  hunter: {
-    colour: "#ABD473",
-    specs: {
-    },
-  },
-  mage: {
-    colour: "#40C7EB",
-    specs: {
-    },
-  },
-  monk: {
-    colour: "#00FF96",
-    specs: {
-    },
-  },
-  paladin: {
-    colour: "#F58CBA",
-    specs: {
-      holy: {
-        icon: "spell_holy_holybolt",
-      },
-    },
-  },
-  priest: {
-    colour: "#FFFFFF",
-    specs: {
-    },
-  },
-  rogue: {
-    colour: "#FFF569",
-    specs: {
-    },
-  },
-  shaman: {
-    colour: "#0070DE",
-    specs: {
-    },
-  },
-  warlock: {
-    colour: "#8787ED",
-    specs: {
-    },
-  },
-  warrior: {
-    colour: "#C79C6E",
-    specs: {
-    },
-  },
-}
+import { mapGetters } from 'vuex'
+import {classes, classColour, classIcon, specIcon, spec} from './wow_info'
 
 export default {
   data: () => ({
     classes,
-    members: [],
     expanded: {},
   }),
 
   props: {
-    assigns: {
-      type: Array,
-      required: true,
-    },
+  },
+
+  mounted() {
+    this.$store.commit('assigns/set', {name: "Yorman", className: 'druid', specName: 'resto', id: 1})
+    this.$store.commit('assigns/set', {name: "Test", className: 'druid', specName: 'resto', id: 2})
+    this.$store.commit('assigns/set', {name: "Toshpal", className: 'paladin', specName: 'holy', id: 3})
   },
 
   computed: {
-    indexedMembers() {
-      return this.members.reduce((ms, m) => {
+    ...mapGetters('assigns', ['players', 'abilities']),
+
+    indexedPlayers() {
+      return this.players.reduce((ms, m) => {
         let c = ms[m.className]
         if (!c) {
           c = {}
@@ -143,36 +89,31 @@ export default {
         }
         s.push(m)
         return ms
-      }, [])
+      }, {})
     },
 
-    sortedMembers() {
-      return [...this.members].sort((a, b) => {
+    sortedPlayers() {
+      return [...this.players].sort((a, b) => {
         let c = a.className.localeCompare(b.className)
         if (c != 0) return c
         c = a.specName.localeCompare(b.specName)
-        if (c != 0) return c
-        c = (a.name || "").localeCompare(b.name || "")
         return c
       })
     },
   },
 
   methods: {
-    classIcon(className, size="small") {
-      return `https://wow.zamimg.com/images/wow/icons/${size}/class_${className}.jpg`
-    },
+    classIcon,
+    specIcon,
+    spec,
+    classColour,
 
-    specIcon(specInfo, size="tiny") {
-      return `https://wow.zamimg.com/images/wow/icons/${size}/${specInfo.icon}.gif`
+    classCount(className) {
+      return Object.values(this.indexedPlayers[className] || {}).reduce((sum, spec) => sum + spec.length, 0)
     },
 
     specCount(className, specName) {
-      return ((this.indexedMembers[className] || {})[specName] || []).length
-    },
-
-    addSpec(className, specName) {
-      this.members = [...this.members, {className, specName}]
+      return ((this.indexedPlayers[className] || {})[specName] || []).length
     },
 
     expandedClass(expanded) {
@@ -181,7 +122,22 @@ export default {
         c.push('v-data-table__expand-icon--active')
       }
       return c
-    }
+    },
+
+    addPlayer(className, specName) {
+      this.$store.commit('assigns/set', {className, specName})
+    },
+  },
+
+  components: {
+    Assignee,
   },
 };
 </script>
+<style>
+.player-select {
+  min-height: 20px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+</style>
