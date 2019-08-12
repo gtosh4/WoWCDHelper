@@ -74,7 +74,7 @@ export default {
     spec,
 
     deleteAssign() {
-      this.$store.commit('assigns/delete', this.assignId)
+      this.$store.commit('deleteAssign', this.assignId)
     },
   },
 

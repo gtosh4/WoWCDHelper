@@ -1,38 +1,38 @@
 <template>
-<div
+<v-flex shrink pa-0 ma-0
   @drop="handleDrop"
   @dragover.prevent="handleDragOver"
   @dragleave.prevent="handleDragLeave"
   class="assignment"
 >
-  <InsertAssignment v-if="draggedOver" />
+  <InsertAssignment :eventId="eventId" :draggedAssign="draggedAssign" />
   <v-chip
     v-if="!spell"
     label
-    :close="hover && !draggedOver"
+    :close="showHover"
     @mouseenter="hover = true"
     @mouseleave="hover = false"
     class="player"
     :color="classColour"
     @click:close="remove"
   >
-    <v-icon class="handle">mdi-drag</v-icon>
+    <v-icon class="handle" :style="{display: showHover ? '' : 'none'}">mdi-drag</v-icon>
     <span>{{ name }}</span>
   </v-chip>
   <v-chip
     v-else
     label
-    :close="hover && !draggedOver"
+    :close="showHover"
     @mouseenter="hover = true"
     @mouseleave="hover = false"
     class="spell"
     :color="classColour"
     @click:close="remove"
   >
-    <v-icon class="handle" :style="{display: hover ? 'flex' : 'none'}">mdi-drag</v-icon>
-    <span>{{player.name}} <Spell :spell="spell" :showname="false" class="ml-1" /></span>
+    <v-icon class="handle" :style="{display: showHover ? '' : 'none'}">mdi-drag</v-icon>
+    <span>{{player.name}} <Spell :spell="spell" :showname="false" /></span>
   </v-chip>
-</div>
+</v-flex>
 </template>
 <script>
 import Spell from './Spell'
@@ -44,7 +44,7 @@ import {assignProps} from '../store/utils'
 export default {
   data: () => ({
     hover: false,
-    draggedOver: false,
+    draggedAssign: null,
   }),
 
   props: {
@@ -90,7 +90,11 @@ export default {
     classColour() {
       const c = classes[this.player.className].colour
       return `rgba(${c.r}, ${c.g}, ${c.b}, 0.5)`
-    }
+    },
+
+    showHover() {
+      return this.hover && !this.draggedAssign
+    },
   },
 
   methods: {
@@ -115,12 +119,12 @@ export default {
         } else {
           event.dataTransfer.dropEffect = "link"
         }
-        this.draggedOver = true
+        this.draggedAssign = {assignId, sourceId, assignIndex}
       }
     },
 
     handleDragLeave() {
-      this.draggedOver = false
+      this.draggedAssign = null
     },
 
     handleDrop(event) {
@@ -136,7 +140,7 @@ export default {
           this.$store.commit('events/addAssignment', {id: this.eventId, assignId: assignId, index: this.index})
         }
       }
-      this.draggedOver = false
+      this.draggedAssign = null
     },
   },
 
@@ -147,9 +151,12 @@ export default {
 };
 </script>
 <style>
+.assignment {
+  display: inline-flex;
+}
 .assignment .v-chip {
   margin-left: 4px;
-  margin-right: 4px;
+  margin-right: 0px;
 }
 
 .assignment .handle {

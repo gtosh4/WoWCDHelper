@@ -45,20 +45,6 @@ const mutations = {
     state.assigns = {...state.assigns, [assign.id]: assign}
     return assign
   },
-
-  delete(state, id) {
-    const n = {...state.assigns}
-    const assign = state.assigns[id]
-    delete n[id]
-    if (assign != null && assign.id == assign.playerId) {
-      Object.values(n).forEach(a => {
-        if (a.playerId == id) {
-          delete n[a.id]
-        }
-      })
-    }
-    state.assigns = n
-  },
 }
 
 export default {

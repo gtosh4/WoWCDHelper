@@ -26,6 +26,7 @@ const getters = {
       return a.id > b.id
     })
   },
+
   nextid,
 }
 

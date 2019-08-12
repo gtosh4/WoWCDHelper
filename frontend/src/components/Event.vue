@@ -3,9 +3,11 @@
   <td class="event-time">
     <EventTextField v-model="timeStr" placeholder="0:0" />
   </td>
+
   <td class="event-label">
     <EventTextField v-model="label" :placeholder="eventId ? 'unnamed' : 'new'" />
   </td>
+
   <td class="event-assignments">
     <v-layout fluid wrap fill-height align-center justify-start
       class="assignments"
@@ -14,9 +16,10 @@
       @dragleave.prevent="handleDragLeave"
     >
       <Assignment :eventId="eventId" :index="index" v-for="(assign, index) in assignments" :key="index" />
-      <InsertAssignment v-if="draggedOver" />
+      <InsertAssignment :eventId="eventId" :draggedAssign="draggedAssign" class="ml-1" />
     </v-layout>
   </td>
+
   <td class="event-actions">
     <div v-if="showActions">
     <v-tooltip top>
@@ -64,7 +67,7 @@ const endingNum = /(\d+)$/
 export default {
   data: () => ({
     hover: false,
-    draggedOver: false,
+    draggedAssign: null,
   }),
 
   props: {
@@ -115,13 +118,13 @@ export default {
           event.dataTransfer.dropEffect = "link"
         }
         if (sourceId != this.eventId || sourceIdx == "" || +sourceIdx < this.assignments.length-1) {
-          this.draggedOver = true
+        this.draggedAssign = {assignId, sourceId, assignIndex: sourceIdx}
         }
       }
     },
 
     handleDragLeave() {
-      this.draggedOver = false
+      this.draggedAssign = null
     },
 
     handleDrop(event) {
@@ -135,7 +138,7 @@ export default {
           this.$store.commit('events/removeAssignment', {id: sourceId, index: sourceIdx})
         }
         this.$store.commit('events/addAssignment', {id: this.eventId, assignId: assignId})
-        this.draggedOver = false
+        this.draggedAssign = null
       }
     },
 
