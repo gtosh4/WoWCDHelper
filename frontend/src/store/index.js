@@ -12,12 +12,15 @@ import { spec } from '../components/wow_info';
 const vuexPersist = new VuexPersist({
   key: 'wow-cd-helper',
   storage: localStorage,
+
   saveState(key, state, storage) {
     storage.setItem(key,JSON.stringify({
+      name: state.name,
       events: state.events.events,
       assigns: state.assigns.assigns,
     }))
   },
+
   restoreState(key, storage) {
     const raw = JSON.parse(storage.getItem(key)) || {}
     Object.values(raw.events || {}).forEach(v => v.time = moment.duration(v.time))
@@ -34,6 +37,7 @@ const vuexPersist = new VuexPersist({
       }
     })
     return {
+      name: raw.name,
       events: {events: raw.events},
       assigns: {assigns: raw.assigns},
     }
@@ -46,14 +50,20 @@ const debug = process.env.NODE_ENV !== 'production'
 export default new Vuex.Store({
   mutations: {
     deleteAssign(state, id) {
+      const playerId = state.assigns.assigns[id].playerId
+      const deleteplayer = playerId && id == playerId
+
       const es = {...state.events.events}
-      es.forEach(e => e.assignments.filter(a => a != id))
+      Object.values(es).forEach(e => e.assignments = e.assignments.filter(a => {
+        const isDeletedId = a == id
+        const isDeletedPlayer = deleteplayer && state.assigns.assigns[a].playerId == playerId
+        return !isDeletedId && !isDeletedPlayer
+      }))
       state.events.events = es
 
       const n = {...state.assigns.assigns}
-      const playerId = state.assigns.assigns[id].playerId
       delete n[id]
-      if (playerId && id == playerId) {
+      if (deleteplayer) {
         Object.values(n).forEach(a => {
           if (a.playerId == playerId) {
             delete n[a.id]
@@ -61,6 +71,10 @@ export default new Vuex.Store({
         })
       }
       state.assigns.assigns = n
+    },
+
+    setName(state, name) {
+      state.name = name
     },
   },
   modules: {

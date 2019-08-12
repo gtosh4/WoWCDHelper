@@ -7,14 +7,9 @@
         hide-details
         placeholder="Assignments"
         id="plan-name"
+        v-model="name"
       />
     </v-toolbar-title>
-    <v-toolbar-items>
-      <!--
-      <v-btn tile icon><v-icon>mdi-content-save</v-icon></v-btn>
-      <v-btn tile icon><v-icon>mdi-undo</v-icon></v-btn>
-      -->
-    </v-toolbar-items>
   </v-toolbar></v-card-title>
 
   <v-card outlined tile>
@@ -92,6 +87,16 @@ export default {
     items() {
       return [...this.$store.getters['events/orderedEvents'], {}]
     },
+
+    name: {
+      get() {
+        return this.$store.state.name
+      },
+
+      set(v) {
+        this.$store.commit("setName", v)
+      }
+    }
   },
 
   methods: {
