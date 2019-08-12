@@ -93,7 +93,7 @@ export default {
     },
 
     clearAssign() {
-      this.$store.commit('events/clearAssignee', this.assignId)
+      this.$store.commit('clearAssign', this.assignId)
     },
   },
 
