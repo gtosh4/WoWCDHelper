@@ -1,23 +1,21 @@
 <template>
-<v-container id="cd-palette">
+<v-flex shrink id="cd-palette"><v-card outlined tile>
   <v-layout>
     <v-flex xs12 class="px-1 pb-1">
-      <v-card outlined tile>
 
-        <v-list>
-          <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="assignee player">
-            <v-card outline tile width="100%" >
-              <Assignee :assignId="player.id" />
-              <v-list class="mr-4">
-                <v-list-item v-for="(spell, i) in playerSpells[player.id]" :key="i" class="assignee spell">
-                  <Assignee :assignId="spell.id" />
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-list-item>
-        </v-list>
+      <v-list>
+        <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="assignee">
+          <v-card outlined tile width="100%" >
+            <Assignee :assignId="player.id" />
+            <v-list>
+              <v-list-item v-for="(spell, i) in playerSpells[player.id]" :key="i">
+                <Assignee :assignId="spell.id" />
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-list-item>
+      </v-list>
 
-      </v-card>
     </v-flex>
   </v-layout>
 
@@ -96,7 +94,7 @@
     </v-flex>
   </v-layout>
 
-</v-container>
+</v-card></v-flex>
 </template>
 <script>
 import Assignee from './Assignee'
@@ -203,10 +201,7 @@ export default {
 </script>
 <style>
 #cd-palette {
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 0px;
+  padding: 0 0 0 4px;
   /* max-width: min(25vw, 650px); */
   max-width: 650px;
 }
@@ -220,7 +215,16 @@ export default {
   padding-left: 4px;
   margin-bottom: 4px;
 }
-.v-list-item.assignee.spell {
+.v-list-item.assignee .v-list {
   padding-left: 32px;
+  padding-right: 32px;
+}
+.v-list-item.assignee .v-list-item {
+  min-height: 20px;
+  padding-left: 4px;
+  margin-bottom: 4px;
+}
+.v-list-item.assignee .player,.spell {
+  width: 100%;
 }
 </style>

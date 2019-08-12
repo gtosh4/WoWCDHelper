@@ -1,13 +1,13 @@
 <template>
 <v-layout>
-  <v-chip v-if="!spell" label :color="classColour" class="assignee player" >
+  <v-chip v-if="!spell" label :color="classColour" class="player" >
     <v-icon class="handle">mdi-drag</v-icon>
     <WowIcon :className="className" />
     <WowIcon v-if="specName" :className="className" :specName="specName" />
     <WowIcon v-else />
     <v-text-field v-model="name" solo flat placeholder="Name" hide-details background-color="transparent" width="100%" />
   </v-chip>
-  <v-chip v-else label :color="classColour" draggable class="assignee spell">
+  <v-chip v-else label :color="classColour" draggable class="spell">
     <v-icon class="handle">mdi-drag</v-icon>
     <span class="mr-1">{{ assignmentCount }}</span>
     <Spell :spell="spell" />

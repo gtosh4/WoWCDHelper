@@ -53,9 +53,6 @@ export default {
 .v-input {
   margin-top: 0px;
   padding-top: 0px;
-  min-width: 50px;
-}
-input {
-  text-align: end;
+  width: 100%;
 }
 </style>

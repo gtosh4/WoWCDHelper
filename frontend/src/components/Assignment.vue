@@ -3,38 +3,40 @@
   @drop="handleDrop"
   @dragover.prevent="handleDragOver"
   @dragleave.prevent="handleDragLeave"
+  class="assignment"
 >
-<v-chip v-if="draggedOver" label disabled class="grey lighten-4" />
-<v-chip
-  v-if="!spell"
-  label
-  :close="hover && !draggedOver"
-  @mouseenter="hover = true"
-  @mouseleave="hover = false"
-  class="assignment player"
-  :color="classColour"
-  @click:close="remove"
->
-  <v-icon class="handle">mdi-drag</v-icon>
-  <span>{{ name }}</span>
-</v-chip>
-<v-chip
-  v-else
-  label
-  :close="hover && !draggedOver"
-  @mouseenter="hover = true"
-  @mouseleave="hover = false"
-  class="assignment spell"
-  :color="classColour"
-  @click:close="remove"
->
-  <v-icon class="handle" :style="{display: hover ? 'flex' : 'none'}">mdi-drag</v-icon>
-  <span>{{player.name}} <Spell :spell="spell" :showname="false" class="ml-1" /></span>
-</v-chip>
+  <InsertAssignment v-if="draggedOver" />
+  <v-chip
+    v-if="!spell"
+    label
+    :close="hover && !draggedOver"
+    @mouseenter="hover = true"
+    @mouseleave="hover = false"
+    class="player"
+    :color="classColour"
+    @click:close="remove"
+  >
+    <v-icon class="handle">mdi-drag</v-icon>
+    <span>{{ name }}</span>
+  </v-chip>
+  <v-chip
+    v-else
+    label
+    :close="hover && !draggedOver"
+    @mouseenter="hover = true"
+    @mouseleave="hover = false"
+    class="spell"
+    :color="classColour"
+    @click:close="remove"
+  >
+    <v-icon class="handle" :style="{display: hover ? 'flex' : 'none'}">mdi-drag</v-icon>
+    <span>{{player.name}} <Spell :spell="spell" :showname="false" class="ml-1" /></span>
+  </v-chip>
 </div>
 </template>
 <script>
 import Spell from './Spell'
+import InsertAssignment from './InsertAssignment'
 
 import {classes, classIcon, specIcon, spec} from './wow_info'
 import {assignProps} from '../store/utils'
@@ -140,11 +142,12 @@ export default {
 
   components: {
     Spell,
+    InsertAssignment,
   },
 };
 </script>
 <style>
-.assignment {
+.assignment .v-chip {
   margin-left: 4px;
   margin-right: 4px;
 }

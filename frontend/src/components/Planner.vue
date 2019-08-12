@@ -1,13 +1,19 @@
 <template>
-<v-container py-0 id="cd-planner">
-  <v-toolbar dense>
-    <v-toolbar-title>Assignments</v-toolbar-title>
+<v-flex py-0 grow id="cd-planner"><v-card outlined tile>
+  <v-card-title><v-toolbar dense>
+    <v-toolbar-title>
+      <v-text-field
+        single-line
+        hide-details
+        placeholder="Assignments"
+        id="plan-name"
+      />
+    </v-toolbar-title>
     <v-spacer />
     <v-toolbar-items>
-      <v-text-field />
       <v-btn tile icon><v-icon>mdi-save</v-icon></v-btn>
     </v-toolbar-items>
-  </v-toolbar>
+  </v-toolbar></v-card-title>
 
   <v-card outlined tile>
     <v-data-table
@@ -46,7 +52,7 @@
 
     </v-data-table>
   </v-card>
-</v-container>
+</v-card></v-flex>
 </template>
 <script>
 import Event from './Event'
@@ -92,9 +98,6 @@ export default {
 </script>
 <style>
 #cd-planner {
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 0px;
-  padding-right: 4px;
+  padding: 0 4px 0 0;
 }
 </style>

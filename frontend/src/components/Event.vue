@@ -1,12 +1,12 @@
 <template>
-<tr>
+<tr @mouseenter="hover = true" @mouseleave="hover = false">
   <td class="event-time">
     <EventTextField v-model="timeStr" placeholder="0:0" />
   </td>
   <td class="event-label">
     <EventTextField v-model="label" :placeholder="eventId ? 'unnamed' : 'new'" />
   </td>
-  <td>
+  <td class="event-assignments">
     <v-layout fluid wrap fill-height align-center justify-start
       class="assignments"
       @drop="handleDrop"
@@ -14,19 +14,20 @@
       @dragleave.prevent="handleDragLeave"
     >
       <Assignment :eventId="eventId" :index="index" v-for="(assign, index) in assignments" :key="index" />
-      <v-chip v-if="draggedOver" label disabled class="grey lighten-4" />
+      <InsertAssignment v-if="draggedOver" />
     </v-layout>
   </td>
   <td class="event-actions">
-    <v-btn tile x-small icon tabindex="-1" @click="clone"><v-icon small>mdi-content-copy</v-icon></v-btn>
-    <v-btn tile x-small icon tabindex="-1" @click="clear"><v-icon small>mdi-arrow-collapse-left</v-icon></v-btn>
-    <v-btn tile x-small icon tabindex="-1" @click="remove"><v-icon small>mdi-delete</v-icon></v-btn>
+    <v-btn v-if="hover && !draggedOver" tile x-small icon tabindex="-1" @click="clone"><v-icon small>mdi-content-copy</v-icon></v-btn>
+    <v-btn v-if="hover && !draggedOver" tile x-small icon tabindex="-1" @click="clear"><v-icon small>mdi-arrow-collapse-left</v-icon></v-btn>
+    <v-btn v-if="hover && !draggedOver" tile x-small icon tabindex="-1" @click="remove"><v-icon small>mdi-delete</v-icon></v-btn>
   </td>
 </tr>
 </template>
 <script>
 import Assignment from './Assignment'
 import EventTextField from './EventTextField'
+import InsertAssignment from './InsertAssignment'
 
 import moment from 'moment'
 import { eventProps } from '../store/utils';
@@ -37,6 +38,7 @@ function padTime(t) {
 
 export default {
   data: () => ({
+    hover: false,
     draggedOver: false,
   }),
 
@@ -120,6 +122,7 @@ export default {
   components: {
     Assignment,
     EventTextField,
+    InsertAssignment,
   },
 };
 </script>
@@ -138,10 +141,6 @@ export default {
 .v-data-table td.event-time {
   padding-left: 8px;
   padding-right: 8px;
-}
-.v-data-table td.event-time .v-input {
-  margin-top: 0px;
-  padding-top: 0px;
   min-width: 50px;
 }
 .v-data-table td.event-time input {
@@ -151,10 +150,16 @@ export default {
 .v-data-table td.event-label {
   padding-left: 8px;
   padding-right: 8px;
-}
-.v-data-table td.event-label .v-input {
-  margin-top: 0px;
-  padding-top: 0px;
   min-width: 100px;
+}
+
+.v-data-table td.event-assignments {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.assignments .assignment {
+  padding-left: 2px;
+  padding-right: 2px;
 }
 </style>
