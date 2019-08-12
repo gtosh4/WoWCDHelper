@@ -3,7 +3,7 @@
   <v-layout>
     <v-flex>
 
-      <v-list>
+      <v-list class="pb-0">
         <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="assignee">
           <v-card outlined tile width="100%" >
             <Assignee :assignId="player.id" />

@@ -25,7 +25,7 @@
     <v-tooltip top>
       <template #activator="{ on }">
         <v-btn tile x-small icon tabindex="-1" @click="clone" v-on="on">
-          <v-icon small>mdi-content-copy</v-icon>
+          <v-icon>mdi-content-copy</v-icon>
         </v-btn>
       </template>
       <span>Copy</span>
@@ -33,7 +33,7 @@
     <v-tooltip top>
       <template #activator="{ on }">
         <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="clear" v-on="on">
-          <v-icon small>mdi-arrow-collapse-left</v-icon>
+          <v-icon>mdi-backspace</v-icon>
         </v-btn>
       </template>
       <span>Clear assignments</span>
@@ -41,7 +41,7 @@
     <v-tooltip top>
       <template #activator="{ on }">
         <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="remove" v-on="on">
-          <v-icon small>mdi-delete</v-icon>
+          <v-icon>mdi-delete</v-icon>
         </v-btn>
       </template>
       <span>Delete row</span>
@@ -152,7 +152,8 @@ export default {
     },
 
     clear() {
-      this.$store.commit('events/set', {id: this.eventId, time: this.time, label: this.label})
+      const event = this.$store.state.events.events[this.eventId]
+      this.$store.commit('events/set', {...event, assignments: []})
     },
 
     remove() {

@@ -10,6 +10,24 @@
         v-model="name"
       />
     </v-toolbar-title>
+    <v-toolbar-items>
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <v-btn v-on="on" tile x-small icon @click="clearAll">
+            <v-icon>mdi-backspace</v-icon>
+          </v-btn>
+        </template>
+        <span>Clear All Assignments</span>
+      </v-tooltip>
+      <v-tooltip top>
+        <template #activator="{ on }">
+          <v-btn v-on="on" tile x-small icon @click="deleteAll">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
+        <span>Delete All Events</span>
+      </v-tooltip>
+    </v-toolbar-items>
   </v-toolbar></v-card-title>
 
   <v-card outlined tile>
@@ -104,6 +122,14 @@ export default {
       const event = {}
       this.$store.commit('events/set', event)
       this.$nextTick(() => this.$el.querySelector(`#event-${event.id} input`).focus())
+    },
+
+    clearAll() {
+      this.$store.getters['events/orderedEvents'].forEach(e => this.$store.commit('events/set', {...e, assignments: []}))
+    },
+
+    deleteAll() {
+      this.$store.commit('events/import', {})
     },
   },
 

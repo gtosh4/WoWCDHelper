@@ -12,7 +12,22 @@
     <span class="mr-1">{{ assignmentCount }}</span>
     <Spell :spell="spell" />
   </v-chip>
-  <v-icon @click="deleteAssign">mdi-delete</v-icon>
+    <v-tooltip top>
+      <template #activator="{ on }">
+        <v-btn tile x-small icon tabindex="-1" @click="clearAssign" v-on="on">
+          <v-icon>mdi-backspace</v-icon>
+        </v-btn>
+      </template>
+      <span>Clear assignments</span>
+    </v-tooltip>
+    <v-tooltip top>
+      <template #activator="{ on }">
+        <v-btn tile x-small icon tabindex="-1" @click="deleteAssign" v-on="on">
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
+      </template>
+      <span>Delete</span>
+    </v-tooltip>
 </v-layout>
 </template>
 <script>
@@ -75,6 +90,10 @@ export default {
 
     deleteAssign() {
       this.$store.commit('deleteAssign', this.assignId)
+    },
+
+    clearAssign() {
+      this.$store.commit('events/clearAssignee', this.assignId)
     },
   },
 
