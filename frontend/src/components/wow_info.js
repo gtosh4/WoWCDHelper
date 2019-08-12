@@ -7,11 +7,11 @@ export const classes = {
         spells: [],
       },
       frost: {
-        icon: "spell_deathknight_frostpresence.gif",
+        icon: "spell_deathknight_frostpresence",
         spells: [],
       },
       unholy: {
-        icon: "spell_deathknight_unholypresence.gif",
+        icon: "spell_deathknight_unholypresence",
         spells: [],
       },
     },
@@ -21,7 +21,9 @@ export const classes = {
     specs: {
       havoc: {
         icon: "ability_demonhunter_specdps",
-        spells: [],
+        spells: [
+          {id: 196718, name: "Darkness", icon: "https://media.wowdb.com/wow/icons/large/ability_demonhunter_darkness.jpg"},
+        ],
       },
       vengeance: {
         icon: "ability_demonhunter_spectank",
@@ -46,7 +48,9 @@ export const classes = {
       },
       restoration: {
         icon: "spell_nature_healingtouch",
-        spells: [],
+        spells: [
+          {id: 740, name: "Tranquility", icon: "https://media.wowdb.com/wow/icons/large/spell_nature_tranquility.jpg"},
+        ],
       },
     },
   },
@@ -93,7 +97,9 @@ export const classes = {
       },
       mistweaver: {
         icon: "monk_stance_wiseserpent",
-        spells: [],
+        spells: [
+          {id: 115310, name: "Revival", icon: "https://media.wowdb.com/wow/icons/large/spell_monk_revival.jpg"},
+        ],
       },
       windwalker: {
         icon: "monk_stance_whitetiger",
@@ -106,7 +112,10 @@ export const classes = {
     specs: {
       holy: {
         icon: "spell_holy_holybolt",
-        spells: [],
+        spells: [
+          {id: 31821, name: "Aura Mastery", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_auramastery.jpg"},
+          {id: 31884, name: "Avenging Wrath", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_avenginewrath.jpg"},
+        ],
       },
       protection: {
         icon: "ability_paladin_shieldofthetemplar",
@@ -123,15 +132,24 @@ export const classes = {
     specs: {
       discipline: {
         icon: "spell_holy_powerwordshield",
-        spells: [],
+        spells: [
+          {id: 81782, name: "Power Word: Barrier", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_powerwordbarrier.jpg"},
+          {id: 246287, name: "Evangelism", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_divineillumination.jpg"},
+          {id: 47536, name: "Rapture", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_rapture.jpg"},
+        ],
       },
       holy: {
         icon: "spell_holy_guardianspirit",
-        spells: [],
+        spells: [
+          {id: 64843, name: "Divine Hymn", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_divinehymn.jpg"},
+          {id: 265202, name: "Holy Word: Salvation", icon: "https://media.wowdb.com/wow/icons/large/ability_priest_archangel.jpg"},
+        ],
       },
       shadow: {
         icon: "spell_shadow_shadowwordpain",
-        spells: [],
+        spells: [
+          {id: 15286, name: "Vampiric Embrace", icon: "https://media.wowdb.com/wow/icons/large/spell_shadow_unsummonbuilding.jpg"},
+        ],
       },
     },
   },
@@ -165,7 +183,10 @@ export const classes = {
       },
       restoration: {
         icon: "spell_nature_magicimmunity",
-        spells: [],
+        spells: [
+          {id: 108280, name: "Healing Tide Totem", icon: "https://media.wowdb.com/wow/icons/large/ability_shaman_healingtide.jpg"},
+          {id: 98008, name: "Spirit Link Totem", icon: "https://media.wowdb.com/wow/icons/large/spell_shaman_spiritlink.jpg"},
+        ],
       },
     },
   },
@@ -191,15 +212,21 @@ export const classes = {
     specs: {
       arms: {
         icon: "ability_warrior_savageblow",
-        spells: [],
+        spells: [
+          {id: 97462, name: "Rallying Cry", icon: "https://media.wowdb.com/wow/icons/large/ability_warrior_rallyingcry.jpg"},
+        ],
       },
       fury: {
         icon: "ability_warrior_innerrage",
-        spells: [],
+        spells: [
+          {id: 97462, name: "Rallying Cry", icon: "https://media.wowdb.com/wow/icons/large/ability_warrior_rallyingcry.jpg"},
+        ],
       },
       protection: {
         icon: "ability_warrior_defensivestance",
-        spells: [],
+        spells: [
+          {id: 97462, name: "Rallying Cry", icon: "https://media.wowdb.com/wow/icons/large/ability_warrior_rallyingcry.jpg"},
+        ],
       },
     },
   },

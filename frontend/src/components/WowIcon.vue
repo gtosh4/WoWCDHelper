@@ -1,7 +1,6 @@
 <template>
 <v-avatar tile class="mx-1" size="18">
-  <img v-if="src" :src="src" class="wowicon" draggable="false" />
-  <v-icon v-else>mdi-alert-circle</v-icon>
+  <img v-if="src" :src="src" class="wowicon" draggable="false" ondragstart="return false" />
 </v-avatar>
 </template>
 <script>

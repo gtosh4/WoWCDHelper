@@ -3,10 +3,14 @@ export function assignProps(props) {
   props.forEach(prop => {
     p[prop] = {
       get() {
-        return this.$store.state.assigns.assigns[this.assignId][prop]
+        if (this.assignId === undefined) return undefined
+
+        const assign = this.$store.state.assigns.assigns[this.assignId]
+        return assign !== undefined ? assign[prop] : undefined
       },
       set(v) {
-        this.$store.commit('assigns/set', {...this.$store.state.assigns.assigns[this.assignId], [prop]: v})
+        const assign = this.assignId === undefined ? {} : this.$store.state.assigns.assigns[this.assignId]
+        this.$store.commit('assigns/set', {...assign, [prop]: v})
       },
     }
   });
@@ -18,10 +22,14 @@ export function eventProps(props) {
   props.forEach(prop => {
     p[prop] = {
       get() {
-        return this.$store.state.events.events[this.eventId][prop]
+        if (this.eventId === undefined) return undefined
+
+        const event = this.$store.state.events.events[this.eventId]
+        return event !== undefined ? event[prop] : undefined
       },
       set(v) {
-        this.$store.commit('events/set', {...this.$store.state.events.events[this.eventId], [prop]: v})
+        const event = this.eventId === undefined ? {} : this.$store.state.events.events[this.eventId]
+        this.$store.commit('events/set', {...event, [prop]: v})
       },
     }
   });

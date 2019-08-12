@@ -1,24 +1,10 @@
 <template>
 <tr>
-  <td class="text-right">
-    <v-edit-dialog :return-value.sync="timeStr">{{ timeStr }}
-      <template v-slot:input>
-        <v-text-field
-          v-model="timeStr"
-          single-line
-        />
-      </template>
-    </v-edit-dialog>
+  <td class="event-time">
+    <EventTextField v-model="timeStr" placeholder="0:0" />
   </td>
-  <td style="border-right: solid 1px rgba(255, 255, 255, 0.12); white-space: nowrap;">
-    <v-edit-dialog :return-value.sync="label">{{ label || 'unnamed' }}
-      <template v-slot:input>
-        <v-text-field
-          v-model="label"
-          single-line
-        />
-      </template>
-    </v-edit-dialog>
+  <td class="event-label">
+    <EventTextField v-model="label" :placeholder="eventId ? 'unnamed' : 'new'" />
   </td>
   <td>
     <v-layout fluid wrap fill-height align-center justify-start
@@ -31,18 +17,23 @@
       <v-chip v-if="draggedOver" label disabled class="grey lighten-4" />
     </v-layout>
   </td>
-  <td style="border-left: solid 1px rgba(255, 255, 255, 0.12); white-space: nowrap;">
-    <v-icon small @click="clear">mdi-arrow-collapse-left</v-icon>
-    <v-icon small class="pl-1" @click="remove">mdi-delete</v-icon>
+  <td class="event-actions">
+    <v-btn tile x-small icon tabindex="-1" @click="clone"><v-icon small>mdi-content-copy</v-icon></v-btn>
+    <v-btn tile x-small icon tabindex="-1" @click="clear"><v-icon small>mdi-arrow-collapse-left</v-icon></v-btn>
+    <v-btn tile x-small icon tabindex="-1" @click="remove"><v-icon small>mdi-delete</v-icon></v-btn>
   </td>
 </tr>
 </template>
 <script>
 import Assignment from './Assignment'
+import EventTextField from './EventTextField'
 
 import moment from 'moment'
-import {classIcon, specIcon, spec} from './wow_info'
 import { eventProps } from '../store/utils';
+
+function padTime(t) {
+  return `${t < 10 ? '0' : ''}${t}`
+}
 
 export default {
   data: () => ({
@@ -63,20 +54,21 @@ export default {
 
     timeStr: {
       get() {
-        return `${this.time.minutes()}:${this.time.seconds()}`
+        const t = this.time
+        return t !== undefined ? `${t.minutes()}:${padTime(t.seconds())}` : ""
       },
       set(v) {
-        const [mins, secs] = v.split(":")
-        this.time = moment.duration(+mins, 'minutes').add(+secs, 'seconds')
+        if (v === undefined || v == "") {
+          this.time = undefined
+        } else {
+          const [mins, secs] = v.split(":")
+          this.time = moment.duration(+mins, 'minutes').add(+secs, 'seconds')
+        }
       },
     },
   },
 
   methods: {
-    classIcon,
-    specIcon,
-    spec,
-
     handleDragOver(event) {
       const assignId = event.dataTransfer.getData("assignId")
       if (assignId) {
@@ -87,7 +79,7 @@ export default {
         } else {
           event.dataTransfer.dropEffect = "link"
         }
-        if (sourceIdx == "" || +sourceIdx < this.assignments.length-1) {
+        if (sourceId != this.eventId || sourceIdx == "" || +sourceIdx < this.assignments.length-1) {
           this.draggedOver = true
         }
       }
@@ -112,6 +104,10 @@ export default {
       }
     },
 
+    clone() {
+      this.$store.commit('events/set', {time: this.time, label: this.label})
+    },
+
     clear() {
       this.$store.commit('events/set', {id: this.eventId, time: this.time, label: this.label})
     },
@@ -123,8 +119,42 @@ export default {
 
   components: {
     Assignment,
+    EventTextField,
   },
 };
 </script>
 <style>
+.event-label {
+  border-right: solid 1px rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+}
+.v-data-table td.event-actions {
+  border-left: solid 1px rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.v-data-table td.event-time {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.v-data-table td.event-time .v-input {
+  margin-top: 0px;
+  padding-top: 0px;
+  min-width: 50px;
+}
+.v-data-table td.event-time input {
+  text-align: end;
+}
+
+.v-data-table td.event-label {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.v-data-table td.event-label .v-input {
+  margin-top: 0px;
+  padding-top: 0px;
+  min-width: 100px;
+}
 </style>

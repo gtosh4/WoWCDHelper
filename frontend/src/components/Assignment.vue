@@ -6,9 +6,11 @@
 >
 <v-chip v-if="draggedOver" label disabled class="grey lighten-4" />
 <v-chip
-  v-if="!ability"
+  v-if="!spell"
   label
-  close
+  :close="hover && !draggedOver"
+  @mouseenter="hover = true"
+  @mouseleave="hover = false"
   class="assignment player"
   :color="classColour"
   @click:close="remove"
@@ -19,19 +21,27 @@
 <v-chip
   v-else
   label
-  class="assignment ability"
+  :close="hover && !draggedOver"
+  @mouseenter="hover = true"
+  @mouseleave="hover = false"
+  class="assignment spell"
   :color="classColour"
   @click:close="remove"
 >
+  <v-icon class="handle" :style="{display: hover ? 'flex' : 'none'}">mdi-drag</v-icon>
+  <span>{{player.name}} <Spell :spell="spell" :showname="false" class="ml-1" /></span>
 </v-chip>
 </div>
 </template>
 <script>
+import Spell from './Spell'
+
 import {classes, classIcon, specIcon, spec} from './wow_info'
-import { mapState } from 'vuex';
+import {assignProps} from '../store/utils'
 
 export default {
   data: () => ({
+    hover: false,
     draggedOver: false,
   }),
 
@@ -69,22 +79,14 @@ export default {
     assignId() {
       return this.$store.state.events.events[this.eventId].assignments[this.index]
     },
-    ...mapState('assigns', {
-      name(state) {
-        return state.assigns[this.assignId].name
-      },
-      className(state) {
-        return state.assigns[this.assignId].className
-      },
-      specName(state) {
-        return state.assigns[this.assignId].specName
-      },
-      ability(state) {
-        return state.assigns[this.assignId].ability
-      },
-    }),
+    ...assignProps(['name', 'className', 'specName', 'spell', 'playerId']),
+
+    player() {
+      return this.$store.state.assigns.assigns[this.playerId]
+    },
+
     classColour() {
-      const c = classes[this.className].colour
+      const c = classes[this.player.className].colour
       return `rgba(${c.r}, ${c.g}, ${c.b}, 0.5)`
     }
   },
@@ -134,6 +136,10 @@ export default {
       }
       this.draggedOver = false
     },
+  },
+
+  components: {
+    Spell,
   },
 };
 </script>

@@ -1,100 +1,100 @@
 <template>
-<v-container fluid>
-  <v-layout>
-    <v-flex>
-      <v-data-table
-        :headers="headers"
-        :items="items"
-        :items-per-page="-1"
-        hide-default-header
-        hide-default-footer
-      >
+<v-container py-0 id="cd-planner">
+  <v-toolbar dense>
+    <v-toolbar-title>Assignments</v-toolbar-title>
+    <v-spacer />
+    <v-toolbar-items>
+      <v-text-field />
+      <v-btn tile icon><v-icon>mdi-save</v-icon></v-btn>
+    </v-toolbar-items>
+  </v-toolbar>
 
-        <template v-slot:item="{ item }">
-          <Event :eventId="item.id" />
-        </template>
+  <v-card outlined tile>
+    <v-data-table
+      :headers="headers"
+      :items="items"
+      :items-per-page="-1"
+      hide-default-header
+      hide-default-footer
+    >
 
-        <template v-slot:footer>
-          <v-footer>
-            <v-edit-dialog :return-value.sync="addItem"><v-icon>mdi-plus-circle</v-icon>
-              <template v-slot:input>
-                <v-text-field
-                  placeholder="time"
-                  single-line
-                />
-              </template>
-            </v-edit-dialog>
-            <v-spacer />
-            <v-dialog persistent v-model="showExport">
-              <template v-slot:activator="{ on }">
-                <v-icon @click="on.click">mdi-export</v-icon>
-              </template>
+      <template #item="{ item }">
+        <Event :eventId="item.id" :id="`event-${item.id === undefined ? 'new': item.id}`" :class="item ? 'event-even' : 'event-odd' " />
+      </template>
 
-              <Export @close="showExport = false" />
-            </v-dialog>
-          </v-footer>
-        </template>
+      <template #footer>
+        <v-footer>
+          <v-spacer />
 
-      </v-data-table>
-    </v-flex>
-    <v-flex xs4>
-      <Cooldowns />
-    </v-flex>
-  </v-layout>
+          <v-dialog persistent v-model="showImport" @keydown.esc.stop="showImport = false">
+            <template #activator="{ on }">
+              <v-btn v-on="on" tile x-small icon><v-icon>mdi-import</v-icon></v-btn>
+            </template>
+
+            <Import @close="showImport = false" />
+          </v-dialog>
+
+          <v-dialog persistent v-model="showExport" @keydown.esc.stop="showExport = false">
+            <template #activator="{ on }">
+              <v-btn v-on="on" tile x-small icon><v-icon>mdi-export</v-icon></v-btn>
+            </template>
+
+            <Export @close="showExport = false" />
+          </v-dialog>
+        </v-footer>
+      </template>
+
+    </v-data-table>
+  </v-card>
 </v-container>
 </template>
 <script>
-import Cooldowns from './Cooldowns'
 import Event from './Event'
+import Import from './Import'
 import Export from './Export'
-
-import moment from 'moment'
 
 export default {
   data: () => ({
     headers: [
         { text: 'Time',        value: 'time',    align: 'right' },
         { text: 'Label',       value: 'label',   align: 'left'  },
-        { text: 'Assignments', value: 'assigns', align: 'left',  width: '100%'  },
-        { text: '',            value: 'clear',   align: 'right', width: '1px'   },
+        { text: 'Assignments', value: 'assigns', align: 'left',  width: '100%' },
+        { text: '',            value: 'clear',   align: 'right'},
     ],
     assignees: {},
     showExport: false,
+    showImport: false,
   }),
 
   computed: {
     items() {
-      return [...Object.values(this.$store.state.events.events)].sort((a, b) => {
-        const t = a.time.asSeconds() - b.time.asSeconds()
-        if (t != 0) return t
-        return a.label > b.label
-      })
+      return [...this.$store.getters['events/orderedEvents'], {}]
     },
-
-    addItem: {
-      get() {
-        return undefined
-      },
-      set(v) {
-        const [mins, secs] = v.split(":")
-        this.$store.commit('events/set', {time: moment.duration(+mins, 'minutes').add(+secs, 'seconds')})
-      },
-    }
   },
 
   methods: {
+    addItem() {
+      const event = {}
+      this.$store.commit('events/set', event)
+      this.$nextTick(() => this.$el.querySelector(`#event-${event.id} input`).focus())
+    },
   },
 
   mounted() {
-    this.$store.commit('events/set', {time: moment.duration(0, 'seconds'), label: "Event 1", assignments: []})
-    this.$store.commit('events/set', {time: moment.duration(15, 'seconds'), label: "Event 2", assignments: []})
-    this.$store.commit('events/set', {time: moment.duration(1.5, 'minutes'), label: "Event 2", assignments: []})
   },
 
   components: {
     Event,
-    Cooldowns,
+    Import,
     Export,
   },
 };
 </script>
+<style>
+#cd-planner {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0px;
+  padding-right: 4px;
+}
+</style>

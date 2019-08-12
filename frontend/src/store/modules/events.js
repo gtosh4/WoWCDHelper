@@ -1,10 +1,32 @@
+function nextid(state) {
+  let next = 1
+  while (state.events[next] !== undefined) {
+    next++
+  }
+  return next
+}
+
 const state = {
   events: {},
-  nextid: 1,
 }
 
 const getters = {
-
+  orderedEvents(state) {
+    return [...Object.values(state.events)].sort((a, b) => {
+      if (a.time != null && typeof(a.time.asSeconds) == 'function' && b.time != null && typeof(b.time.asSeconds) == 'function') {
+        const t = a.time.asSeconds() - b.time.asSeconds()
+        if (t != 0) return t
+      }
+      if (a.time != null) {
+        return -1
+      }
+      if (b.time != null) {
+        return 1
+      }
+      return a.id > b.id
+    })
+  },
+  nextid,
 }
 
 const actions = {
@@ -12,26 +34,28 @@ const actions = {
 }
 
 const mutations = {
+  import(state, events) {
+    state.events = {...events}
+  },
+
   set(state, event) {
     if (!event) return
-    event = {
-      label: "",
-      assignments: [],
-      ...event,
-    }
 
-    if (!event.id) {
+    if (event.id === undefined) {
       do {
-        event.id = state.nextid++
+        event.id = nextid(state)
       } while (state.events[event.id])
+    }
+    if (event.assignments === undefined) {
+      event.assignments = []
     }
     state.events = {...state.events, [event.id]: event}
   },
 
   delete(state, id) {
-    const n = {...state.assigns}
-    delete(n, id)
-    state.assigns = n
+    const n = {...state.events}
+    delete n[id]
+    state.events = n
   },
 
   addAssignment(state, {id, assignId, index}) {

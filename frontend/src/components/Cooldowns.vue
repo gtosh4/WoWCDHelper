@@ -1,13 +1,19 @@
 <template>
-<v-container fluid>
-
+<v-container id="cd-palette">
   <v-layout>
-    <v-flex xs12 class="pa-1">
+    <v-flex xs12 class="px-1 pb-1">
       <v-card outlined tile>
 
         <v-list>
-          <v-list-item v-for="(player, index) in sortedPlayers" :key="index" min-height="20px">
-            <Assignee :assignId="player.id" />
+          <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="assignee player">
+            <v-card outline tile width="100%" >
+              <Assignee :assignId="player.id" />
+              <v-list class="mr-4">
+                <v-list-item v-for="(spell, i) in playerSpells[player.id]" :key="i" class="assignee spell">
+                  <Assignee :assignId="spell.id" />
+                </v-list-item>
+              </v-list>
+            </v-card>
           </v-list-item>
         </v-list>
 
@@ -44,35 +50,48 @@
   </v-layout>
 
   <v-layout wrap>
-    <v-flex v-for="(classInfo, className) in classes" :key="className" class="pa-1">
+    <v-flex xs12 class="pa-1">
       <v-card outlined tile>
-        <v-chip
-          label
-          :text-color="classColour(className)"
-          color="transparent"
-          @click="expanded = {...expanded, [className]: !expanded[className]}"
-          style="width: 100%"
-        >
-          <v-layout align-center fill-height>
-            <WowIcon :className="className" />
-            <span class="mx-1">{{ className }}</span>
-            <v-icon :class="expandedClass(expanded[className])">$vuetify.icons.expand</v-icon>
-          </v-layout>
-        </v-chip>
-        <v-list v-if="expanded[className]">
-          <v-list-item class="player-select">
-            <v-chip outlined small label class="mr-1">{{ classCount(className) }}</v-chip>
-            <v-icon @click="addPlayer(className)" class="mx-1" small>mdi-account-plus</v-icon>
-            <span :style="{color: classColour(className)}" class="mx-1">{{ className }}</span>
-          </v-list-item>
-          <v-divider class="mx-1" />
-          <v-list-item v-for="(specInfo, specName) in classInfo.specs" :key="specName" class="player-select">
-            <v-chip outlined small label class="mr-1">{{ specCount(className, specName) }}</v-chip>
-            <v-icon @click="addPlayer(className, specName)" class="mx-1" small>mdi-account-plus</v-icon>
-            <WowIcon :className="className" :specName="specName" />
-            <span :style="{color: classColour(className)}" class="mx-1">{{ specName }}</span>
-          </v-list-item>
-        </v-list>
+      <v-chip
+        label
+        color="transparent"
+        @click="expanded = {...expanded, all: !expanded['all']}"
+        style="width: 100%"
+      >
+        <v-layout align-center fill-height>
+          <span class="mx-1">all</span>
+          <v-icon :class="expandedClass(expanded['all'])">$vuetify.icons.expand</v-icon>
+        </v-layout>
+      </v-chip>
+      <v-container v-if="expanded.all" grid-list-sm><v-layout wrap>
+        <v-flex v-for="(classInfo, className) in classes" :key="className" class="pa-1">
+            <v-chip
+              label
+              :text-color="classColour(className)"
+              color="transparent"
+              style="width: 100%"
+            >
+              <v-layout align-center fill-height>
+                <WowIcon :className="className" />
+                <span class="mx-1">{{ className }}</span>
+              </v-layout>
+            </v-chip>
+            <v-list>
+              <v-list-item class="player-select">
+                <v-chip outlined small label class="mr-1">{{ classCount(className) }}</v-chip>
+                <v-icon @click="addPlayer(className)" class="mx-1" small>mdi-account-plus</v-icon>
+                <span :style="{color: classColour(className)}" class="mx-1">{{ className }}</span>
+              </v-list-item>
+              <v-divider class="mx-1" />
+              <v-list-item v-for="(specInfo, specName) in classInfo.specs" :key="specName" class="player-select">
+                <v-chip outlined small label class="mr-1">{{ specCount(className, specName) }}</v-chip>
+                <v-icon @click="addPlayer(className, specName)" class="mx-1" small>mdi-account-plus</v-icon>
+                <WowIcon :className="className" :specName="specName" />
+                <span :style="{color: classColour(className)}" class="mx-1">{{ specName }}</span>
+              </v-list-item>
+            </v-list>
+        </v-flex>
+      </v-layout></v-container>
       </v-card>
     </v-flex>
   </v-layout>
@@ -99,13 +118,10 @@ export default {
   },
 
   mounted() {
-    this.$store.commit('assigns/set', {name: "Yorman", className: 'druid', specName: 'restoration', id: 1})
-    this.$store.commit('assigns/set', {name: "Yellowy", className: 'priest', specName: 'holy', id: 2})
-    this.$store.commit('assigns/set', {name: "Toshpal", className: 'paladin', specName: 'holy', id: 3})
   },
 
   computed: {
-    ...mapGetters('assigns', ['players', 'abilities']),
+    ...mapGetters('assigns', ['players', 'spells']),
 
     indexedPlayers() {
       return this.players.reduce((ms, m) => {
@@ -132,6 +148,18 @@ export default {
         return c
       })
     },
+
+    playerSpells() {
+      return (this.spells || []).reduce((m, spell) => {
+        let pspells = m[spell.playerId]
+        if (!pspells) {
+          pspells = []
+          m[spell.playerId] = pspells
+        }
+        pspells.push(spell)
+        return m
+      }, {})
+    }
   },
 
   methods: {
@@ -156,8 +184,14 @@ export default {
       return c
     },
 
-    addPlayer(className, specName) {
-      this.$store.commit('assigns/set', {className, specName})
+    addPlayer(className, specName, name, id) {
+      const player = {className, specName, name, id}
+      this.$store.commit('assigns/set', player)
+      if (specName !== undefined) {
+        spec(className, specName).spells.forEach(spell => {
+          this.$store.commit('assigns/set', {spell, playerId: player.id, id: `${player.id}.${spell.id}`})
+        })
+      }
     },
   },
 
@@ -168,9 +202,25 @@ export default {
 };
 </script>
 <style>
-.player-select {
-  min-height: 20px !important;
-  padding-left: 4px !important;
-  padding-right: 4px !important;
+#cd-palette {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 0px;
+  /* max-width: min(25vw, 650px); */
+  max-width: 650px;
+}
+.v-list-item.player-select {
+  min-height: 20px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.v-list-item.assignee {
+  min-height: 20px;
+  padding-left: 4px;
+  margin-bottom: 4px;
+}
+.v-list-item.assignee.spell {
+  padding-left: 32px;
 }
 </style>
