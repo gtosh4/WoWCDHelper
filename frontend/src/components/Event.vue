@@ -1,5 +1,5 @@
 <template>
-<tr @mouseenter="hover = true" @mouseleave="hover = false">
+<tr @mouseenter="hover = true" @mouseleave="hover = false" :id="rowId">
   <td class="event-time">
     <EventTextField v-model="timeStr" placeholder="0:0" />
   </td>
@@ -18,9 +18,9 @@
     </v-layout>
   </td>
   <td class="event-actions">
-    <v-btn v-if="hover && !draggedOver" tile x-small icon tabindex="-1" @click="clone"><v-icon small>mdi-content-copy</v-icon></v-btn>
-    <v-btn v-if="hover && !draggedOver" tile x-small icon tabindex="-1" @click="clear"><v-icon small>mdi-arrow-collapse-left</v-icon></v-btn>
-    <v-btn v-if="hover && !draggedOver" tile x-small icon tabindex="-1" @click="remove"><v-icon small>mdi-delete</v-icon></v-btn>
+    <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="clone"><v-icon small>mdi-content-copy</v-icon></v-btn>
+    <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="clear"><v-icon small>mdi-arrow-collapse-left</v-icon></v-btn>
+    <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="remove"><v-icon small>mdi-delete</v-icon></v-btn>
   </td>
 </tr>
 </template>
@@ -35,6 +35,8 @@ import { eventProps } from '../store/utils';
 function padTime(t) {
   return `${t < 10 ? '0' : ''}${t}`
 }
+
+const endingNum = /(\d+)$/
 
 export default {
   data: () => ({
@@ -68,6 +70,14 @@ export default {
         }
       },
     },
+
+    rowId() {
+      return `event-${this.eventId === undefined ? 'new': this.eventId}`
+    },
+
+    showActions() {
+      return this.hover && !this.draggedOver && this.eventId !== undefined
+    }
   },
 
   methods: {
@@ -107,7 +117,12 @@ export default {
     },
 
     clone() {
-      this.$store.commit('events/set', {time: this.time, label: this.label})
+      let label = this.label
+      const num = label.match(endingNum)
+      if (num != null) {
+        label = label.replace(endingNum,  `${(+num[0])+1}`)
+      }
+      this.$store.commit('events/set', {time: this.time, label, assignments: [...this.assignments]})
     },
 
     clear() {
@@ -132,7 +147,6 @@ export default {
   white-space: nowrap;
 }
 .v-data-table td.event-actions {
-  border-left: solid 1px rgba(255, 255, 255, 0.12);
   white-space: nowrap;
   padding-left: 4px;
   padding-right: 4px;

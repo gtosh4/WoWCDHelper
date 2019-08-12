@@ -57,7 +57,7 @@ export default {
   },
 
   mounted() {
-    const chip = this.$el
+    const chip = this.$el.querySelector(".assignment > .v-chip")
     const handle = chip.querySelector(".handle")
 
     handle.onmousedown = () => {
@@ -150,5 +150,9 @@ export default {
 .assignment .v-chip {
   margin-left: 4px;
   margin-right: 4px;
+}
+
+.assignment .handle {
+  cursor: grab;
 }
 </style>

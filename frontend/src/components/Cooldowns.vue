@@ -1,7 +1,7 @@
 <template>
 <v-flex shrink id="cd-palette"><v-card outlined tile>
   <v-layout>
-    <v-flex xs12 class="px-1 pb-1">
+    <v-flex>
 
       <v-list>
         <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="assignee">
@@ -213,6 +213,7 @@ export default {
 .v-list-item.assignee {
   min-height: 20px;
   padding-left: 4px;
+  padding-right: 4px;
   margin-bottom: 4px;
 }
 .v-list-item.assignee .v-list {

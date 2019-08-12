@@ -1,6 +1,6 @@
 <template>
 <v-flex py-0 grow id="cd-planner"><v-card outlined tile>
-  <v-card-title><v-toolbar dense>
+  <v-card-title class="pa-1"><v-toolbar dense flat>
     <v-toolbar-title>
       <v-text-field
         single-line
@@ -9,9 +9,11 @@
         id="plan-name"
       />
     </v-toolbar-title>
-    <v-spacer />
     <v-toolbar-items>
-      <v-btn tile icon><v-icon>mdi-save</v-icon></v-btn>
+      <!--
+      <v-btn tile icon><v-icon>mdi-content-save</v-icon></v-btn>
+      <v-btn tile icon><v-icon>mdi-undo</v-icon></v-btn>
+      -->
     </v-toolbar-items>
   </v-toolbar></v-card-title>
 
@@ -25,7 +27,7 @@
     >
 
       <template #item="{ item }">
-        <Event :eventId="item.id" :id="`event-${item.id === undefined ? 'new': item.id}`" :class="item ? 'event-even' : 'event-odd' " />
+        <Event :eventId="item.id" />
       </template>
 
       <template #footer>
@@ -99,5 +101,8 @@ export default {
 <style>
 #cd-planner {
   padding: 0 4px 0 0;
+}
+#cd-planner tr:nth-child(even) {
+  background-color: "grey";
 }
 </style>

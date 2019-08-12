@@ -1,5 +1,5 @@
 <template>
-<v-layout>
+<v-layout class="assignee">
   <v-chip v-if="!spell" label :color="classColour" class="player" >
     <v-icon class="handle">mdi-drag</v-icon>
     <WowIcon :className="className" />
@@ -33,7 +33,7 @@ export default {
   },
 
   mounted() {
-    const chip = this.$el.querySelector(".assignee")
+    const chip = this.$el.querySelector(".assignee > .v-chip")
     const handle = chip.querySelector(".handle")
 
     handle.onmousedown = () => {
@@ -85,8 +85,11 @@ export default {
 }
 </script>
 <style>
-.v-chip.assignee {
+.assignee .v-chip {
   width: 100%;
+}
+.assignee .handle {
+  cursor: grab;
 }
 </style>
 
