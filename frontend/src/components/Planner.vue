@@ -35,16 +35,30 @@
           <v-spacer />
 
           <v-dialog persistent v-model="showImport" @keydown.esc.stop="showImport = false">
-            <template #activator="{ on }">
-              <v-btn v-on="on" tile x-small icon><v-icon>mdi-import</v-icon></v-btn>
+            <template #activator="{ on: dialog }">
+              <v-tooltip top>
+                <template #activator="{ on: tooltip }">
+                  <v-btn v-on="{...tooltip, ...dialog}" tile x-small icon>
+                    <v-icon>mdi-import</v-icon>
+                    </v-btn>
+                </template>
+                <span>Import</span>
+              </v-tooltip>
             </template>
 
             <Import @close="showImport = false" />
           </v-dialog>
 
           <v-dialog persistent v-model="showExport" @keydown.esc.stop="showExport = false">
-            <template #activator="{ on }">
-              <v-btn v-on="on" tile x-small icon><v-icon>mdi-export</v-icon></v-btn>
+            <template #activator="{ on: dialog }">
+              <v-tooltip top>
+                <template #activator="{ on: tooltip }">
+                  <v-btn v-on="{...tooltip, ...dialog}" tile x-small icon>
+                    <v-icon>mdi-export</v-icon>
+                  </v-btn>
+                </template>
+                <span>Export</span>
+              </v-tooltip>
             </template>
 
             <Export @close="showExport = false" />

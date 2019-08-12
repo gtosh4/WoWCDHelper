@@ -18,9 +18,32 @@
     </v-layout>
   </td>
   <td class="event-actions">
-    <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="clone"><v-icon small>mdi-content-copy</v-icon></v-btn>
-    <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="clear"><v-icon small>mdi-arrow-collapse-left</v-icon></v-btn>
-    <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="remove"><v-icon small>mdi-delete</v-icon></v-btn>
+    <div v-if="showActions">
+    <v-tooltip top>
+      <template #activator="{ on }">
+        <v-btn tile x-small icon tabindex="-1" @click="clone" v-on="on">
+          <v-icon small>mdi-content-copy</v-icon>
+        </v-btn>
+      </template>
+      <span>Copy</span>
+    </v-tooltip>
+    <v-tooltip top>
+      <template #activator="{ on }">
+        <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="clear" v-on="on">
+          <v-icon small>mdi-arrow-collapse-left</v-icon>
+        </v-btn>
+      </template>
+      <span>Clear assignments</span>
+    </v-tooltip>
+    <v-tooltip top>
+      <template #activator="{ on }">
+        <v-btn v-if="showActions" tile x-small icon tabindex="-1" @click="remove" v-on="on">
+          <v-icon small>mdi-delete</v-icon>
+        </v-btn>
+      </template>
+      <span>Delete row</span>
+    </v-tooltip>
+    </div>
   </td>
 </tr>
 </template>

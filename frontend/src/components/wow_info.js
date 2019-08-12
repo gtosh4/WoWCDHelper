@@ -133,7 +133,7 @@ export const classes = {
       discipline: {
         icon: "spell_holy_powerwordshield",
         spells: [
-          {id: 81782, name: "Power Word: Barrier", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_powerwordbarrier.jpg"},
+          {id: 62618, name: "Power Word: Barrier", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_powerwordbarrier.jpg"},
           {id: 246287, name: "Evangelism", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_divineillumination.jpg"},
           {id: 47536, name: "Rapture", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_rapture.jpg"},
         ],
