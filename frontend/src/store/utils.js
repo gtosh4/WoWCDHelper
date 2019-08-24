@@ -17,6 +17,15 @@ export function assignProps(props) {
   return p
 }
 
+export function player() {
+  return {
+    player() {
+      const assign = this.$store.state.assigns.assigns[this.assignId]
+      return this.$store.state.assigns.assigns[assign.playerId]
+    }
+  }
+}
+
 export function eventProps(props) {
   const p = {}
   props.forEach(prop => {
@@ -34,4 +43,22 @@ export function eventProps(props) {
     }
   });
   return p
+}
+
+export function dragAssignProps() {
+  return {
+    draggedAssign: {
+      get() {
+        return this.$store.state.dragassign.info
+      },
+
+      set(info) {
+        if (!info || info == {}) {
+          this.$store.commit('dragassign/stop')
+        } else {
+          this.$store.commit('dragassign/start', info)
+        }
+      },
+    },
+  }
 }

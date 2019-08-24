@@ -1,7 +1,7 @@
 <template>
 <v-card>
   <v-card-text class="import-content">
-    <v-textarea auto-grow full-width outlined @change="v => content = v" />
+    <v-textarea auto-grow full-width outlined v-model="content" />
   </v-card-text>
 
   <v-card-actions>
@@ -36,6 +36,10 @@ export default {
 
       this.$store.commit("assigns/import", assigns)
       this.$store.commit("events/import", events)
+      if (t.name) {
+        this.$store.commit("setName", t.name)
+      }
+      this.content = ""
       this.$emit("close")
     },
   },

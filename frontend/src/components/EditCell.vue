@@ -6,8 +6,6 @@ export default {
   }),
 
   props: {
-    value: {
-    },
   },
 
   computed: {

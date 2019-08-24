@@ -94,12 +94,14 @@ export default {
         { text: 'Time',        value: 'time',    align: 'right' },
         { text: 'Label',       value: 'label',   align: 'left'  },
         { text: 'Assignments', value: 'assigns', align: 'left',  width: '100%' },
-        { text: '',            value: 'clear',   align: 'right'},
     ],
     assignees: {},
     showExport: false,
     showImport: false,
   }),
+
+  props: {
+  },
 
   computed: {
     items() {
@@ -125,7 +127,7 @@ export default {
     },
 
     clearAll() {
-      this.$store.getters['events/orderedEvents'].forEach(e => this.$store.commit('events/set', {...e, assignments: []}))
+      this.$store.commit('events/clearAll')
     },
 
     deleteAll() {

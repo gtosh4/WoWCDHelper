@@ -1,3 +1,5 @@
+import {toColor} from '../../components/colour_utils'
+
 function nextid(state) {
   let next = 1
   while (state.events[next] !== undefined) {
@@ -6,25 +8,38 @@ function nextid(state) {
   return next
 }
 
+export function sortEvents(events) {
+  return [...Object.values(events)].sort((a, b) => {
+    if (a.time != null && typeof(a.time.asSeconds) == 'function' && b.time != null && typeof(b.time.asSeconds) == 'function') {
+      const t = a.time.asSeconds() - b.time.asSeconds()
+      if (t != 0) return t
+    }
+    if (a.time != null) {
+      return -1
+    }
+    if (b.time != null) {
+      return 1
+    }
+    return a.id > b.id
+  })
+}
+
 const state = {
   events: {},
 }
 
 const getters = {
   orderedEvents(state) {
-    return [...Object.values(state.events)].sort((a, b) => {
-      if (a.time != null && typeof(a.time.asSeconds) == 'function' && b.time != null && typeof(b.time.asSeconds) == 'function') {
-        const t = a.time.asSeconds() - b.time.asSeconds()
-        if (t != 0) return t
+    return sortEvents(state.events)
+  },
+
+  allEventColours(state) {
+    return [...Object.values(state.events).reduce((s, e) => {
+      if (e.colour) {
+        s.add(toColor(e.colour).hex())
       }
-      if (a.time != null) {
-        return -1
-      }
-      if (b.time != null) {
-        return 1
-      }
-      return a.id > b.id
-    })
+      return s
+    }, new Set())]
   },
 
   nextid,
@@ -57,6 +72,12 @@ const mutations = {
     const n = {...state.events}
     delete n[id]
     state.events = n
+  },
+
+  clearAll(state) {
+    const es = {...state.events}
+    Object.values(es).forEach(e => e.assignments = [])
+    state.events = es
   },
 
   addAssignment(state, {id, assignId, index}) {

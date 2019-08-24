@@ -22,5 +22,9 @@ export default {
   },
   data: () => ({
   }),
+  mounted() {
+  },
+  methods: {
+  },
 };
 </script>

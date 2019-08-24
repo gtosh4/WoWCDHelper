@@ -114,7 +114,7 @@ export const classes = {
         icon: "spell_holy_holybolt",
         spells: [
           {id: 31821, name: "Aura Mastery", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_auramastery.jpg", cd: 180},
-          {id: 31884, name: "Avenging Wrath", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_avenginewrath.jpg", cd: 120},
+          {id: 31884, name: "Avenging Wrath", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_avenginewrath.jpg", cd: 108},
         ],
       },
       protection: {

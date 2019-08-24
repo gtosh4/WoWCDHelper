@@ -8,7 +8,7 @@
           <v-card outlined tile width="100%" >
             <Assignee :assignId="player.id" />
             <v-list>
-              <v-list-item v-for="(spell, i) in playerSpells[player.id]" :key="i">
+              <v-list-item v-for="(spell, i) in playerSpells[player.id]" :key="i" class="px-0">
                 <Assignee :assignId="spell.id" />
               </v-list-item>
             </v-list>
@@ -113,6 +113,7 @@ export default {
   }),
 
   props: {
+    draggedAssign: Object,
   },
 
   mounted() {
@@ -142,7 +143,11 @@ export default {
       return [...this.players].sort((a, b) => {
         let c = a.className.localeCompare(b.className)
         if (c != 0) return c
-        c = a.specName.localeCompare(b.specName)
+        if (a.specName && b.specName) {
+          c = a.specName.localeCompare(b.specName)
+          if (c != 0) return c
+        }
+        c = a.id - b.id
         return c
       })
     },
@@ -217,8 +222,8 @@ export default {
   margin-bottom: 4px;
 }
 .v-list-item.assignee .v-list {
-  padding-left: 32px;
-  padding-right: 32px;
+  padding-left: 28px;
+  padding-right: 28px;
 }
 .v-list-item.assignee .v-list-item {
   min-height: 20px;

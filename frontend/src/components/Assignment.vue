@@ -5,7 +5,7 @@
   @dragleave.prevent="handleDragLeave"
   class="assignment"
 >
-  <InsertAssignment :eventId="eventId" :draggedAssign="draggedAssign" />
+  <InsertAssignment v-if="draggedOver" />
   <v-chip
     v-if="!spell"
     label
@@ -38,13 +38,14 @@
 import Spell from './Spell'
 import InsertAssignment from './InsertAssignment'
 
+import Color from 'color'
 import {classes, classIcon, specIcon, spec} from './wow_info'
-import {assignProps} from '../store/utils'
+import {assignProps, dragAssignProps} from '../store/utils'
 
 export default {
   data: () => ({
     hover: false,
-    draggedAssign: null,
+    draggedOver: false,
   }),
 
   props: {
@@ -68,16 +69,22 @@ export default {
     }
 
     chip.ondragstart = (e) => {
-      e.dataTransfer.setData("eventId", this.eventId)
       e.dataTransfer.setData("assignId", this.assignId)
-      e.dataTransfer.setData("assignIndex", this.index)
+      this.draggedAssign = {
+        assignId: this.assignId,
+        sourceId: this.eventId,
+        sourceIndex: this.index,
+      }
     }
     chip.ondragend = () => {
       chip.setAttribute('draggable', 'false')
+      this.draggedAssign = null
     }
   },
 
   computed: {
+    ...dragAssignProps(),
+
     assignId() {
       return this.$store.state.events.events[this.eventId].assignments[this.index]
     },
@@ -88,12 +95,12 @@ export default {
     },
 
     classColour() {
-      const c = classes[this.player.className].colour
-      return `rgba(${c.r}, ${c.g}, ${c.b}, 0.5)`
+      const c = Color(classes[this.player.className].colour)
+      return c.mix(Color('rgb(66, 66, 66)'), 0.4).string()
     },
 
     showHover() {
-      return this.hover && !this.draggedAssign
+      return this.hover && !this.draggedOver
     },
   },
 
@@ -107,40 +114,41 @@ export default {
     },
 
     handleDragOver(event) {
-      const assignId = event.dataTransfer.getData("assignId"),
-            assignIndex = event.dataTransfer.getData("assignIndex"),
-            sourceId = event.dataTransfer.getData("eventId")
-      event.stopPropagation();
+      if (!this.draggedAssign) return
+      event.stopPropagation()
       
-      if (sourceId == this.eventId && (assignIndex == this.index || +assignIndex+1 == this.index)) return
-      if (assignId) {
-        if (sourceId) {
-          event.dataTransfer.dropEffect = "move"
-        } else {
-          event.dataTransfer.dropEffect = "link"
-        }
-        this.draggedAssign = {assignId, sourceId, assignIndex}
+
+      if (this.draggedAssign.sourceId !== undefined) {
+        const isSameEvent = this.draggedAssign.sourceId == this.eventId
+        const isReorder = this.draggedAssign.sourceIndex == this.index || +this.draggedAssign.sourceIndex+1 == this.index
+        if (isSameEvent && isReorder) return
+
+        event.dataTransfer.dropEffect = "move"
+      } else {
+        event.dataTransfer.dropEffect = "link"
       }
+      this.draggedOver = true
     },
 
     handleDragLeave() {
-      this.draggedAssign = null
+      this.draggedOver = false
     },
 
     handleDrop(event) {
-      const assignId = event.dataTransfer.getData("assignId")
-      if (assignId) {
-        event.preventDefault()
-        event.stopPropagation();
-        const sourceId = event.dataTransfer.getData("eventId")
-        const sourceIdx = event.dataTransfer.getData("assignIndex")
-        if (sourceId && sourceIdx) {
-          this.$store.commit('events/moveAssignment', {from: {id: sourceId, index: sourceIdx}, to: {id: this.eventId, index: this.index}})
-        } else {
-          this.$store.commit('events/addAssignment', {id: this.eventId, assignId: assignId, index: this.index})
-        }
+      if (!this.draggedAssign) return
+
+      event.preventDefault()
+      event.stopPropagation();
+
+      if (this.draggedAssign.sourceId !== undefined && this.draggedAssign.sourceIndex !== undefined) {
+        this.$store.commit('events/moveAssignment', {
+          from: {id: this.draggedAssign.sourceId, index: this.draggedAssign.sourceIndex},
+          to: {id: this.eventId, index: this.index}
+        })
+      } else {
+        this.$store.commit('events/addAssignment', {id: this.eventId, assignId: this.draggedAssign.assignId, index: this.index})
       }
-      this.draggedAssign = null
+      this.draggedOver = false
     },
   },
 

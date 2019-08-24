@@ -12,33 +12,52 @@
     <span class="mr-1">{{ assignmentCount }}</span>
     <Spell :spell="spell" />
   </v-chip>
-    <v-tooltip top>
-      <template #activator="{ on }">
-        <v-btn tile x-small icon tabindex="-1" @click="clearAssign" v-on="on">
-          <v-icon>mdi-backspace</v-icon>
-        </v-btn>
-      </template>
-      <span>Clear assignments</span>
-    </v-tooltip>
-    <v-tooltip top>
-      <template #activator="{ on }">
-        <v-btn tile x-small icon tabindex="-1" @click="deleteAssign" v-on="on">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
-      <span>Delete</span>
-    </v-tooltip>
+  <v-dialog v-model="showSettings" width="650px">
+    <template #activator="{ on: dialog }">
+      <v-tooltip top>
+        <template #activator="{ on: tooltip }">
+          <v-btn tile x-small icon tabindex="-1" v-on="{...tooltip, ...dialog}">
+            <v-icon>mdi-settings</v-icon>
+          </v-btn>
+        </template>
+        <span>Settings</span>
+      </v-tooltip>
+    </template>
+
+    <SpellSettings v-if="spell" :assignId="assignId" @close="showSettings = false" />
+    <PlayerSettings v-else :assignId="assignId" @close="showSettings = false" />
+  </v-dialog>
+  <v-tooltip top>
+    <template #activator="{ on }">
+      <v-btn tile x-small icon tabindex="-1" @click="clearAssign" v-on="on">
+        <v-icon>mdi-backspace</v-icon>
+      </v-btn>
+    </template>
+    <span>Clear assignments</span>
+  </v-tooltip>
+  <v-tooltip top>
+    <template #activator="{ on }">
+      <v-btn tile x-small icon tabindex="-1" @click="deleteAssign" v-on="on">
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
+    </template>
+    <span>Delete</span>
+  </v-tooltip>
 </v-layout>
 </template>
 <script>
 import WowIcon from './WowIcon'
 import Spell from './Spell'
+import SpellSettings from './SpellSettings'
+import PlayerSettings from './PlayerSettings'
 
+import Color from 'color'
 import {classes, classIcon, specIcon, spec} from './wow_info'
-import {assignProps} from '../store/utils'
+import {assignProps, dragAssignProps, player} from '../store/utils'
 
 export default {
   data: () => ({
+    showSettings: false,
   }),
 
   props: {
@@ -60,22 +79,24 @@ export default {
 
     chip.ondragstart = (e) => {
       e.dataTransfer.setData("assignId", this.assignId)
+      this.draggedAssign = {
+        assignId: this.assignId,
+      }
     }
     chip.ondragend = () => {
       chip.setAttribute('draggable', 'false')
+      this.draggedAssign = null
     }
   },
 
   computed: {
+    ...dragAssignProps(),
     ...assignProps(['name', 'className', 'specName', 'spell', 'playerId']),
-
-    player() {
-      return this.$store.state.assigns.assigns[this.playerId]
-    },
+    ...player(),
 
     classColour() {
-      const c = classes[this.player.className].colour
-      return `rgba(${c.r}, ${c.g}, ${c.b}, 0.5)`
+      const c = Color(classes[this.player.className].colour)
+      return c.mix(Color('rgb(66, 66, 66)'), 0.4).string()
     },
 
     assignmentCount() {
@@ -100,6 +121,8 @@ export default {
   components: {
     WowIcon,
     Spell,
+    SpellSettings,
+    PlayerSettings,
   },
 }
 </script>
