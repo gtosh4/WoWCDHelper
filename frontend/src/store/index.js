@@ -23,7 +23,8 @@ const vuexPersist = new VuexPersist({
   },
 
   restoreState(key, storage) {
-    const raw = JSON.parse(storage.getItem(key)) || {}
+    const raw = JSON.parse(storage.getItem(key) || '{}') || {}
+    if (!raw || Object.keys(raw).length == 0) return
     Object.values(raw.events || {}).forEach(v => v.time = moment.duration(v.time))
     Object.values(raw.assigns).forEach(a => {
       if (a.spell) {
