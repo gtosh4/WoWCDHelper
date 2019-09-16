@@ -26,14 +26,25 @@ import Color from 'color'
 function formatRows(formatLabel, formatPlayer, formatSpell) {
   return (events, assigns) => {
     const rows = sortEvents(events).map(event => {
-      return `${formatLabel(event)}\t` + event.assignments.map(assignId => {
-        const assign = assigns[assignId]
-        const player = assigns[assign.playerId]
-        if (player !== undefined && assign.id != player.id) {
-          return `${formatPlayer(player)}${formatSpell(assign)}`
-        } else {
-          return formatPlayer(assign)
-        }
+      const assignments = [...event.assignments.map(a => assigns[a])].sort((a, b) => {
+        if (a.playerId != b.playerId) return a.playerId < b.playerId
+        return a.id < b.id
+      })
+      const evtAs = assignments.reduce((byPlayer, a) => {
+        const pid = a.playerId || ''
+        byPlayer[pid] = byPlayer[pid] || []
+        byPlayer[pid].push(a)
+        return byPlayer
+      }, {})
+      return `${formatLabel(event)}\t` + Object.entries(evtAs).map(([pid, as]) => {
+        return as.map((a, i) => {
+          const player = assigns[a.playerId]
+          if (a.spell) {
+            return `${i == 0 || pid == '' ? formatPlayer(player) : ''}${formatSpell(a)}`
+          } else {
+            return formatPlayer(a)
+          }
+        }).join("+")
       }).join("\t")
     })
     return rows.join("\n")
@@ -60,7 +71,7 @@ export default {
         name: 'Exorsus Raid Tools',
         run: formatRows(
           colouredLabel,
-          player => (player && player.name) ? `|c${Color.rgb(classes[player.className].colour).hex().replace(/#/, 'ff')}${player.name}|r` : '',
+          player => (player && player.name) ? `${Color.rgb(classes[player.className].colour).hex().replace(/#/, '|cFF')}${player.name}|r` : '',
           assign => `{spell:${assign.spell.id}}`,
         )
       },

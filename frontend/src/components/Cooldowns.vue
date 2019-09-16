@@ -207,7 +207,7 @@ export default {
 <style>
 #cd-palette {
   padding: 0 0 0 4px;
-  /* max-width: min(25vw, 650px); */
+  min-width: 400px;
   max-width: 650px;
 }
 .v-list-item.player-select {

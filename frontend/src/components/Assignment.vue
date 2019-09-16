@@ -1,5 +1,5 @@
 <template>
-<v-flex shrink pa-0 ma-0
+<v-flex shrink
   @drop="handleDrop"
   @dragover.prevent="handleDragOver"
   @dragleave.prevent="handleDragLeave"
@@ -40,7 +40,7 @@ import InsertAssignment from './InsertAssignment'
 
 import Color from 'color'
 import {classes, classIcon, specIcon, spec} from './wow_info'
-import {assignProps, dragAssignProps} from '../store/utils'
+import {assignProps, dragAssignProps, spell} from '../store/utils'
 
 export default {
   data: () => ({
@@ -54,6 +54,9 @@ export default {
     },
     index: {
       required: true,
+    },
+    moveable: {
+      default: true,
     },
   },
 
@@ -88,7 +91,8 @@ export default {
     assignId() {
       return this.$store.state.events.events[this.eventId].assignments[this.index]
     },
-    ...assignProps(['name', 'className', 'specName', 'spell', 'playerId']),
+    ...assignProps(['name', 'className', 'specName', 'playerId']),
+    ...spell(),
 
     player() {
       return this.$store.state.assigns.assigns[this.playerId]
@@ -100,7 +104,7 @@ export default {
     },
 
     showHover() {
-      return this.hover && !this.draggedOver
+      return this.moveable && this.hover && !this.draggedOver
     },
   },
 
@@ -160,6 +164,8 @@ export default {
 </script>
 <style>
 .assignment {
+  padding: 0 0 0 0;
+  margin: 0 0 0 0;
   display: inline-flex;
 }
 .assignment .v-chip {

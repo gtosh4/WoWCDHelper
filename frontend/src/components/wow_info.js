@@ -22,7 +22,7 @@ export const classes = {
       havoc: {
         icon: "ability_demonhunter_specdps",
         spells: [
-          {id: 196718, name: "Darkness", icon: "https://media.wowdb.com/wow/icons/large/ability_demonhunter_darkness.jpg", cd: 180},
+          {id: 196718}, // Darkness
         ],
       },
       vengeance: {
@@ -49,7 +49,17 @@ export const classes = {
       restoration: {
         icon: "spell_nature_healingtouch",
         spells: [
-          {id: 740, name: "Tranquility", icon: "https://media.wowdb.com/wow/icons/large/spell_nature_tranquility.jpg", cd: 180},
+          { // Tranquility
+            id: 740,
+            options: [
+              {text: "Inner Peace", type: Boolean, default: false, prop: 'inner_peace'},
+            ],
+            configure(spell) {
+              if (spell.cfg.inner_peace) {
+                spell.cd -= 60
+              }
+            }
+          },
         ],
       },
     },
@@ -98,7 +108,7 @@ export const classes = {
       mistweaver: {
         icon: "monk_stance_wiseserpent",
         spells: [
-          {id: 115310, name: "Revival", icon: "https://media.wowdb.com/wow/icons/large/spell_monk_revival.jpg", cd: 180},
+          {id: 115310}, // Revival
         ],
       },
       windwalker: {
@@ -113,8 +123,8 @@ export const classes = {
       holy: {
         icon: "spell_holy_holybolt",
         spells: [
-          {id: 31821, name: "Aura Mastery", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_auramastery.jpg", cd: 180},
-          {id: 31884, name: "Avenging Wrath", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_avenginewrath.jpg", cd: 108},
+          {id: 31821}, // Aura Mastery
+          {id: 31884}, // Avenging Wrath
         ],
       },
       protection: {
@@ -133,22 +143,22 @@ export const classes = {
       discipline: {
         icon: "spell_holy_powerwordshield",
         spells: [
-          {id: 62618, name: "Power Word: Barrier", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_powerwordbarrier.jpg", cd: 180},
-          {id: 246287, name: "Evangelism", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_divineillumination.jpg", cd: 90},
-          {id: 47536, name: "Rapture", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_rapture.jpg", cd: 90},
+          {id: 62618}, // Power Word: Barrier
+          {id: 246287}, // Evangelism
+          {id: 47536}, // Rapture
         ],
       },
       holy: {
         icon: "spell_holy_guardianspirit",
         spells: [
-          {id: 64843, name: "Divine Hymn", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_divinehymn.jpg", cd: 180},
-          {id: 265202, name: "Holy Word: Salvation", icon: "https://media.wowdb.com/wow/icons/large/ability_priest_archangel.jpg", cd: 300},
+          {id: 64843}, // Divine Hymn
+          {id: 265202}, // Holy Word: Salvation
         ],
       },
       shadow: {
         icon: "spell_shadow_shadowwordpain",
         spells: [
-          {id: 15286, name: "Vampiric Embrace", icon: "https://media.wowdb.com/wow/icons/large/spell_shadow_unsummonbuilding.jpg", cd: 120},
+          {id: 15286}, // Vampiric Embrace
         ],
       },
     },
@@ -184,8 +194,8 @@ export const classes = {
       restoration: {
         icon: "spell_nature_magicimmunity",
         spells: [
-          {id: 108280, name: "Healing Tide Totem", icon: "https://media.wowdb.com/wow/icons/large/ability_shaman_healingtide.jpg", cd: 180},
-          {id: 98008, name: "Spirit Link Totem", icon: "https://media.wowdb.com/wow/icons/large/spell_shaman_spiritlink.jpg", cd: 180},
+          {id: 108280}, // Healing Tide Totem
+          {id: 98008}, // Spirit Link Totem
         ],
       },
     },
@@ -213,23 +223,40 @@ export const classes = {
       arms: {
         icon: "ability_warrior_savageblow",
         spells: [
-          {id: 97462, name: "Rallying Cry", icon: "https://media.wowdb.com/wow/icons/large/ability_warrior_rallyingcry.jpg", cd: 180},
+          {id: 97462}, // Rallying Cry
         ],
       },
       fury: {
         icon: "ability_warrior_innerrage",
         spells: [
-          {id: 97462, name: "Rallying Cry", icon: "https://media.wowdb.com/wow/icons/large/ability_warrior_rallyingcry.jpg", cd: 180},
+          {id: 97462}, // Rallying Cry
         ],
       },
       protection: {
         icon: "ability_warrior_defensivestance",
         spells: [
-          {id: 97462, name: "Rallying Cry", icon: "https://media.wowdb.com/wow/icons/large/ability_warrior_rallyingcry.jpg", cd: 180},
+          {id: 97462}, // Rallying Cry
         ],
       },
     },
   },
+}
+
+export const spells = {
+  196718: {id: 196718, name: "Darkness", icon: "https://media.wowdb.com/wow/icons/large/ability_demonhunter_darkness.jpg", cd: 180},
+  740:    {id: 740,    name: "Tranquility", icon: "https://media.wowdb.com/wow/icons/large/spell_nature_tranquility.jpg", cd: 180},
+  115310: {id: 115310, name: "Revival", icon: "https://media.wowdb.com/wow/icons/large/spell_monk_revival.jpg", cd: 180},
+  31821:  {id: 31821,  name: "Aura Mastery", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_auramastery.jpg", cd: 180},
+  31884:  {id: 31884,  name: "Avenging Wrath", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_avenginewrath.jpg", cd: 108},
+  62618:  {id: 62618,  name: "Power Word: Barrier", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_powerwordbarrier.jpg", cd: 180},
+  246287: {id: 246287, name: "Evangelism", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_divineillumination.jpg", cd: 90},
+  47536:  {id: 47536,  name: "Rapture", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_rapture.jpg", cd: 90},
+  64843:  {id: 64843,  name: "Divine Hymn", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_divinehymn.jpg", cd: 180},
+  265202: {id: 265202, name: "Holy Word: Salvation", icon: "https://media.wowdb.com/wow/icons/large/ability_priest_archangel.jpg", cd: 300},
+  15286:  {id: 15286,  name: "Vampiric Embrace", icon: "https://media.wowdb.com/wow/icons/large/spell_shadow_unsummonbuilding.jpg", cd: 120},
+  108280: {id: 108280, name: "Healing Tide Totem", icon: "https://media.wowdb.com/wow/icons/large/ability_shaman_healingtide.jpg", cd: 180},
+  98008:  {id: 98008,  name: "Spirit Link Totem", icon: "https://media.wowdb.com/wow/icons/large/spell_shaman_spiritlink.jpg", cd: 180},
+  97462:  {id: 97462,  name: "Rallying Cry", icon: "https://media.wowdb.com/wow/icons/large/ability_warrior_rallyingcry.jpg", cd: 180},
 }
 
 export const healers = [

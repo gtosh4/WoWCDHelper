@@ -6,7 +6,7 @@
 </v-card>
 </template>
 <script>
-import { assignProps, player } from '../store/utils'
+import { assignProps, player, spell } from '../store/utils'
 
 export default {
   data: () => ({
@@ -19,7 +19,8 @@ export default {
   },
 
   computed: {
-    ...assignProps(['name', 'className', 'specName', 'spell', 'playerId']),
+    ...assignProps(['name', 'className', 'specName', 'playerId']),
+    ...spell(),
     ...player(),
   },
 

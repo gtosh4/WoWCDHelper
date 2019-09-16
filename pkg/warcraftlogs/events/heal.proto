@@ -1,0 +1,33 @@
+syntax = "proto3";
+package warcraftlogs.events;
+option go_package = "events";
+
+import "gogoproto/gogo.proto";
+import "common.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+message Heal {
+  int64 sourceID = 1;
+  bool sourceIsFriendly = 2;
+  int64 targetID = 3;
+  bool targetIsFriendly = 4;
+  Ability ability = 5;
+  int64 hitType = 6;
+  int64 amount = 7;
+  int64 overheal = 8;
+  int64 resourceActor = 9;
+  repeated ClassResources classResources = 10;
+  int64 hitPoints = 11;
+  int64 maxHitPoints = 12;
+  int64 attackPower = 13;
+  int64 spellPower = 14;
+  int64 armor = 15;
+  int64 x = 16;
+  int64 y = 17;
+  int64 facing = 18;
+  int64 mapID = 19;
+  int64 itemLevel = 20;
+}

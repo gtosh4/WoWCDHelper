@@ -89,10 +89,7 @@ import moment from 'moment'
 import Color from 'color'
 import { eventProps, dragAssignProps } from '../store/utils'
 import {toColor, toRGBA} from './colour_utils'
-
-function padTime(t) {
-  return `${t < 10 ? '0' : ''}${t}`
-}
+import {formatDuration} from './duration_utils'
 
 const endingNum = /(\d+)$/
 const defaultColour = Color('rgb(66, 66, 66)')
@@ -123,8 +120,7 @@ export default {
 
     timeStr: {
       get() {
-        const t = this.time
-        return t !== undefined ? `${t.minutes()}:${padTime(t.seconds())}` : ""
+        return formatDuration(this.time)
       },
       set(v) {
         if (v === undefined || v == "") {
@@ -141,10 +137,10 @@ export default {
     },
 
     style() {
-      var colour = toColor(this.colour) || defaultColour
-      if (this.hover) {
-        colour = colour.isLight() ? colour.darken(0.5) : colour.lighten(0.5)
-      }
+      var colour = toColor(this.colour)
+      colour = colour ? colour.darken(0.5) : defaultColour
+      if (this.hover) colour = colour.lighten(0.5)
+      
       return {
         "background-color": colour.string(),
       }
@@ -267,7 +263,7 @@ export default {
 .v-data-table td.event-time {
   padding-left: 8px;
   padding-right: 8px;
-  min-width: 50px;
+  min-width: 60px;
 }
 .v-data-table td.event-time input {
   text-align: end;
@@ -276,7 +272,7 @@ export default {
 .v-data-table td.event-label {
   padding-left: 8px;
   padding-right: 8px;
-  min-width: 100px;
+  min-width: 140px;
 }
 
 .v-data-table td.event-assignments {
@@ -286,11 +282,7 @@ export default {
 
 .assignments {
   flex-grow: 1;
-}
-
-.assignments .assignment {
-  padding-left: 2px;
-  padding-right: 2px;
+  min-height: 32px;
 }
 
 .drag-on-cd {

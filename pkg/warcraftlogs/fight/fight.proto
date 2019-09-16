@@ -1,0 +1,17 @@
+syntax = "proto3";
+package warcraftlogs.fight;
+option go_package = "fight";
+
+import "gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+message Fight {
+  int64 id = 1;
+  string name = 2;
+  int64 start_time = 3;
+  int64 end_time = 4;
+  int64 boss = 5;
+}

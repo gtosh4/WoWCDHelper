@@ -7,10 +7,15 @@ GOFLAGS     ?= -mod=vendor
 
 FRONTEND_FILES ?= $(shell find . -path './frontend/src/*')
 
+PB_FILES ?= $(shell find . -name '*.proto')
+
+GOGO_REPLACE := Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types,Mgoogle/protobuf/duration.proto=github.com/gogo/protobuf/types
+PROTOC ?= protoc -I=. -I=../../../vendor/github.com/gogo/protobuf --gogofast_out=$(GOGO_REPLACE):.
+
 .PHONY: all
 all: bin/wcdh
 
-bin/wcdh: fmt test $(GO_FILES) bin/frontend/dist vendor/modules.txt
+bin/wcdh: proto fmt test $(GO_FILES) bin/frontend/dist vendor/modules.txt
 	go build  -v -o $@ ./cmd/wcdh
 
 frontend/node_modules: frontend/package.json
@@ -26,6 +31,11 @@ bin/frontend/dist: frontend/dist
 vendor/modules.txt: go.mod go.sum
 	go mod tidy
 	go mod vendor
+
+.PHONY: proto
+proto: $(PB_FILES)
+	cd pkg/warcraftlogs/events && $(PROTOC) *.proto
+	cd pkg/warcraftlogs/fight && $(PROTOC) *.proto
 
 .PHONY: test
 test:

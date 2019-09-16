@@ -1,3 +1,6 @@
+import {spells} from '../components/wow_info'
+
+
 export function assignProps(props) {
   const p = {}
   props.forEach(prop => {
@@ -6,7 +9,20 @@ export function assignProps(props) {
         if (this.assignId === undefined) return undefined
 
         const assign = this.$store.state.assigns.assigns[this.assignId]
-        return assign !== undefined ? assign[prop] : undefined
+        if (assign === undefined) return undefined
+
+        if (assign[prop] !== undefined) {
+          return assign[prop]
+        }
+        
+        if (assign.id != assign.playerId) {
+          // Fallback to player assign (eg for specName, className)
+          const pAssign = this.$store.state.assigns.assigns[assign.playerId]
+          if (pAssign !== undefined && pAssign[prop] !== undefined) {
+            return pAssign[prop]
+          }
+        }
+        return undefined
       },
       set(v) {
         const assign = this.assignId === undefined ? {} : this.$store.state.assigns.assigns[this.assignId]
@@ -15,6 +31,32 @@ export function assignProps(props) {
     }
   });
   return p
+}
+
+export function spell() {
+  return {
+    spell() {
+      const assign = this.$store.state.assigns.assigns[this.assignId]
+      if (!assign.spell || !assign.spell.id) return undefined
+
+      const s = {
+        ...spells[assign.spell.id],
+        ...assign.spell,
+      }
+      
+      if (s.cfg) {
+        const pAssign = this.$store.state.assigns.assigns[assign.playerId]
+        const spec = spec(pAssign.className, pAssign.specName)
+        spec.spells.forEach(specSpell => {
+          if (specSpell.id == s.id && typeof(specSpell.configure) == 'function') {
+            specSpell.configure(s)
+          }
+        })
+      }
+
+      return s
+    }
+  }
 }
 
 export function player() {

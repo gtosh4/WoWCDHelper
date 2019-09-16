@@ -1,0 +1,31 @@
+syntax = "proto3";
+package warcraftlogs.events;
+
+import "gogoproto/gogo.proto";
+
+import "absorbed.proto";
+import "combatantinfo.proto";
+import "damage.proto";
+import "heal.proto";
+import "unknown.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+message Event {
+  int64 time = 1;
+  string type = 2;
+
+  oneof data {
+    Absorbed absorbed = 10;
+    CombatantInfo combatant_info = 11;
+    Damage damage = 12;
+    Heal heal = 13;
+    Unknown unknown = 14;
+  }
+}
+
+message Events {
+  repeated Event events = 1 [(gogoproto.nullable) = false];
+}

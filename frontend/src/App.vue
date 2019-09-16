@@ -14,17 +14,27 @@
 import Planner from './components/Planner';
 import Cooldowns from './components/Cooldowns'
 
+import {loadFromURL} from './store/plugins/url'
+
 export default {
   name: 'App',
-  components: {
-    Planner,
-    Cooldowns,
-  },
   data: () => ({
   }),
   mounted() {
   },
+  watch: {
+    '$route':{
+      handler(to) {
+        loadFromURL(this.$store, to)
+      },
+      immediate: true,
+    },
+  },
   methods: {
+  },
+  components: {
+    Planner,
+    Cooldowns,
   },
 };
 </script>

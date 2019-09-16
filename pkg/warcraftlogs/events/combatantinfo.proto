@@ -1,0 +1,78 @@
+syntax = "proto3";
+package warcraftlogs.events;
+option go_package = "events";
+
+import "gogoproto/gogo.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+message CombatantInfo {
+  int64 sourceID = 1;
+  repeated Gear gear = 2;
+  repeated Auras auras = 3;
+  int64 faction = 4;
+  int64 specID = 5;
+  int64 strength = 6;
+  int64 agility = 7;
+  int64 stamina = 8;
+  int64 intellect = 9;
+  int64 dodge = 10;
+  int64 parry = 11;
+  int64 block = 12;
+  int64 armor = 13;
+  int64 critMelee = 14;
+  int64 critRanged = 15;
+  int64 critSpell = 16;
+  int64 speed = 17;
+  int64 leech = 18;
+  int64 hasteMelee = 19;
+  int64 hasteRanged = 20;
+  int64 hasteSpell = 21;
+  int64 avoidance = 22;
+  int64 mastery = 23;
+  int64 versatilityDamageDone = 24;
+  int64 versatilityHealingDone = 25;
+  int64 versatilityDamageReduction = 26;
+  repeated Talents talents = 27;
+  repeated PvpTalents pvpTalents = 28;
+  repeated Artifact artifact = 29;
+}
+
+message Gems {
+  int64 id = 1;
+  int64 itemLevel = 2;
+  string icon = 3;
+}
+message Gear {
+  int64 id = 1;
+  int64 quality = 2;
+  string icon = 3;
+  int64 itemLevel = 4;
+  repeated int64 bonusIDs = 5;
+  int64 permanentEnchant = 6;
+  repeated Gems gems = 7;
+}
+message Auras {
+  int64 source = 1;
+  int64 ability = 2;
+  int64 stacks = 3;
+  string icon = 4;
+  string name = 5;
+}
+message Talents {
+  int64 id = 1;
+  string icon = 2;
+}
+message PvpTalents {
+  int64 id = 1;
+  string icon = 2;
+}
+message Artifact {
+  int64 traitID = 1;
+  int64 rank = 2;
+  int64 spellID = 3;
+  string icon = 4;
+  int64 slot = 5;
+}

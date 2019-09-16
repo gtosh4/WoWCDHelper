@@ -3,49 +3,10 @@ import Vuex from 'vuex'
 import assigns from './modules/assigns'
 import events from './modules/events'
 import dragassign from './modules/dragassign'
-import VuexPersist from 'vuex-persist'
 
 Vue.use(Vuex)
 
-import moment from 'moment'
-import { spec } from '../components/wow_info';
-
-const vuexPersist = new VuexPersist({
-  key: 'wow-cd-helper',
-  storage: localStorage,
-
-  saveState(key, state, storage) {
-    storage.setItem(key,JSON.stringify({
-      name: state.name,
-      events: state.events.events,
-      assigns: state.assigns.assigns,
-    }))
-  },
-
-  restoreState(key, storage) {
-    const raw = JSON.parse(storage.getItem(key) || '{}') || {}
-    if (!raw || Object.keys(raw).length == 0) return
-    Object.values(raw.events || {}).forEach(v => v.time = moment.duration(v.time))
-    Object.values(raw.assigns).forEach(a => {
-      if (a.spell) {
-        const player = raw.assigns[a.playerId]
-        if (player.specName) {
-          spec(player.className, player.specName).spells.forEach(specSpell => {
-            if (specSpell.id == a.spell.id) {
-              a.spell = specSpell
-            }
-          })
-        }
-      }
-    })
-    return {
-      name: raw.name,
-      events: {events: raw.events},
-      assigns: {assigns: raw.assigns},
-    }
-  },
-})
-
+import { updateURLPlugin } from './plugins/url'
 
 const debug = process.env.NODE_ENV !== 'production'
 
@@ -87,12 +48,18 @@ export default new Vuex.Store({
     setName(state, name) {
       state.name = name
     },
+
+    setLogURL(state, logURL) {
+      state.logURL = logURL
+    },
   },
   modules: {
     assigns,
     events,
     dragassign,
   },
-  plugins: [vuexPersist.plugin],
+  plugins: [
+    updateURLPlugin,
+  ],
   strict: debug,
 })

@@ -1,0 +1,48 @@
+syntax = "proto3";
+package warcraftlogs.fight;
+option go_package = "fight";
+
+import "gogoproto/gogo.proto";
+import "fight.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+message Fights {
+  string title = 1;
+  int64 zone = 2;
+  repeated Fight fights = 3 [(gogoproto.nullable) = false];
+  repeated Friendly friendlies = 4 [(gogoproto.nullable) = false];
+  repeated Enemy enemies = 5 [(gogoproto.nullable) = false];
+  repeated Phases phases = 6 [(gogoproto.nullable) = false];
+}
+
+message EncounteredIn {
+  int64 id = 1;
+  int64 instances = 2;
+  int64 groups = 3;
+}
+
+message Friendly {
+  int64 id = 1;
+  string name = 2;
+  int64 guid = 3;
+  string type = 4;
+  string server = 5;
+  repeated EncounteredIn fights = 6 [(gogoproto.nullable) = false];
+}
+
+message Enemy {
+  int64 id = 1;
+  string name = 2;
+  int64 guid = 3;
+  string type = 4;
+  string abilityIcon = 5;
+  repeated EncounteredIn fights = 6 [(gogoproto.nullable) = false];
+}
+
+message Phases {
+  int64 boss = 1;
+  repeated string phases = 2;
+}

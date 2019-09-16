@@ -53,7 +53,7 @@ import PlayerSettings from './PlayerSettings'
 
 import Color from 'color'
 import {classes, classIcon, specIcon, spec} from './wow_info'
-import {assignProps, dragAssignProps, player} from '../store/utils'
+import {assignProps, dragAssignProps, player, spell} from '../store/utils'
 
 export default {
   data: () => ({
@@ -91,7 +91,8 @@ export default {
 
   computed: {
     ...dragAssignProps(),
-    ...assignProps(['name', 'className', 'specName', 'spell', 'playerId']),
+    ...assignProps(['name', 'className', 'specName', 'playerId']),
+    ...spell(),
     ...player(),
 
     classColour() {
