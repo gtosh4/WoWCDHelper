@@ -24,6 +24,10 @@ function clearAssign(state, id) {
 }
 
 export default new Vuex.Store({
+  state: {
+    name: "",
+    logURL: null,
+  },
   mutations: {
     clearAssign,
 

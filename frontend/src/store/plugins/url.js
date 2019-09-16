@@ -81,6 +81,7 @@ function expandState(s) {
     logURL: s.u,
     events: {events: {}},
     assigns: {assigns: {}},
+    dragassign: {info: null},
   }
   if (s.a) {
     s.a.forEach(a => {
@@ -98,22 +99,42 @@ function expandState(s) {
 }
 
 export function loadFromURL(store, route) {
+  // use replaceState instead of mutations so that we don't trigger updateURL and stomp our changes
+
   const data = route.params.data
-  if (!data) return
+  if (!data) {
+    store.replaceState({
+      name: "",
+      logURL: null,
+      events: {events: {}},
+      assigns: {assigns: {}},
+      dragassign: {info: null},
+    })
+    return
+  }
 
   codec.decompress(data).then(short => {
     const json = JSON.parse(short)
     const state = expandState(json)
-  
-    store.replaceState({...store.state, ...state})
+    store.replaceState(state)
   }).catch(err => console.log("Error decompressing", {data, err}))
 }
 
 export function updateURLPlugin(store) {
+  const ignorePatterns = [
+    /^dragassign/,
+  ]
   store.subscribe((mutation, state) => {
+    const ignored = ignorePatterns.some(p => p.test(mutation.type))
+    if (ignored) {
+      return
+    }
     const short = shortenState(state)
     const str = JSON.stringify(short)
     codec.compress(str).then(data => {
+      if (data == router.currentRoute.params.data) {
+        return
+      }
       const r = {
         path: `/${data}`,
         query: router.currentRoute.query,
