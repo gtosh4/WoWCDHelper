@@ -1,4 +1,4 @@
-import {spells} from '../components/wow_info'
+import {spells, spec} from '../components/wow_info'
 
 
 export function assignProps(props) {
@@ -35,26 +35,38 @@ export function assignProps(props) {
 
 export function spell() {
   return {
-    spell() {
-      const assign = this.$store.state.assigns.assigns[this.assignId]
-      if (!assign.spell || !assign.spell.id) return undefined
+    spell: {
+      get() {
+        const assign = this.$store.state.assigns.assigns[this.assignId]
+        if (!assign.spell || !assign.spell.id) return undefined
 
-      const s = {
-        ...spells[assign.spell.id],
-        ...assign.spell,
-      }
-      
-      if (s.cfg) {
+        const s = {
+          ...spells[assign.spell.id],
+          ...assign.spell,
+        }
+        if (!s.cfg) {
+          s.cfg = {}
+        }
+        
         const pAssign = this.$store.state.assigns.assigns[assign.playerId]
-        const spec = spec(pAssign.className, pAssign.specName)
-        spec.spells.forEach(specSpell => {
-          if (specSpell.id == s.id && typeof(specSpell.configure) == 'function') {
+        const specSpell = spec(pAssign.className, pAssign.specName).spells.find(ss => ss.id == s.id)
+        if (specSpell) {
+          s.options = specSpell.options
+          if (typeof(specSpell.configure) == 'function') {
             specSpell.configure(s)
           }
-        })
-      }
+        }
 
-      return s
+        return s
+      },
+      set(v) {
+        const s = {
+          id: v.id,
+          cfg: v.cfg,
+        }
+        const assign = this.$store.state.assigns.assigns[this.assignId]
+        this.$store.commit('assigns/set', {...assign, spell: s})
+      },
     }
   }
 }

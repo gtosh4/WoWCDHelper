@@ -1,3 +1,13 @@
+const visions = {
+  opt: {text: "Vision of Perfection", type: Boolean, default: false, prop: 'vision'},
+  config: spell => {
+    if (spell.cfg.vision) {
+      // 25% reduced
+      spell.cd *= 0.75
+    }
+  },
+}
+
 export const classes = {
   deathknight: {
     colour: {r: 196, g: 31, b: 59},
@@ -53,12 +63,14 @@ export const classes = {
             id: 740,
             options: [
               {text: "Inner Peace", type: Boolean, default: false, prop: 'inner_peace'},
+              visions.opt,
             ],
             configure(spell) {
               if (spell.cfg.inner_peace) {
                 spell.cd -= 60
               }
-            }
+              visions.config(spell)
+            },
           },
         ],
       },
@@ -124,7 +136,15 @@ export const classes = {
         icon: "spell_holy_holybolt",
         spells: [
           {id: 31821}, // Aura Mastery
-          {id: 31884}, // Avenging Wrath
+          { // Avenging Wrath
+            id: 31884,
+            options: [
+              {...visions.opt, default: true}, // Visions is BiS
+            ],
+            configure(spell) {
+              visions.config(spell)
+            },
+          },
         ],
       },
       protection: {
@@ -247,7 +267,7 @@ export const spells = {
   740:    {id: 740,    name: "Tranquility", icon: "https://media.wowdb.com/wow/icons/large/spell_nature_tranquility.jpg", cd: 180},
   115310: {id: 115310, name: "Revival", icon: "https://media.wowdb.com/wow/icons/large/spell_monk_revival.jpg", cd: 180},
   31821:  {id: 31821,  name: "Aura Mastery", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_auramastery.jpg", cd: 180},
-  31884:  {id: 31884,  name: "Avenging Wrath", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_avenginewrath.jpg", cd: 108},
+  31884:  {id: 31884,  name: "Avenging Wrath", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_avenginewrath.jpg", cd: 120},
   62618:  {id: 62618,  name: "Power Word: Barrier", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_powerwordbarrier.jpg", cd: 180},
   246287: {id: 246287, name: "Evangelism", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_divineillumination.jpg", cd: 90},
   47536:  {id: 47536,  name: "Rapture", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_rapture.jpg", cd: 90},
