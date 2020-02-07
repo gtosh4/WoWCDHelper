@@ -251,10 +251,6 @@ export default {
 };
 </script>
 <style>
-.event-label {
-  border-right: solid 1px rgba(255, 255, 255, 0.12);
-  white-space: nowrap;
-}
 .v-data-table td.event-actions {
   padding-left: 4px;
   padding-right: 4px;
@@ -270,9 +266,11 @@ export default {
 }
 
 .v-data-table td.event-label {
+  border-right: solid 1px rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
   padding-left: 8px;
   padding-right: 8px;
-  min-width: 140px;
+  min-width: 250px;
 }
 
 .v-data-table td.event-assignments {

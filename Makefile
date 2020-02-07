@@ -51,5 +51,5 @@ version:
 
 .PHONY: image
 image: test
-	docker build -t wowcdhelper:$(TAG) -f build/package/Dockerfile .
-	docker tag wowcdhelper:$(TAG) wowcdhelper:latest
+	docker build -t wowcds:$(TAG) -f build/package/Dockerfile .
+	docker tag wowcds:$(TAG) wowcds:latest
