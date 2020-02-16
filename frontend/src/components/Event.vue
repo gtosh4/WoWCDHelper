@@ -217,7 +217,7 @@ export default {
       if (num != null) {
         label = label.replace(endingNum,  `${(+num[0])+1}`)
       }
-      this.$store.commit('events/set', {time: this.time, label, colour, assignments: [...this.assignments]})
+      this.$store.commit('events/set', {time: this.time, label, colour: this.colour, assignments: [...this.assignments]})
     },
 
     clear() {
