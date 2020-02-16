@@ -72,6 +72,7 @@ export const classes = {
               visions.config(spell)
             },
           },
+          {id: 33891}, // Incarnation: Tree of Life
         ],
       },
     },
@@ -171,7 +172,15 @@ export const classes = {
       holy: {
         icon: "spell_holy_guardianspirit",
         spells: [
-          {id: 64843}, // Divine Hymn
+          { // Divine Hymn
+            id: 64843,
+            options: [
+              {...visions.opt, default: true},
+            ],
+            configure(spell) {
+              visions.config(spell)
+            },
+          }, 
           {id: 265202}, // Holy Word: Salvation
         ],
       },
@@ -214,7 +223,15 @@ export const classes = {
       restoration: {
         icon: "spell_nature_magicimmunity",
         spells: [
-          {id: 108280}, // Healing Tide Totem
+          { // Healing Tide Totem
+            id: 108280,
+            options: [
+              {...visions.opt, default: true},
+            ],
+            configure(spell) {
+              visions.config(spell)
+            },
+          },
           {id: 98008}, // Spirit Link Totem
         ],
       },
@@ -265,6 +282,7 @@ export const classes = {
 export const spells = {
   196718: {id: 196718, name: "Darkness", icon: "https://media.wowdb.com/wow/icons/large/ability_demonhunter_darkness.jpg", cd: 180},
   740:    {id: 740,    name: "Tranquility", icon: "https://media.wowdb.com/wow/icons/large/spell_nature_tranquility.jpg", cd: 180},
+  33891:  {id: 33891,  name: "Incarnation: Tree of Life", icon: "https://media.wowdb.com/wow/icons/large/ability_druid_treeoflife.jpg", cd: 180},
   115310: {id: 115310, name: "Revival", icon: "https://media.wowdb.com/wow/icons/large/spell_monk_revival.jpg", cd: 180},
   31821:  {id: 31821,  name: "Aura Mastery", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_auramastery.jpg", cd: 180},
   31884:  {id: 31884,  name: "Avenging Wrath", icon: "https://media.wowdb.com/wow/icons/large/spell_holy_avenginewrath.jpg", cd: 120},

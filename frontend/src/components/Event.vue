@@ -8,7 +8,7 @@
     <EventTextField v-model="label" :placeholder="eventId ? 'unnamed' : 'new'" />
   </td>
 
-  <td class="event-assignments" :class="dragDestClass">
+  <td class="event-assignments">
     <v-dialog persistent v-model="showColour" @keydown.esc.stop="showColour = false" max-width="300px">
       <v-card tile>
         <v-color-picker v-model="colourPicker" :swatches="swatches" show-swatches flat hide-mode-switch />
@@ -31,8 +31,8 @@
           @dragleave.prevent="handleDragLeave"
         >
           <v-layout>
-            <Assignment :eventId="eventId" :index="index" v-for="(assign, index) in assignments" :key="index" />
-            <InsertAssignment v-if="draggedOver" class="ml-1" />
+            <Assignment :eventId="eventId" :index="index" v-for="(assign, index) in assignments" :key="index" class="mr-1" />
+            <InsertAssignment v-if="draggedOver" />
           </v-layout>
         </v-flex>
 
@@ -90,6 +90,7 @@ import Color from 'color'
 import { eventProps, dragAssignProps } from '../store/utils'
 import {toColor, toRGBA} from './colour_utils'
 import {formatDuration} from './duration_utils'
+import {spells, spec} from './wow_info'
 
 const endingNum = /(\d+)$/
 const defaultColour = Color('rgb(66, 66, 66)')
@@ -160,20 +161,6 @@ export default {
       return events[events.length-1].time
     },
 
-    dragDestClass() {
-      if (!this.time || !this.draggedAssign) return
-
-      const spell = this.$store.state.assigns.assigns[this.draggedAssign.assignId].spell
-
-      if (!spell || !spell.cd) return
-
-      const onCD = this.prevDragSpellTime
-        ? (this.time.asSeconds() - this.prevDragSpellTime.asSeconds()) < spell.cd
-        : false
-      
-      return onCD ? 'drag-on-cd' : 'drag-off-cd'
-    },
-
     showActions() {
       return this.hover && this.eventId !== undefined && !this.draggedAssign
     },
@@ -230,7 +217,7 @@ export default {
       if (num != null) {
         label = label.replace(endingNum,  `${(+num[0])+1}`)
       }
-      this.$store.commit('events/set', {time: this.time, label, assignments: [...this.assignments]})
+      this.$store.commit('events/set', {time: this.time, label, colour, assignments: [...this.assignments]})
     },
 
     clear() {
