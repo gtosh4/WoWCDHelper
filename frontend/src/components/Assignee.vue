@@ -5,7 +5,18 @@
     <WowIcon :className="className" />
     <WowIcon v-if="specName" :className="className" :specName="specName" />
     <WowIcon v-else />
-    <v-text-field v-model="name" solo flat placeholder="Name" hide-details background-color="transparent" width="100%" />
+    <v-text-field
+      v-model="nameTmp"
+      solo
+      flat
+      placeholder="Name"
+      hide-details
+      background-color="transparent"
+      width="100%"
+      @keydown.esc.stop="nameTmp = name"
+      @keydown.enter="name = nameTmp"
+      @blur="name = nameTmp"
+    />
   </v-chip>
   <v-chip v-else label :color="classColour" draggable class="spell">
     <v-icon class="handle">mdi-drag</v-icon>
@@ -58,6 +69,7 @@ import {assignProps, dragAssignProps, player, spell} from '../store/utils'
 export default {
   data: () => ({
     showSettings: false,
+    nameTmp: "",
   }),
 
   props: {
@@ -102,6 +114,13 @@ export default {
 
     assignmentCount() {
       return Object.values(this.$store.state.events.events).map(e => e.assignments.filter(a => a == this.assignId)).flat().length
+    },
+  },
+
+  watch: {
+    name: {
+      handler() { this.nameTmp = this.name},
+      immediate: true,
     },
   },
 
