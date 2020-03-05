@@ -26,26 +26,24 @@ import Color from 'color'
 function formatRows(formatLabel, formatPlayer, formatSpell) {
   return (events, assigns) => {
     const rows = sortEvents(events).map(event => {
-      const assignments = [...event.assignments.map(a => assigns[a])].sort((a, b) => {
-        if (a.playerId != b.playerId) return a.playerId < b.playerId
-        return a.id < b.id
-      })
-      const evtAs = assignments.reduce((byPlayer, a) => {
-        const pid = a.playerId || ''
-        byPlayer[pid] = byPlayer[pid] || []
-        byPlayer[pid].push(a)
-        return byPlayer
-      }, {})
-      return `${formatLabel(event)}\t` + Object.entries(evtAs).map(([pid, as]) => {
-        return as.map((a, i) => {
-          const player = assigns[a.playerId]
-          if (a.spell) {
-            return `${i == 0 || pid == '' ? formatPlayer(player) : ''}${formatSpell(a)}`
+      const assignments = [...event.assignments.map(a => assigns[a])]
+      return `${formatLabel(event)}\t` + assignments.reduce((evtTxts, a, idx) => {
+        const player = assigns[a.playerId]
+        if (a.spell) {
+          if (player == null) {
+            evtTxts.push(formatSpell(a))
           } else {
-            return formatPlayer(a)
+            if (idx > 0 && evtTxts.length > 0 && assignments[idx-1].playerId == a.playerId) {
+              evtTxts[evtTxts.length-1] += `+${formatSpell(a)}`
+            } else {
+              evtTxts.push(`${formatPlayer(player)}${formatSpell(a)}`)
+            }
           }
-        }).join("+")
-      }).join("\t")
+        } else {
+          evtTxts.push(formatPlayer(a))
+        }
+        return evtTxts
+      }, []).join("\t")
     })
     return rows.join("\n")
   }

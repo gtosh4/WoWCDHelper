@@ -90,7 +90,6 @@ import Color from 'color'
 import { eventProps, dragAssignProps } from '../store/utils'
 import {toColor, toRGBA} from './colour_utils'
 import {formatDuration} from './duration_utils'
-import {spells, spec} from './wow_info'
 
 const endingNum = /(\d+)$/
 const defaultColour = Color('rgb(66, 66, 66)')
