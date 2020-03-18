@@ -58,9 +58,7 @@ const mutations = {
     if (!event) return
 
     if (event.id === undefined) {
-      do {
-        event.id = nextid(state)
-      } while (state.events[event.id])
+      event.id = nextid(state)
     }
     if (event.assignments === undefined) {
       event.assignments = []

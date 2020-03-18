@@ -6,7 +6,11 @@
     </v-tab>
   </v-tabs>
 
-  <v-select v-if="tab == 'ertp'" v-model="selectedPlayer" :items="players" dense />
+  <v-layout>
+    <v-checkbox v-model="ignoreEmpty" label="Ignore Empty" />
+  </v-layout>
+
+  <v-select v-if="tab == 'ertp'" v-model="selectedPlayer" :items="players" clearable dense label="Select a Player" class="mx-2" />
 
   <v-card-text class="export-content">
     <v-textarea auto-grow readonly full-width outlined :value="text" />
@@ -24,8 +28,12 @@ import {classes} from './wow_info'
 import Color from 'color'
 
 function formatRows(formatLabel, formatPlayer, formatSpell) {
-  return (events, assigns) => {
-    const rows = sortEvents(events).map(event => {
+  return (events, assigns, name, config) => {
+    var fmtEvts = sortEvents(events)
+    if (config.ignoreEmpty) {
+      fmtEvts = fmtEvts.filter(e => e.assignments.length > 0)
+    }
+    const rows = fmtEvts.map(event => {
       const assignments = [...event.assignments.map(a => assigns[a])]
       return `${formatLabel(event)}\t` + assignments.reduce((evtTxts, a, idx) => {
         const player = assigns[a.playerId]
@@ -75,13 +83,13 @@ export default {
       },
       ertp: {
         name: 'ERT Personal',
-        run: (events, assigns, name, selectedPlayer) => {
+        run: (events, assigns, name, config) => {
           const fmt = formatRows(
             event => `{time:${event.time.minutes()}:${event.time.seconds()}}\t${colouredLabel(event)}\t`,
             () => '',
             assign => `{spell:${assign.spell.id}}`,
           )
-          const playerAssigns = new Set(Object.values(assigns).filter(a => a.playerId == selectedPlayer).map(a => a.id))
+          const playerAssigns = new Set(Object.values(assigns).filter(a => a.playerId == config.selectedPlayer).map(a => a.id))
           const playerEvents = Object.fromEntries(Object.entries(events)
             .map(([k, v]) => [k, {...v, assignments: v.assignments.filter(a => playerAssigns.has(a))}])
             .filter(([, v]) => v.assignments.length > 0))
@@ -97,6 +105,7 @@ export default {
     tab: "aa",
 
     selectedPlayer: null,
+    ignoreEmpty: true,
   }),
 
   props: {
@@ -113,11 +122,18 @@ export default {
         this.$store.state.events.events,
         this.$store.state.assigns.assigns,
         this.$store.state.name,
-        this.selectedPlayer)
+        this.config)
     },
 
     players() {
       return [...this.$store.getters['assigns/players'].map(a => ({text: a.name, value: a.id}))]
+    },
+
+    config() {
+      return {
+        ignoreEmpty: this.ignoreEmpty,
+        selectedPlayer: this.selectedPlayer,
+      }
     },
   },
 

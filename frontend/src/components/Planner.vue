@@ -51,13 +51,13 @@
   </v-tabs-items>
 
   <v-card-actions>
-    <v-dialog persistent v-model="showImport" @keydown.esc.stop="showImport = false">
+    <v-dialog persistent v-model="showImport" @keydown.esc.stop="showImport = false" max-width="800">
       <template #activator="{ on: dialog }">
         <v-tooltip top>
           <template #activator="{ on: tooltip }">
-            <v-btn v-on="{...tooltip, ...dialog}" tile x-small icon>
-              <v-icon>mdi-import</v-icon>
-              </v-btn>
+            <v-btn v-on="{...tooltip, ...dialog}" tile x-small class="mr-1">
+              <v-icon>mdi-import</v-icon>Import
+            </v-btn>
           </template>
           <span>Import</span>
         </v-tooltip>
@@ -66,12 +66,12 @@
       <Import @close="showImport = false" />
     </v-dialog>
 
-    <v-dialog persistent v-model="showExport" @keydown.esc.stop="showExport = false">
+    <v-dialog persistent v-model="showExport" @keydown.esc.stop="showExport = false" max-width="800">
       <template #activator="{ on: dialog }">
         <v-tooltip top>
           <template #activator="{ on: tooltip }">
-            <v-btn v-on="{...tooltip, ...dialog}" tile x-small icon>
-              <v-icon>mdi-export</v-icon>
+            <v-btn v-on="{...tooltip, ...dialog}" tile x-small>
+              <v-icon>mdi-export</v-icon>Export
             </v-btn>
           </template>
           <span>Export</span>
