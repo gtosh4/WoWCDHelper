@@ -8,13 +8,17 @@
     hide-default-footer
   >
     <template #item="{ item }">
-      <Event :eventId="item.id" />
+      <Event :eventId="item.id" @config="configEvent=item.id" />
     </template>
   </v-data-table>
+  <v-dialog persistent v-model="showConfig" max-width="300px">
+    <EventConfig :eventId="configEvent" @close="configEvent = null" />
+  </v-dialog>
 </v-card>
 </template>
 <script>
 import Event from './Event'
+import EventConfig from './EventConfig'
 
 export default {
   data: () => ({
@@ -23,6 +27,7 @@ export default {
         { text: 'Label',       value: 'label',   align: 'left'  },
         { text: 'Assignments', value: 'assigns', align: 'left'  },
     ],
+    configEvent: null,
   }),
 
   props: {
@@ -32,6 +37,10 @@ export default {
     items() {
       return [...this.$store.getters['events/orderedEvents'], {}]
     },
+
+    showConfig() {
+      return this.configEvent != null
+    }
   },
 
   methods: {
@@ -47,6 +56,7 @@ export default {
 
   components: {
     Event,
+    EventConfig,
   },
 };
 </script>

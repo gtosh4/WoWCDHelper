@@ -1,9 +1,9 @@
 <template>
-<span :data-tooltip-href="`//www.wowdb.com/spells/${spell.id}`">
+<span :data-tooltip-href="`//www.wowdb.com/spells/${spell.id}`" class="spelldetails">
   <v-avatar tile class="mr-1" size="18">
     <img v-if="spell.icon" :src="spell.icon" draggable="false" ondragstart="return false" />
   </v-avatar>
-  <span v-if="showname">{{spell.name}}</span>
+  <span v-if="showname" class="spellname">{{spell.name}}</span>
 </span>
 </template>
 <script>
@@ -36,4 +36,7 @@ export default {
 };
 </script>
 <style>
+.spelldetails .spellname {
+  width: 100%;
+}
 </style>

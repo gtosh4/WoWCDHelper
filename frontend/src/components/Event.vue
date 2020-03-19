@@ -1,14 +1,14 @@
 <template>
-<tr @mouseenter="hover = true" @mouseleave="hover = false" :id="rowId" :style="style">
-  <td class="event-time">
+<tr @mouseenter="hover = true" @mouseleave="hover = false" :id="rowId" class="event">
+  <td class="event-time" :style="style('time')">
     <EventTextField v-model="timeStr" placeholder="0:0" />
   </td>
 
-  <td class="event-label">
+  <td class="event-label" :style="style('label')">
     <EventTextField v-model="label" :placeholder="eventId ? 'unnamed' : 'new'" />
   </td>
 
-  <td class="event-assignments">
+  <td class="event-assignments" :style="style('assignments')">
     <v-row no-gutters>
       <v-col>
         <AssignmentGroup v-if="eventId !== undefined"
@@ -22,7 +22,7 @@
             @clone="clone"
             @clear="clear"
             @remove="remove"
-            @colour="colourPicker = colour ? colour : toRGBA(defaultColour); showColour = true"
+            @config="$emit('config')"
           />
         </v-container>
       </v-col>
@@ -38,7 +38,7 @@ import AssignmentGroup from './AssignmentGroup'
 import moment from 'moment'
 import Color from 'color'
 import { eventProps } from '../store/utils'
-import {toColor, toRGBA} from './colour_utils'
+import {toColor} from './colour_utils'
 import {formatDuration} from './duration_utils'
 
 const endingNum = /(\d+)$/
@@ -50,9 +50,6 @@ export default {
 
     hover: false,
     draggedOver: false,
-
-    showColour: false,
-    colourPicker: null,
   }),
 
   props: {
@@ -85,16 +82,6 @@ export default {
       return `event-${this.eventId === undefined ? 'new': this.eventId}`
     },
 
-    style() {
-      var colour = toColor(this.colour)
-      colour = colour ? colour.darken(0.5) : defaultColour
-      if (this.hover) colour = colour.lighten(0.5)
-      
-      return {
-        "background-color": colour.string(),
-      }
-    },
-
     prevDragSpellTime() {
       if (!this.draggedAssign || !this.time) return
       const assign = this.$store.state.assigns.assigns[this.draggedAssign.assignId]
@@ -112,14 +99,32 @@ export default {
     showActions() {
       return this.hover && this.eventId !== undefined && !this.draggedAssign
     },
-
-    swatches() {
-      return this.$store.getters["events/allEventColours"].map(c => [c])
-    },
   },
 
   methods: {
-    toRGBA,
+    style(col) {
+      const s = {}
+
+      if (this.colour) {
+        s["border-top-color"] = toColor(this.colour).string()
+      }
+
+      switch (col) {
+        case 'time':
+          if (this.colour) {
+            s["border-left"] = `2px solid ${toColor(this.colour).string()}`
+          }
+          break;
+
+        case 'assignments':
+          if (this.colour) {
+            s["border-right"] = `2px solid ${toColor(this.colour).string()}`
+          }
+          break;
+      }
+      
+      return s
+    },
 
     clone() {
       let label = this.label
@@ -131,8 +136,7 @@ export default {
     },
 
     clear() {
-      const event = this.$store.state.events.events[this.eventId]
-      this.$store.commit('events/set', {...event, assignments: []})
+      this.assignments = []
     },
 
     remove() {
@@ -148,6 +152,9 @@ export default {
 };
 </script>
 <style>
+.v-data-table .event td {
+  border-top: 2px solid rgba(255,255,255,0);
+}
 
 .v-data-table td.event-time {
   padding-left: 8px;
@@ -159,7 +166,7 @@ export default {
 }
 
 .v-data-table td.event-label {
-  border-right: solid 1px rgba(255, 255, 255, 0.3);
+  border-right: 2px solid rgba(255, 255, 255, 0.3);
   white-space: nowrap;
   padding-left: 8px;
   padding-right: 8px;

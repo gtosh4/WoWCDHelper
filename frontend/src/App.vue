@@ -2,7 +2,7 @@
   <v-app>
     <v-content>
       <v-container fluid>
-        <v-row>
+        <v-row no-gutters>
           <Planner />
           <Cooldowns />
         </v-row>

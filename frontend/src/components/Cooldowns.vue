@@ -1,25 +1,19 @@
 <template>
-<v-col shrink id="cd-palette"><v-card outlined tile>
+<v-col cols="auto" id="cd-palette"><v-card outlined tile>
+  <v-list>
+    <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="player-container">
+      <v-card outlined tile >
+        <PlayerAssignee :assignId="player.id" />
+        <v-list>
+          <v-list-item v-for="(spell, i) in playerSpells[player.id]" :key="i">
+            <SpellAssignee :assignId="spell.id" />
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-list-item>
+  </v-list>
+
   <v-row>
-    <v-col>
-
-      <v-list class="pb-0">
-        <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="assignee">
-          <v-card outlined tile width="100%" >
-            <Assignee :assignId="player.id" />
-            <v-list>
-              <v-list-item v-for="(spell, i) in playerSpells[player.id]" :key="i" class="px-0">
-                <Assignee :assignId="spell.id" />
-              </v-list-item>
-            </v-list>
-          </v-card>
-        </v-list-item>
-      </v-list>
-
-    </v-col>
-  </v-row>
-
-  <v-row wrap>
     <v-col xs12 class="pa-1">
       <v-card outlined tile>
         <v-chip
@@ -47,7 +41,7 @@
     </v-col>
   </v-row>
 
-  <v-row wrap>
+  <v-row>
     <v-col xs12 class="pa-1">
       <v-card outlined tile>
       <v-chip
@@ -97,7 +91,8 @@
 </v-card></v-col>
 </template>
 <script>
-import Assignee from './Assignee'
+import SpellAssignee from './SpellAssignee'
+import PlayerAssignee from './PlayerAssignee'
 import WowIcon from './WowIcon'
 
 import { mapGetters } from 'vuex'
@@ -199,33 +194,25 @@ export default {
   },
 
   components: {
-    Assignee,
+    SpellAssignee,
+    PlayerAssignee,
     WowIcon,
   },
 };
 </script>
 <style>
-#cd-palette {
-  padding: 0 0 0 4px;
-  min-width: 400px;
-  max-width: 650px;
-}
 .v-list-item.player-select {
   min-height: 20px;
   padding-left: 4px;
   padding-right: 4px;
 }
-.v-list-item.assignee {
-  min-height: 20px;
-  padding-left: 4px;
-  padding-right: 4px;
-  margin-bottom: 4px;
-}
-.v-list-item.assignee .v-list {
+
+.v-list-item.player-container .v-list {
   padding-left: 28px;
   padding-right: 28px;
 }
-.v-list-item.assignee .v-list-item {
+
+.v-list-item.player-container .v-list-item {
   min-height: 20px;
   padding-left: 4px;
   margin-bottom: 4px;

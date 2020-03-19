@@ -39,7 +39,7 @@ export default {
   },
 
   mounted() {
-    const chip = this.$el.querySelector(".assignment > .v-chip")
+    const chip = this.$el
     const handle = chip.querySelector(".handle")
 
     handle.onmousedown = () => {
@@ -86,7 +86,7 @@ export default {
     },
 
     chipClass() {
-      return this.spell != null ? "spell" : "player"
+      return [this.spell != null ? "spell" : "player", "ma-0"]
     }
   },
 
