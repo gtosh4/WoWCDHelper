@@ -2,10 +2,10 @@
   <v-app>
     <v-content>
       <v-container fluid>
-        <v-layout>
+        <v-row>
           <Planner />
           <Cooldowns />
-        </v-layout>
+        </v-row>
       </v-container>
     </v-content>
   </v-app>

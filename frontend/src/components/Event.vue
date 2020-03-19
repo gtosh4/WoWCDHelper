@@ -9,85 +9,35 @@
   </td>
 
   <td class="event-assignments">
-    <v-dialog persistent v-model="showColour" @keydown.esc.stop="showColour = false" max-width="300px">
-      <v-card tile>
-        <v-color-picker v-model="colourPicker" :swatches="swatches" show-swatches flat hide-mode-switch />
-
-        <v-card-actions>
-          <v-btn @click="showColour = false; colour = null">Clear</v-btn>
-          <v-spacer />
-          <v-btn @click="showColour = false">Discard</v-btn>
-          <v-btn @click="colour = colourPicker; showColour = false">Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-container pa-0 ma-0 justify-start>
-      <v-layout>
-        <v-flex v-if="eventId !== undefined"
-          grow
-          class="assignments"
-          @drop="handleDrop"
-          @dragover.prevent="handleDragOver"
-          @dragleave.prevent="handleDragLeave"
-        >
-          <v-layout>
-            <Assignment :eventId="eventId" :index="index" v-for="(assign, index) in assignments" :key="index" class="mr-1" />
-            <InsertAssignment v-if="draggedOver" />
-          </v-layout>
-        </v-flex>
-
-        <v-flex v-if="showActions" shrink>
-          <v-tooltip top>
-            <template #activator="{ on }">
-              <v-btn v-on="on" @click.stop="colourPicker = colour ? colour : toRGBA(defaultColour); showColour = true" tile x-small icon>
-                <v-icon>mdi-palette</v-icon>
-              </v-btn>
-            </template>
-            <span>Set Colour</span>
-          </v-tooltip>
-
-          <v-tooltip top>
-            <template #activator="{ on }">
-              <v-btn tile x-small icon tabindex="-1" @click="clone" v-on="on">
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
-            </template>
-            <span>Copy</span>
-          </v-tooltip>
-
-          <v-tooltip top>
-            <template #activator="{ on }">
-              <v-btn tile x-small icon tabindex="-1" @click="clear" v-on="on">
-                <v-icon>mdi-backspace</v-icon>
-              </v-btn>
-            </template>
-            <span>Clear assignments</span>
-          </v-tooltip>
-
-          <v-tooltip top>
-            <template #activator="{ on }">
-              <v-btn tile x-small icon tabindex="-1" @click="remove" v-on="on">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </template>
-            <span>Delete row</span>
-          </v-tooltip>
-        </v-flex>
-
-      </v-layout>
-      <v-layout style="height: 4px" />
-    </v-container>
+    <v-row no-gutters>
+      <v-col>
+        <AssignmentGroup v-if="eventId !== undefined"
+          :eventId="eventId"
+        />
+      </v-col>
+      <v-col align-right cols="auto">
+        <v-container pa-0 ma-0 fill-height>
+          <EventActions v-if="showActions"
+            class="event-actions"
+            @clone="clone"
+            @clear="clear"
+            @remove="remove"
+            @colour="colourPicker = colour ? colour : toRGBA(defaultColour); showColour = true"
+          />
+        </v-container>
+      </v-col>
+    </v-row>
   </td>
 </tr>
 </template>
 <script>
-import Assignment from './Assignment'
 import EventTextField from './EventTextField'
-import InsertAssignment from './InsertAssignment'
+import EventActions from './EventActions'
+import AssignmentGroup from './AssignmentGroup'
 
 import moment from 'moment'
 import Color from 'color'
-import { eventProps, dragAssignProps } from '../store/utils'
+import { eventProps } from '../store/utils'
 import {toColor, toRGBA} from './colour_utils'
 import {formatDuration} from './duration_utils'
 
@@ -116,7 +66,6 @@ export default {
 
   computed: {
     ...eventProps(['time', 'label', 'assignments', 'colour']),
-    ...dragAssignProps(),
 
     timeStr: {
       get() {
@@ -172,44 +121,6 @@ export default {
   methods: {
     toRGBA,
 
-    handleDragOver(event) {
-      if (!this.draggedAssign) return
-
-      if (this.draggedAssign.sourceId) {
-        event.dataTransfer.dropEffect = "move"
-      } else {
-        event.dataTransfer.dropEffect = "link"
-      }
-      const isNewAssignment = this.draggedAssign.sourceId === undefined
-      const isSameEvent = !isNewAssignment && this.draggedAssign.sourceId == this.eventId
-      const isReorder = +this.draggedAssign.sourceIndex < this.assignments.length-1
-
-      if (isNewAssignment || !isSameEvent || !isReorder) {
-        this.draggedOver = true
-      }
-    },
-
-    handleDragLeave() {
-      this.draggedOver = false
-    },
-
-    handleDrop(event) {
-      if (!this.draggedAssign) return
-
-      event.preventDefault()
-      event.stopPropagation();
-
-      if (this.draggedAssign.sourceId !== undefined && this.draggedAssign.sourceIndex !== undefined) {
-        this.$store.commit('events/moveAssignment', {
-          from: {id: this.draggedAssign.sourceId, index: this.draggedAssign.sourceIndex},
-          to: {id: this.eventId, index: this.assignments.length}
-        })
-      } else {
-        this.$store.commit('events/addAssignment', {id: this.eventId, assignId: this.draggedAssign.assignId})
-      }
-      this.draggedOver = false
-    },
-
     clone() {
       let label = this.label
       const num = label.match(endingNum)
@@ -230,33 +141,29 @@ export default {
   },
 
   components: {
-    Assignment,
+    AssignmentGroup,
     EventTextField,
-    InsertAssignment,
+    EventActions,
   },
 };
 </script>
 <style>
-.v-data-table td.event-actions {
-  padding-left: 4px;
-  padding-right: 4px;
-}
 
 .v-data-table td.event-time {
   padding-left: 8px;
   padding-right: 8px;
-  min-width: 60px;
+  width: 8ch;
 }
 .v-data-table td.event-time input {
   text-align: end;
 }
 
 .v-data-table td.event-label {
-  border-right: solid 1px rgba(255, 255, 255, 0.12);
+  border-right: solid 1px rgba(255, 255, 255, 0.3);
   white-space: nowrap;
   padding-left: 8px;
   padding-right: 8px;
-  min-width: 250px;
+  width: 20ch;
 }
 
 .v-data-table td.event-assignments {
@@ -264,16 +171,9 @@ export default {
   padding-right: 8px;
 }
 
-.assignments {
-  flex-grow: 1;
-  min-height: 32px;
+.v-data-table td.event-assignments .event-actions {
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
-.drag-on-cd {
-  background-color: rgba(128, 25, 35, 0.8);
-}
-
-.drag-off-cd {
-  background-color: rgba(102, 128, 103, 0.8);
-}
 </style>

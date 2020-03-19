@@ -1,42 +1,20 @@
 <template>
-<v-flex shrink
-  @drop="handleDrop"
-  @dragover.prevent="handleDragOver"
-  @dragleave.prevent="handleDragLeave"
-  class="assignment"
+<v-chip
+  label
+  :close="showHover"
+  @mouseenter="hover = true"
+  @mouseleave="hover = false"
+  :class="chipClass"
+  :color="classColour"
+  @click:close="remove"
 >
-  <InsertAssignment v-if="draggedOver" />
-  <v-chip
-    v-if="!spell"
-    label
-    :close="showHover"
-    @mouseenter="hover = true"
-    @mouseleave="hover = false"
-    class="player"
-    :color="classColour"
-    @click:close="remove"
-  >
-    <v-icon class="handle" :style="{display: showHover ? '' : 'none'}">mdi-drag</v-icon>
-    <span>{{ name }}</span>
-  </v-chip>
-  <v-chip
-    v-else
-    label
-    :close="showHover"
-    @mouseenter="hover = true"
-    @mouseleave="hover = false"
-    class="spell"
-    :color="classColour"
-    @click:close="remove"
-  >
-    <v-icon class="handle" :style="{display: showHover ? '' : 'none'}">mdi-drag</v-icon>
-    <span>{{player.name}} <Spell :spell="spell" :showname="false" /></span>
-  </v-chip>
-</v-flex>
+  <v-icon v-if="moveable" class="handle" :style="{display: showHover ? '' : 'none'}">mdi-drag</v-icon>
+  <span v-if="spell">{{ player.name }} <Spell :spell="spell" :showname="false" /></span>
+  <span v-else>{{ name }}</span>
+</v-chip>
 </template>
 <script>
 import Spell from './Spell'
-import InsertAssignment from './InsertAssignment'
 
 import Color from 'color'
 import {classes, classIcon, specIcon, spec} from './wow_info'
@@ -106,6 +84,10 @@ export default {
     showHover() {
       return this.moveable && this.hover && !this.draggedOver
     },
+
+    chipClass() {
+      return this.spell != null ? "spell" : "player"
+    }
   },
 
   methods: {
@@ -158,7 +140,6 @@ export default {
 
   components: {
     Spell,
-    InsertAssignment,
   },
 };
 </script>

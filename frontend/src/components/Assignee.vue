@@ -1,5 +1,5 @@
 <template>
-<v-layout class="assignee">
+<v-row class="assignee">
   <v-chip v-if="!spell" label :color="classColour" class="player" >
     <v-icon class="handle">mdi-drag</v-icon>
     <WowIcon :className="className" />
@@ -54,7 +54,7 @@
     </template>
     <span>Delete</span>
   </v-tooltip>
-</v-layout>
+</v-row>
 </template>
 <script>
 import WowIcon from './WowIcon'

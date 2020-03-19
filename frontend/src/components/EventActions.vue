@@ -1,0 +1,48 @@
+<template>
+<v-btn-toggle group>
+  <v-tooltip top>
+    <template #activator="{ on }">
+      <v-btn v-on="on" @click.stop="$emit('colour')" tile x-small icon>
+        <v-icon>mdi-palette</v-icon>
+      </v-btn>
+    </template>
+    <span>Set Colour</span>
+  </v-tooltip>
+
+  <v-tooltip top>
+    <template #activator="{ on }">
+      <v-btn tile x-small icon tabindex="-1" @click="$emit('clone')" v-on="on">
+        <v-icon>mdi-content-copy</v-icon>
+      </v-btn>
+    </template>
+    <span>Copy</span>
+  </v-tooltip>
+
+  <v-tooltip top>
+    <template #activator="{ on }">
+      <v-btn tile x-small icon tabindex="-1" @click="$emit('clear')" v-on="on">
+        <v-icon>mdi-backspace</v-icon>
+      </v-btn>
+    </template>
+    <span>Clear assignments</span>
+  </v-tooltip>
+
+  <v-tooltip top>
+    <template #activator="{ on }">
+      <v-btn tile x-small icon tabindex="-1" @click="$emit('remove')" v-on="on">
+        <v-icon>mdi-delete</v-icon>
+      </v-btn>
+    </template>
+    <span>Delete row</span>
+  </v-tooltip>
+</v-btn-toggle>
+</template>
+<script>
+export default {
+  data: () => ({}),
+
+  props: {
+    
+  }
+}
+</script>

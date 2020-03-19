@@ -1,7 +1,7 @@
 <template>
-<v-flex shrink id="cd-palette"><v-card outlined tile>
-  <v-layout>
-    <v-flex>
+<v-col shrink id="cd-palette"><v-card outlined tile>
+  <v-row>
+    <v-col>
 
       <v-list class="pb-0">
         <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="assignee">
@@ -16,11 +16,11 @@
         </v-list-item>
       </v-list>
 
-    </v-flex>
-  </v-layout>
+    </v-col>
+  </v-row>
 
-  <v-layout wrap>
-    <v-flex xs12 class="pa-1">
+  <v-row wrap>
+    <v-col xs12 class="pa-1">
       <v-card outlined tile>
         <v-chip
           label
@@ -28,10 +28,10 @@
           @click="expanded = {...expanded, healers: !expanded['healers']}"
           style="width: 100%"
         >
-          <v-layout align-center fill-height>
+          <v-row align-center fill-height>
             <span class="mx-1">healers</span>
             <v-icon :class="expandedClass(expanded['healers'])">$vuetify.icons.expand</v-icon>
-          </v-layout>
+          </v-row>
         </v-chip>
 
         <v-list v-if="expanded['healers']">
@@ -44,11 +44,11 @@
           </v-list-item>
         </v-list>
       </v-card>
-    </v-flex>
-  </v-layout>
+    </v-col>
+  </v-row>
 
-  <v-layout wrap>
-    <v-flex xs12 class="pa-1">
+  <v-row wrap>
+    <v-col xs12 class="pa-1">
       <v-card outlined tile>
       <v-chip
         label
@@ -56,23 +56,23 @@
         @click="expanded = {...expanded, all: !expanded['all']}"
         style="width: 100%"
       >
-        <v-layout align-center fill-height>
+        <v-row align-center fill-height>
           <span class="mx-1">all</span>
           <v-icon :class="expandedClass(expanded['all'])">$vuetify.icons.expand</v-icon>
-        </v-layout>
+        </v-row>
       </v-chip>
-      <v-container v-if="expanded.all" grid-list-sm><v-layout wrap>
-        <v-flex v-for="(classInfo, className) in classes" :key="className" class="pa-1">
+      <v-container v-if="expanded.all" grid-list-sm><v-row wrap>
+        <v-col v-for="(classInfo, className) in classes" :key="className" class="pa-1">
             <v-chip
               label
               :text-color="classColour(className)"
               color="transparent"
               style="width: 100%"
             >
-              <v-layout align-center fill-height>
+              <v-row align-center fill-height>
                 <WowIcon :className="className" />
                 <span class="mx-1">{{ className }}</span>
-              </v-layout>
+              </v-row>
             </v-chip>
             <v-list>
               <v-list-item class="player-select">
@@ -88,13 +88,13 @@
                 <span :style="{color: classColour(className)}" class="mx-1">{{ specName }}</span>
               </v-list-item>
             </v-list>
-        </v-flex>
-      </v-layout></v-container>
+        </v-col>
+      </v-row></v-container>
       </v-card>
-    </v-flex>
-  </v-layout>
+    </v-col>
+  </v-row>
 
-</v-card></v-flex>
+</v-card></v-col>
 </template>
 <script>
 import Assignee from './Assignee'
@@ -229,8 +229,5 @@ export default {
   min-height: 20px;
   padding-left: 4px;
   margin-bottom: 4px;
-}
-.v-list-item.assignee .player,.spell {
-  width: 100%;
 }
 </style>

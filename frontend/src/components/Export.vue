@@ -6,9 +6,9 @@
     </v-tab>
   </v-tabs>
 
-  <v-layout>
+  <v-row>
     <v-checkbox v-model="ignoreEmpty" label="Ignore Empty" />
-  </v-layout>
+  </v-row>
 
   <v-select v-if="tab == 'ertp'" v-model="selectedPlayer" :items="players" clearable dense label="Select a Player" class="mx-2" />
 

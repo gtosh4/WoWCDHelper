@@ -21,7 +21,7 @@ export default {
     headers: [
         { text: 'Time',        value: 'time',    align: 'right' },
         { text: 'Label',       value: 'label',   align: 'left'  },
-        { text: 'Assignments', value: 'assigns', align: 'left',  width: '100%' },
+        { text: 'Assignments', value: 'assigns', align: 'left'  },
     ],
   }),
 

@@ -1,5 +1,5 @@
 <template>
-<v-flex py-0 id="cd-planner"><v-card outlined tile>
+<v-col py-0 id="cd-planner"><v-card outlined tile>
   <v-card-title class="pa-1"><v-toolbar dense flat>
     <v-toolbar-title>
       <v-text-field
@@ -81,7 +81,7 @@
       <Export @close="showExport = false" />
     </v-dialog>
   </v-card-actions>
-</v-card></v-flex>
+</v-card></v-col>
 </template>
 <script>
 import EventsTable from './EventsTable'

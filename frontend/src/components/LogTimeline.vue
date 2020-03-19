@@ -1,6 +1,6 @@
 <template>
 <v-card outlined tile>
-  <v-layout>
+  <v-row>
     <v-text-field
       v-model="logURL"
       :loading="loading"
@@ -16,7 +16,7 @@
       <v-icon @click="loadLog">mdi-send</v-icon>
     </template>
     </v-text-field>
-  </v-layout>
+  </v-row>
   <svg :viewBox="`0 0 ${width} ${height}`">
     <g :transform="`translate(${margin.left}, ${margin.top})`" id="chart">
       <g ref="hpaxis" />
@@ -37,11 +37,11 @@
     </g>
   </svg>
   <v-container ma-0 pa-0 justify-start align-start class="timeline-events">
-    <v-layout row justify-start align-start ma-0>
-      <v-layout v-for="event in events" :key="event.id" column justify-start align-start>
+    <v-row row justify-start align-start ma-0>
+      <v-row v-for="event in events" :key="event.id" column justify-start align-start>
         <Assignment v-for="(assign, index) in event.assignments" :key="index" :eventId="event.id" :index="index" :moveable="false" />
-      </v-layout>
-    </v-layout>
+      </v-row>
+    </v-row>
   </v-container>
 </v-card>
 </template>
