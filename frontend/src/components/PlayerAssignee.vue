@@ -124,3 +124,15 @@ export default {
   }
 }
 </script>
+<style>
+.player.assignee {
+  width: 100%;
+}
+.player.assignee .v-chip__content {
+  width: 100%;
+}
+
+.player.assignee .handle {
+  cursor: grab;
+}
+</style>

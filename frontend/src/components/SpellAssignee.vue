@@ -1,9 +1,9 @@
 <template>
 <v-chip label :color="classColour" class="spell assignee">
   <v-icon class="handle">mdi-drag</v-icon>
-  <span class="mr-1">{{ assignmentCount }}</span>
+  <span>{{ assignmentCount }}</span>
   <Spell :spell="spell" />
-  <v-btn-toggle group>
+  <v-btn-toggle group class="actions">
     <v-tooltip top>
       <template #activator="{ on }">
         <v-btn tile small icon tabindex="-1" @click="$emit('config')" v-on="on">
@@ -34,10 +34,7 @@
 
 </template>
 <script>
-import WowIcon from './WowIcon'
 import Spell from './Spell'
-import SpellSettings from './SpellSettings'
-import PlayerSettings from './PlayerSettings'
 
 import Color from 'color'
 import {classes, classIcon, specIcon, spec} from './wow_info'
@@ -125,6 +122,10 @@ export default {
   width: 100%;
 }
 
+.spell.assignee span {
+  margin-right: 4px;
+}
+
 .spell.assignee .v-chip__content {
   width: 100%;
 }
@@ -133,7 +134,7 @@ export default {
   width: 100%;
 }
 
-.v-chip .handle {
+.spell.assignee .handle {
   cursor: grab;
 }
 </style>
