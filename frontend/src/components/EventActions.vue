@@ -2,7 +2,7 @@
 <v-btn-toggle group>
   <v-tooltip top>
     <template #activator="{ on }">
-      <v-btn v-on="on" @click.stop="$emit('config')" tile small icon>
+      <v-btn tile small icon tabindex="-1" @click="$emit('config')" v-on="on">
         <v-icon>mdi-settings</v-icon>
       </v-btn>
     </template>

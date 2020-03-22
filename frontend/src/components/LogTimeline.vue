@@ -1,6 +1,6 @@
 <template>
 <v-card outlined tile>
-  <v-row>
+  <v-card-title>
     <v-text-field
       v-model="logURL"
       :loading="loading"
@@ -16,8 +16,8 @@
       <v-icon @click="loadLog">mdi-send</v-icon>
     </template>
     </v-text-field>
-  </v-row>
-  <svg :viewBox="`0 0 ${width} ${height}`">
+  </v-card-title>
+  <svg :viewBox="`0 0 ${width} ${height+assigmentsMaxHeight}`" class="log-timeline">
     <g :transform="`translate(${margin.left}, ${margin.top})`" id="chart">
       <g ref="hpaxis" />
       <g ref="dtpsaxis" />
@@ -27,22 +27,34 @@
       <path :d="dtpsLine" fill="none" stroke="crimson" stroke-width="2" />
       <path v-if="showHealing" :d="hpsLine" fill="none" stroke="springgreen" stroke-width="2" />
 
-      <line v-for="event in events" :key="event.id"
-        :x1="xForEvent(event)" :x2="xForEvent(event)"
-        y1="0" :y2="height"
-        stroke-width="1.5"
-        :stroke="colourForEvent(event)"
-        :id="`line-event-${event.id}`"
-      />
+      <g v-for="event in events" :key="event.id" :transform="`translate(${xForEvent(event)}, 0)`">
+        <line 
+          :x1="0" :x2="0"
+          y1="0" :y2="height"
+          stroke-width="1.5"
+          :stroke="colourForEvent(event)"
+          :id="`line-event-${event.id}`"
+        />
+        <text
+          :x="-height/2"
+          :y="-4"
+          :fill="colourForEvent(event)"
+          transform="rotate(-90)"
+          class="label-text"
+          text-anchor="middle"
+        >
+          {{ event.label || "" }}
+        </text>
+        <g :transform="`translate(${-(assignImageSize/2)}, ${assignmentsTopMargin})`">
+          <image v-for="(assign, index) in event.assignments" :key="index"
+            x="0" :y="index * (assignImageSize+1)"
+            :height="`${assignImageSize}px`" :width="`${assignImageSize}px`"
+            :href="imageForAssign(assign)"
+          />
+        </g>
+      </g>
     </g>
   </svg>
-  <v-container ma-0 pa-0 justify-start align-start class="timeline-events">
-    <v-row row justify-start align-start ma-0>
-      <v-row v-for="event in events" :key="event.id" column justify-start align-start>
-        <Assignment v-for="(assign, index) in event.assignments" :key="index" :eventId="event.id" :index="index" :moveable="false" />
-      </v-row>
-    </v-row>
-  </v-container>
 </v-card>
 </template>
 <script>
@@ -55,11 +67,13 @@ import Color from 'color'
 import { BackendAPI } from '../api/backend'
 import { toColor } from './colour_utils';
 import {formatDuration} from './duration_utils'
+import {spells, spec, specIcon, classIcon} from './wow_info'
 
 const defaultColour = Color('rgb(200, 200, 200)')
 const backend = new BackendAPI()
 
-const logURLParse = /reports\/(\w+)#.*(fight=(\d+))/
+const reReportPath = /reports\/(\w+)/
+const reFightHash = /fight=(\d+)/
 
 function clearChildren(node) {
   while (node.firstChild) {
@@ -72,6 +86,7 @@ export default {
     margin: {top: 10, right: 50, bottom: 30, left: 50},
     height: 480,
     width: 1280,
+    assignImageSize: 18,
 
     hpAxis: null,
     dtpsAxis: null,
@@ -124,6 +139,14 @@ export default {
 
     events() {
       return this.$store.getters['events/orderedEvents']
+    },
+
+    assigmentsMaxHeight() {
+      return this.events.reduce((max, event) => max > event.assignments.length ? max : event.assignments.length, 0) * this.assignImageSize
+    },
+
+    assignmentsTopMargin() {
+      return (this.xAxis != null ? this.xAxis.attr('height') : 0) + 4 + this.height
     },
 
     x() {
@@ -239,11 +262,15 @@ export default {
     },
 
     loadLog() {
-      const match = (this.logURL || '').match(logURLParse)
-      if (!match) return
-      const [, id, , fight] = match
+      const url = new URL(this.logURL)
+      if (url === undefined || url.hostname != "www.warcraftlogs.com") return
+
+      const [, report] = url.pathname.match(reReportPath)
+      const [, fight] = url.hash.match(reFightHash)
+      if (report == null || fight == null) return
+
       this.loading = true
-      backend.getRaidHealth(id, fight)
+      backend.getRaidHealth(report, fight)
         .then(d => {
           this.loading = false
           this.raidHealth = [...d.map(d => {
@@ -253,11 +280,38 @@ export default {
             }
           })]
         })
-        .catch(e => console.log("getRaidHealth error", {e, match, id, fight}))
+        .catch(e => {
+          this.loading = false
+          console.log("getRaidHealth error", {e, report, fight})
+        })
     },
 
     validateLogURL() {
-      return !!this.logURL && (!!this.logURL.match(logURLParse) || 'URL does not contain log id and fight number')
+      if (this.logURL == null || this.logURL == "") return true
+
+      const url = new URL(this.logURL)
+      if (url === undefined || url.hostname != "www.warcraftlogs.com") return `${url ? url.hostname : ''} not a warcraftlogs URL`
+
+      const [report] = url.pathname.match(reReportPath)
+      const [fight] = url.hash.match(reFightHash)
+
+      if (report == null || fight == null) return 'URL does not contain log id and fight number'
+
+      return true
+    },
+
+    imageForAssign(assignId) {
+      const assign = this.$store.state.assigns.assigns[assignId]
+      if (assign.spell != undefined) {
+        const spell = spells[assign.spell.id]
+        return spell != undefined ? spell.icon : ''
+      }
+      if (assign.className && assign.specName) {
+        return specIcon(spec(assign.className, assign.specName))
+      }
+      if (assign.className) {
+        return classIcon(assign.className)
+      }
     },
   },
 
@@ -267,10 +321,14 @@ export default {
 };
 </script>
 <style>
-.timeline-events .assignment {
-  margin-bottom: 4px;
-}
 .logUrlInput {
   min-height: 0px;
+}
+.log-timeline .label-text {
+    paint-order: stroke;
+    stroke: black;
+    stroke-width: 1px;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
 }
 </style>

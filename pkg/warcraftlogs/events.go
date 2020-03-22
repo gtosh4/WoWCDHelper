@@ -92,6 +92,7 @@ func (c *Client) getEventsInternal(code string, fight *fight.Fight, filter strin
 		log.Infof("[page %d] %.2f%% events completed (%d / %d) next: %d", pages, pct*100, current, total, evPage.NextPageTimestamp)
 	}
 
+	log.Infof("Fetching events using start %d to end %d", fight.StartTime, fight.EndTime)
 	query := make(url.Values)
 	query.Set("end", fmt.Sprintf("%d", end))
 	if filter != "" {
@@ -109,6 +110,7 @@ func (c *Client) getEventsInternal(code string, fight *fight.Fight, filter strin
 			}
 			break
 		}
+		normalizeTimestamps(fight.StartTime, evPage.Events)
 
 		fs = append(fs, evPage.Events...)
 
@@ -119,12 +121,11 @@ func (c *Client) getEventsInternal(code string, fight *fight.Fight, filter strin
 		}
 		start = evPage.NextPageTimestamp
 	}
-	normalizeTimestamps(fight.StartTime, fs)
 	return
 }
 
 func normalizeTimestamps(startTime int64, evts []events.Event) {
-	for _, ev := range evts {
-		ev.Time -= startTime
+	for i := range evts {
+		evts[i].Time -= startTime
 	}
 }

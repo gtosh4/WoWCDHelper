@@ -9,8 +9,7 @@
   @click:close="remove"
 >
   <v-icon v-if="moveable" class="handle" :style="{display: showHover ? '' : 'none'}">mdi-drag</v-icon>
-  <span v-if="spell">{{ player.name }} <Spell :spell="spell" :showname="false" /></span>
-  <span v-else>{{ name }}</span>
+  <span class="assignment-content">{{ spell ? name : player.name }}<Spell v-if="spell" :spell="spell" :showname="false" /></span>
 </v-chip>
 </template>
 <script>
@@ -42,24 +41,26 @@ export default {
     const chip = this.$el
     const handle = chip.querySelector(".handle")
 
-    handle.onmousedown = () => {
-      chip.setAttribute('draggable', 'true')
-    }
-    handle.onmouseup = () => {
-      chip.setAttribute('draggable', 'false')
-    }
-
-    chip.ondragstart = (e) => {
-      e.dataTransfer.setData("assignId", this.assignId)
-      this.draggedAssign = {
-        assignId: this.assignId,
-        sourceId: this.eventId,
-        sourceIndex: this.index,
+    if (handle != null) {
+      handle.onmousedown = () => {
+        chip.setAttribute('draggable', 'true')
       }
-    }
-    chip.ondragend = () => {
-      chip.setAttribute('draggable', 'false')
-      this.draggedAssign = null
+      handle.onmouseup = () => {
+        chip.setAttribute('draggable', 'false')
+      }
+
+      chip.ondragstart = (e) => {
+        e.dataTransfer.setData("assignId", this.assignId)
+        this.draggedAssign = {
+          assignId: this.assignId,
+          sourceId: this.eventId,
+          sourceIndex: this.index,
+        }
+      }
+      chip.ondragend = () => {
+        chip.setAttribute('draggable', 'false')
+        this.draggedAssign = null
+      }
     }
   },
 
@@ -86,7 +87,7 @@ export default {
     },
 
     chipClass() {
-      return [this.spell != null ? "spell" : "player", "ma-0"]
+      return [this.spell != null ? "spell" : "player", "assignment"]
     }
   },
 
@@ -98,44 +99,6 @@ export default {
     remove() {
       this.$store.commit('events/removeAssignment', {id: this.eventId, index: this.index})
     },
-
-    handleDragOver(event) {
-      if (!this.draggedAssign) return
-      event.stopPropagation()
-      
-
-      if (this.draggedAssign.sourceId !== undefined) {
-        const isSameEvent = this.draggedAssign.sourceId == this.eventId
-        const isReorder = this.draggedAssign.sourceIndex == this.index || +this.draggedAssign.sourceIndex+1 == this.index
-        if (isSameEvent && isReorder) return
-
-        event.dataTransfer.dropEffect = "move"
-      } else {
-        event.dataTransfer.dropEffect = "link"
-      }
-      this.draggedOver = true
-    },
-
-    handleDragLeave() {
-      this.draggedOver = false
-    },
-
-    handleDrop(event) {
-      if (!this.draggedAssign) return
-
-      event.preventDefault()
-      event.stopPropagation();
-
-      if (this.draggedAssign.sourceId !== undefined && this.draggedAssign.sourceIndex !== undefined) {
-        this.$store.commit('events/moveAssignment', {
-          from: {id: this.draggedAssign.sourceId, index: this.draggedAssign.sourceIndex},
-          to: {id: this.eventId, index: this.index}
-        })
-      } else {
-        this.$store.commit('events/addAssignment', {id: this.eventId, assignId: this.draggedAssign.assignId, index: this.index})
-      }
-      this.draggedOver = false
-    },
   },
 
   components: {
@@ -144,17 +107,11 @@ export default {
 };
 </script>
 <style>
-.assignment {
-  padding: 0 0 0 0;
-  margin: 0 0 0 0;
-  display: inline-flex;
-}
-.assignment .v-chip {
-  margin-left: 4px;
-  margin-right: 0px;
-}
-
 .assignment .handle {
   cursor: grab;
 }
+
+/* .assignment .assignment-content {
+  pointer-events: none;
+} */
 </style>

@@ -45,7 +45,9 @@
     </v-tab-item>
 
     <v-tab-item value="timeline">
-      <LogTimeline />
+      <v-lazy>
+        <LogTimeline />
+      </v-lazy>
     </v-tab-item>
 
   </v-tabs-items>

@@ -42,7 +42,6 @@ import {assignProps, dragAssignProps, player, spell} from '../store/utils'
 
 export default {
   data: () => ({
-    showSettings: false,
     nameTmp: "",
   }),
 

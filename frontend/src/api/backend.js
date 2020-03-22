@@ -9,7 +9,7 @@ export class BackendAPI{
   }
 
   async getRaidHealth(code, fight) {
-    const response = await this.axios.get(`/${code}/${fight}/raid_health`)
+    const response = await this.axios.get(`/${code}/${fight}/raid_health`, {timeout: 60000})
     return response.data
   }
 }

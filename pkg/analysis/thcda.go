@@ -2,16 +2,13 @@ package analysis
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
 
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/ctx"
 	"github.com/gtosh4/WoWCDHelper/pkg/warcraftlogs"
@@ -110,15 +107,8 @@ func (t *THCDA) handleGetEvents(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	evFile, err := os.OpenFile(fmt.Sprintf("examples/events_%s_%d.yaml", fd.Code, fd.Num), os.O_RDWR|os.O_CREATE, 0666)
-	if err != nil {
-		fd.Log.WithError(err).Warn("Could not open file")
-	} else {
-		defer evFile.Close()
-		yaml.NewEncoder(evFile).Encode(events)
-	}
-
-	resp.WriteHeader(http.StatusNoContent)
+	resp.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(resp).Encode(events)
 	return
 }
 
@@ -138,8 +128,8 @@ func (t *THCDA) handleGetRaidHealth(resp http.ResponseWriter, req *http.Request)
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(resp).Encode(raidHealth)
 	resp.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(resp).Encode(raidHealth)
 }
 
 func (t *THCDA) handleDamageTaken(resp http.ResponseWriter, req *http.Request) {

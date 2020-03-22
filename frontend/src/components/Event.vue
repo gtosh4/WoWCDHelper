@@ -1,5 +1,5 @@
 <template>
-<tr @mouseenter="hover = true" @mouseleave="hover = false" :id="rowId" class="event">
+<tr :id="rowId" class="event">
   <td class="event-time" :style="style('time')">
     <EventTextField v-model="timeStr" placeholder="0:0" />
   </td>
@@ -17,7 +17,7 @@
       </v-col>
       <v-col align-right cols="auto">
         <v-container pa-0 ma-0 fill-height>
-          <EventActions v-if="showActions"
+          <EventActions v-if="eventId !== undefined"
             class="event-actions"
             @clone="clone"
             @clear="clear"
@@ -36,19 +36,14 @@ import EventActions from './EventActions'
 import AssignmentGroup from './AssignmentGroup'
 
 import moment from 'moment'
-import Color from 'color'
 import { eventProps } from '../store/utils'
 import {toColor} from './colour_utils'
 import {formatDuration} from './duration_utils'
 
 const endingNum = /(\d+)$/
-const defaultColour = Color('rgb(66, 66, 66)')
 
 export default {
   data: () => ({
-    defaultColour,
-
-    hover: false,
     draggedOver: false,
   }),
 
@@ -94,10 +89,6 @@ export default {
       )
       if (events.length == 0) return
       return events[events.length-1].time
-    },
-
-    showActions() {
-      return this.hover && this.eventId !== undefined && !this.draggedAssign
     },
   },
 
@@ -156,16 +147,16 @@ export default {
   border-top: 2px solid rgba(255,255,255,0);
 }
 
-.v-data-table td.event-time {
+.v-data-table .event td.event-time {
   padding-left: 8px;
   padding-right: 8px;
   width: 8ch;
 }
-.v-data-table td.event-time input {
+.v-data-table .event td.event-time input {
   text-align: end;
 }
 
-.v-data-table td.event-label {
+.v-data-table .event td.event-label {
   border-right: 2px solid rgba(255, 255, 255, 0.3);
   white-space: nowrap;
   padding-left: 8px;
@@ -173,14 +164,19 @@ export default {
   width: 20ch;
 }
 
-.v-data-table td.event-assignments {
+.v-data-table .event td.event-assignments {
   padding-left: 8px;
   padding-right: 8px;
 }
 
-.v-data-table td.event-assignments .event-actions {
+.v-data-table .event td.event-assignments .event-actions {
   padding-left: 4px;
   padding-right: 4px;
+  display: none;
+}
+
+.v-data-table tr:hover.event td.event-assignments .event-actions {
+  display: inherit;
 }
 
 </style>

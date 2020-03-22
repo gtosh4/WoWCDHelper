@@ -7,7 +7,7 @@
     <v-icon :class="expandedClass">$vuetify.icons.expand</v-icon>
     <span>all</span>
   </v-btn>
-  <v-row no-gutters justify="start" :style="{display: expanded ? '' : 'none'}">
+  <v-lazy><v-row no-gutters justify="start" :style="{display: expanded ? '' : 'none'}">
     <v-col v-for="(classInfo, className) in classes" :key="className" cols="4">
       <v-card outlined tile class="add-player-class">
 
@@ -37,7 +37,7 @@
         </v-list>
       </v-card>
     </v-col>
-  </v-row>
+  </v-row></v-lazy>
 </v-card>
 </template>
 <script>

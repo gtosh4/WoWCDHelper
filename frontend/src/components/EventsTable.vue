@@ -35,7 +35,10 @@ export default {
 
   computed: {
     items() {
-      return [...this.$store.getters['events/orderedEvents'], {}]
+      return [
+        ...this.$store.getters['events/orderedEvents'],
+        {}, // Empty event for the "new" row
+      ]
     },
 
     showConfig() {
