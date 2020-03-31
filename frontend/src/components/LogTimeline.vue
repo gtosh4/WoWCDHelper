@@ -29,14 +29,15 @@
 
       <g v-for="event in events" :key="event.id" :transform="`translate(${xForEvent(event)}, 0)`">
         <line 
+          :id="`line-event-${event.id}`"
           :x1="0" :x2="0"
-          y1="0" :y2="height"
+          y1="0" :y2="chartSize.height + xAxisHeight + assignMargin"
           stroke-width="1.5"
           :stroke="colourForEvent(event)"
-          :id="`line-event-${event.id}`"
         />
         <text
-          :x="-height/2"
+          :id="`text-event-${event.id}`"
+          :x="-chartSize.height/2"
           :y="-4"
           :fill="colourForEvent(event)"
           transform="rotate(-90)"
@@ -45,7 +46,7 @@
         >
           {{ event.label || "" }}
         </text>
-        <g :transform="`translate(${-(assignImageSize/2)}, ${assignmentsTopMargin})`">
+        <g :transform="`translate(${-(assignImageSize/2)}, ${xAxisHeight + chartSize.height + assignMargin + 2})`">
           <image v-for="(assign, index) in event.assignments" :key="index"
             x="0" :y="index * (assignImageSize+1)"
             :height="`${assignImageSize}px`" :width="`${assignImageSize}px`"
@@ -87,6 +88,7 @@ export default {
     height: 480,
     width: 1280,
     assignImageSize: 18,
+    assignMargin: 4,
 
     hpAxis: null,
     dtpsAxis: null,
@@ -145,8 +147,9 @@ export default {
       return this.events.reduce((max, event) => max > event.assignments.length ? max : event.assignments.length, 0) * this.assignImageSize
     },
 
-    assignmentsTopMargin() {
-      return (this.xAxis != null ? this.xAxis.attr('height') : 0) + 4 + this.height
+    xAxisHeight() {
+      const node = this.xAxis ? this.xAxis.node() : null
+      return node ? node.getBBox().height : 0
     },
 
     x() {

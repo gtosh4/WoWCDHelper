@@ -152,8 +152,10 @@ func (t *THCDA) RaidHealth(fd *FightData) (RaidHealth, error) {
 			count++
 			hp := ts.m[time.Duration(evstamp)]
 			width := time.Duration(evstamp - prevstamp)
-			cur.Add(width, float64(hp.Current))
-			max.Add(width, float64(hp.Max))
+			if hp.Current > 0 {
+				cur.Add(width, float64(hp.Current))
+				max.Add(width, float64(hp.Max))
+			}
 			healing.Add(width, float64(hp.Healing))
 			damageTaken.Add(width, float64(hp.DamageTaken))
 		}

@@ -74,6 +74,13 @@ func (e *EventsResponse) UnmarshalJSON(msg []byte) error {
 			}
 			evt.Data = &events.Event_Heal{Heal: &data}
 
+		case Types.Death:
+			var data events.Death
+			if err := dec.Unmarshal(buf, &data); err != nil {
+				return err
+			}
+			evt.Data = &events.Event_Death{Death: &data}
+
 		default:
 			var data events.Unknown
 			if err := dec.Unmarshal(buf, &data); err != nil {

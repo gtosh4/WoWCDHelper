@@ -1,0 +1,19 @@
+syntax = "proto3";
+package warcraftlogs.events;
+option go_package = "events";
+
+import "gogoproto/gogo.proto";
+import "common.proto";
+
+option (gogoproto.marshaler_all) = true;
+option (gogoproto.unmarshaler_all) = true;
+option (gogoproto.goproto_getters_all) = false;
+
+message Death {
+  Ability source = 1;
+  bool sourceIsFriendly = 2;
+  int64 targetID = 3;
+  bool targetIsFriendly = 4;
+  Ability ability = 5;
+  Source target = 6;
+}

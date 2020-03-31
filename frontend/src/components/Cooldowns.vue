@@ -1,8 +1,8 @@
 <template>
 <v-col cols="auto" id="cd-palette">
   <PlayerAssigneeGroup />
-  <QuickAddHealer />
-  <AddPlayers />
+  <QuickAddHealer @addPlayer="addPlayer" />
+  <AddPlayers @addPlayer="addPlayer" />
 </v-col>
 </template>
 <script>

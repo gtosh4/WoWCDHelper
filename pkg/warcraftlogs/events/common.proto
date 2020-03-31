@@ -14,10 +14,20 @@ message Ability {
   int64 guid = 2;
   int64 type = 3;
   string abilityIcon = 4;
+  int64 id = 5;
 }
 
 message ClassResources {
   int64 amount = 1;
   int64 max = 2;
   int64 type = 3;
+}
+
+message Source {
+  string name = 1;
+  int64 id = 2;
+  int64 guid = 3;
+  int64 type = 4;
+  string abilityIcon = 5;
+  int64 petOwner = 6;
 }
