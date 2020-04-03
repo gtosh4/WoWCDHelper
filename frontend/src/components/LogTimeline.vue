@@ -59,8 +59,6 @@
 </v-card>
 </template>
 <script>
-import Assignment from './Assignment'
-
 import moment from 'moment'
 import * as d3 from 'd3'
 import Color from 'color'
@@ -319,7 +317,6 @@ export default {
   },
 
   components: {
-    Assignment,
   },
 };
 </script>

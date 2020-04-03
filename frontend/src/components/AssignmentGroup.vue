@@ -68,7 +68,6 @@ export default {
 
       if (!target.matches(".assignment,.assignment *,.insert-assign,.insert-assign *")) {
         this.draggedOver = enter
-        console.log("draggedOver", this.draggedOver)
       }
     },
 
