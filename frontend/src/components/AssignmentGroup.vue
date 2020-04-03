@@ -66,14 +66,6 @@ export default {
         target = target.parentNode
       }
 
-      console.log("drag", {
-        enter,
-        event,
-        target,
-        assignmentDraggedOver: this.assignmentDraggedOver,
-        assignment: target.matches(".assignment,.assignment *"),
-        insert: target.matches(".insert-assign,.insert-assign *")
-      })
       if (!target.matches(".assignment,.assignment *,.insert-assign,.insert-assign *")) {
         this.draggedOver = enter
         console.log("draggedOver", this.draggedOver)
@@ -81,11 +73,13 @@ export default {
     },
 
     handleDrop(index) {
-      console.log('drop', {index, da: this.draggedAssign, eventId: this.eventId, a: this.assignments})
+      if (index == null) {
+        index = this.assignments.length
+      }
       if (this.draggedAssign.sourceId !== undefined && this.draggedAssign.sourceIndex !== undefined) {
         this.$store.commit('events/moveAssignment', {
           from: {id: this.draggedAssign.sourceId, index: this.draggedAssign.sourceIndex},
-          to: {id: this.eventId, index: this.assignments.length}
+          to: {id: this.eventId, index}
         })
       } else {
         this.$store.commit('events/addAssignment', {id: this.eventId, assignId: this.draggedAssign.assignId, index})

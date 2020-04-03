@@ -1,14 +1,17 @@
 <template>
-<tr :id="rowId" class="event">
-  <td class="event-time" :style="style('time')">
+<tr :id="rowId" class="event" :style="rowStyle"
+  @mouseenter="hovered=true"
+  @mouseleave="hovered=false"
+>
+  <td class="event-time" :style="timeSyle">
     <EventTextField v-model="timeStr" placeholder="0:0" />
   </td>
 
-  <td class="event-label" :style="style('label')">
+  <td class="event-label" :style="labelStyle">
     <EventTextField v-model="label" :placeholder="eventId ? 'unnamed' : 'new'" />
   </td>
 
-  <td class="event-assignments" :style="style('assignments')">
+  <td class="event-assignments" :style="assignmentsStyle">
     <v-row no-gutters>
       <v-col>
         <AssignmentGroup v-if="eventId !== undefined"
@@ -45,6 +48,7 @@ const endingNum = /(\d+)$/
 export default {
   data: () => ({
     draggedOver: false,
+    hovered: false,
   }),
 
   props: {
@@ -90,33 +94,43 @@ export default {
       if (events.length == 0) return
       return events[events.length-1].time
     },
-  },
 
-  methods: {
-    style(col) {
+    rowStyle() {
+      const c = this.colour ? toColor(this.colour) : null
+
       const s = {}
-
-      if (this.colour) {
-        s["border-top-color"] = toColor(this.colour).string()
+      if (c != null) {
+        s["background-color"] = c.alpha(this.hovered ? 0.6 : 0.1).string()
       }
-
-      switch (col) {
-        case 'time':
-          if (this.colour) {
-            s["border-left"] = `2px solid ${toColor(this.colour).string()}`
-          }
-          break;
-
-        case 'assignments':
-          if (this.colour) {
-            s["border-right"] = `2px solid ${toColor(this.colour).string()}`
-          }
-          break;
-      }
-      
       return s
     },
 
+    timeSyle() {
+      const c = this.colour ? toColor(this.colour) : null
+
+      const s = {}
+      if (c != null) {
+        s["border-left"] = `2px solid ${toColor(this.colour).string()}`
+      }
+      return s
+    },
+
+    labelStyle() {
+      return {}
+    },
+
+    assignmentsStyle() {
+      const c = this.colour ? toColor(this.colour) : null
+
+      const s = {}
+      if (c != null) {
+        s["border-right"] = `2px solid ${toColor(this.colour).string()}`
+      }
+      return s
+    }
+  },
+
+  methods: {
     clone() {
       let label = this.label
       const num = label.match(endingNum)
