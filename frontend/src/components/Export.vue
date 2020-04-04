@@ -6,7 +6,7 @@
     </v-tab>
   </v-tabs>
 
-  <v-row>
+  <v-row class="mx-0">
     <v-checkbox v-model="ignoreEmpty" label="Ignore Empty" />
   </v-row>
 
@@ -84,16 +84,17 @@ export default {
       ertp: {
         name: 'ERT Personal',
         run: (events, assigns, name, config) => {
+          const playerAssigns = new Set(Object.values(assigns).filter(a => a.playerId == config.selectedPlayer).map(a => a.id))
+          const playerEvents = Object.fromEntries(Object.entries(events)
+            .map(([k, v]) => [k, {...v, assignments: v.assignments.filter(a => playerAssigns.has(a))}])
+            .filter(([, v]) => v.assignments.length > 0))
+            
           const fmt = formatRows(
             event => `{time:${event.time.minutes()}:${event.time.seconds()}}\t${colouredLabel(event)}\t`,
             () => '',
             assign => `{spell:${assign.spell.id}}`,
           )
-          const playerAssigns = new Set(Object.values(assigns).filter(a => a.playerId == config.selectedPlayer).map(a => a.id))
-          const playerEvents = Object.fromEntries(Object.entries(events)
-            .map(([k, v]) => [k, {...v, assignments: v.assignments.filter(a => playerAssigns.has(a))}])
-            .filter(([, v]) => v.assignments.length > 0))
-          return fmt(playerEvents, assigns)
+          return fmt(playerEvents, assigns, name, config)
         }
       },
       json: {
