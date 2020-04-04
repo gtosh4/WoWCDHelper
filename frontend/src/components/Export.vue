@@ -24,6 +24,8 @@
 </template>
 <script>
 import { sortEvents } from '../store/modules/events'
+
+import {formatDuration} from './duration_utils'
 import {classes} from './wow_info'
 import Color from 'color'
 
@@ -90,7 +92,7 @@ export default {
             .filter(([, v]) => v.assignments.length > 0))
             
           const fmt = formatRows(
-            event => `{time:${event.time.minutes()}:${event.time.seconds()}}\t${colouredLabel(event)}\t`,
+            event => `{time:${formatDuration(event.time)}}\t${colouredLabel(event)}\t`,
             () => '',
             assign => `{spell:${assign.spell.id}}`,
           )
