@@ -119,9 +119,7 @@ export default {
       const c = this.colour ? toColor(this.colour) : null
 
       const s = {}
-      if (c != null) {
-        s["border-right"] = `2px solid ${toColor(this.colour).string()}`
-      }
+      s["border-right"] = `2px solid ${c != null ? toColor(this.colour).string() : 'rgba(255, 255, 255, 0.3)'}`
       return s
     },
 
