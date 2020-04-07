@@ -70,7 +70,7 @@ func (t *THCDA) fightData(reqCtx *ctx.Ctx, vars map[string]string) (fd *FightDat
 
 	fights, err := t.WCL.Fights(fd.Code)
 	if err != nil {
-		err = errors.Errorf("Failed to load fights from %s", fd.Code)
+		err = errors.Wrapf(err, "Failed to load fights from %s", fd.Code)
 		return
 	}
 

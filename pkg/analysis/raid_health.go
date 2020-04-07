@@ -188,10 +188,12 @@ func (t *THCDA) RaidHealth(fd *FightData) (RaidHealth, error) {
 func (th *totalHealth) Total(timestamp time.Duration) (hp Health) {
 	hp.Timestamp = timestamp
 	for _, php := range th.last {
-		hp.Current += php.Current
-		hp.Max += php.Max
-		hp.Healing += php.Healing
-		hp.DamageTaken += php.DamageTaken
+		if php.Current > 0 {
+			hp.Current += php.Current
+			hp.Max += php.Max
+			hp.Healing += php.Healing
+			hp.DamageTaken += php.DamageTaken
+		}
 	}
 	return
 }

@@ -19,8 +19,9 @@ RUN go env && echo "$GOFLAGS"
 RUN go build -ldflags="-s -w" -o /app/wcdh ./cmd/wcdh
 
 FROM debian
+RUN apt-get update && apt-get install -y ca-certificates && apt-get clean
 WORKDIR /app
 RUN mkdir frontend
 COPY --from=build /app/wcdh ./
 COPY --from=vue /frontend/dist ./frontend/dist
-ENTRYPOINT ./wcdh
+ENTRYPOINT ["/app/wcdh"]

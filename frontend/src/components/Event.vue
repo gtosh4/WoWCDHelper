@@ -110,13 +110,19 @@ export default {
 
       const s = {}
       if (c != null) {
-        s["border-left"] = `2px solid ${toColor(this.colour).string()}`
+        s["border-left"] = `4px solid ${toColor(this.colour).string()}`
       }
       return s
     },
 
     labelStyle() {
-      return {}
+      const c = this.colour ? toColor(this.colour) : null
+
+      const s = {}
+      if (c != null) {
+        s["border-right"] = `2px solid ${toColor(this.colour).string()}`
+      }
+      return s
     },
 
     assignmentsStyle() {
@@ -124,7 +130,7 @@ export default {
 
       const s = {}
       if (c != null) {
-        s["border-right"] = `2px solid ${toColor(this.colour).string()}`
+        s["border-right"] = `4px solid ${toColor(this.colour).string()}`
       }
       return s
     }
@@ -171,7 +177,6 @@ export default {
 }
 
 .v-data-table .event td.event-label {
-  border-right: 2px solid rgba(255, 255, 255, 0.3);
   white-space: nowrap;
   padding-left: 8px;
   padding-right: 8px;

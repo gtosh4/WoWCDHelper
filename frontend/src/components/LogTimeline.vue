@@ -19,10 +19,6 @@
   </v-card-title>
   <svg :viewBox="`0 0 ${width} ${height+assigmentsMaxHeight}`" class="log-timeline">
     <g :transform="`translate(${margin.left}, ${margin.top})`" id="chart">
-      <g ref="hpaxis" />
-      <g ref="dtpsaxis" />
-      <g ref="xaxis" />
-
       <path :d="hpLine" fill="slategrey" />
       <path :d="dtpsLine" fill="none" stroke="crimson" stroke-width="2" />
       <path v-if="showHealing" :d="hpsLine" fill="none" stroke="springgreen" stroke-width="2" />
@@ -54,6 +50,9 @@
           />
         </g>
       </g>
+      <g ref="hpaxis" />
+      <g ref="dtpsaxis" />
+      <g ref="xaxis" />
     </g>
   </svg>
 </v-card>
@@ -95,6 +94,9 @@ export default {
 
     loading: null,
     raidHealth: null,
+
+    // "hack" to add reactivity for when the axis are updated
+    axisComputation: 0,
   }),
 
   props: {
@@ -146,6 +148,7 @@ export default {
     },
 
     xAxisHeight() {
+      this.axisComputation
       const node = this.xAxis ? this.xAxis.node() : null
       return node ? node.getBBox().height : 0
     },
@@ -185,7 +188,7 @@ export default {
       const area = d3.area()
         .x(d => this.x(d.time_sec))
         .y0(this.yRaidHP(0))
-        .y1(d => this.yRaidHP(d.current / d.max))
+        .y1(d => this.yRaidHP(d.max > 0 ? d.current / d.max : 1))
       return area(this.raidHealth)
     },
 
@@ -252,6 +255,7 @@ export default {
               .tickFormat(d3.format("~s"))
           )
       }
+      this.axisComputation++
     },
 
     xForEvent(event) {

@@ -93,12 +93,12 @@ func (c *Client) do(req *http.Request, out interface{}) (err error) {
 			}
 			switch c := resp.StatusCode; {
 			case c < 200:
-				return errors.Errorf("Request returned with status code %d", resp.StatusCode)
+				return errors.Errorf("Request %s %s returned with status code %d", req.Method, req.URL, resp.StatusCode)
 			case c == 429:
 				log.Debug("Received status code 429, retrying")
 				return retryRequestErr
 			case c >= 400:
-				return errors.Errorf("Request returned with status code %d", resp.StatusCode)
+				return errors.Errorf("Request %s %s returned with status code %d", req.Method, req.URL, resp.StatusCode)
 			}
 			defer resp.Body.Close()
 

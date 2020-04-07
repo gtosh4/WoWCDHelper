@@ -7,7 +7,7 @@
     <v-tooltip top>
       <template #activator="{ on }">
         <v-btn tile small icon tabindex="-1" @click="$emit('config')" v-on="on">
-          <v-icon>mdi-settings</v-icon>
+          <v-icon>mdi-cog-outline</v-icon>
         </v-btn>
       </template>
       <span>Settings</span>

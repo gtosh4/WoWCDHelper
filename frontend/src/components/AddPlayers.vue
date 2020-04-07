@@ -139,5 +139,6 @@ export default {
 
 .add-players-all .add-player-action span {
   margin-right: 8px;
+  white-space: nowrap;
 }
 </style>
