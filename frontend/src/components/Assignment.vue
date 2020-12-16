@@ -8,7 +8,7 @@
   :color="classColour"
   @click:close="remove"
 >
-  <v-icon v-if="moveable" class="handle" :style="{display: showHover ? '' : 'none'}">mdi-drag</v-icon>
+  <v-icon v-if="moveable" class="handle" :style="{display: showHover ? '' : 'none'}">drag_indicator</v-icon>
   <span class="assignment-content">{{ spell ? name : player.name }}<Spell v-if="spell" :spell="spell" :showname="false" /></span>
 </v-chip>
 </template>

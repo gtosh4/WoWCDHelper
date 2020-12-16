@@ -1,51 +1,63 @@
 <template>
-<v-chip label :color="classColour" class="player assignee">
-  <v-icon class="handle">mdi-drag</v-icon>
-  <WowIcon :className="className" />
-  <WowIcon v-if="specName" :className="className" :specName="specName" />
-  <WowIcon v-else />
-  <v-text-field
-    v-model="nameTmp"
-    solo
-    flat
-    placeholder="Name"
-    hide-details
-    background-color="transparent"
-    width="100%"
-    @keydown.esc.stop="nameTmp = name"
-    @keydown.enter="name = nameTmp"
-    @blur="name = nameTmp"
-  />
-  <v-btn-toggle group>
-    <v-tooltip top>
-      <template #activator="{ on }">
-        <v-btn tile small icon tabindex="-1" @click="$emit('config')" v-on="on">
-          <v-icon>mdi-cog-outline</v-icon>
+<v-card tile :color="classColour" class="assignee">
+  <v-card-title ref="player" class="player">
+    <v-icon class="handle">drag_indicator</v-icon>
+    <WowIcon :className="className" />
+    <WowIcon v-if="specName" :className="className" :specName="specName" />
+    <WowIcon v-else />
+    <v-text-field
+      v-model="nameTmp"
+      solo
+      flat
+      placeholder="Name"
+      hide-details
+      background-color="transparent"
+      @keydown.esc.stop="nameTmp = name"
+      @keydown.enter="name = nameTmp"
+      @blur="name = nameTmp"
+      class="name-field"
+    />
+    <v-menu>
+      <template #activator="{ on, attrs }">
+        <v-btn
+          v-bind="attrs"
+          v-on="on"
+          icon
+          tile
+        >
+          <v-icon>more_vert</v-icon>
         </v-btn>
       </template>
-      <span>Settings</span>
-    </v-tooltip>
-    <v-tooltip top>
-      <template #activator="{ on }">
-        <v-btn tile small icon tabindex="-1" @click="clearAssign" v-on="on">
-          <v-icon>mdi-backspace</v-icon>
-        </v-btn>
-      </template>
-      <span>Clear assignments</span>
-    </v-tooltip>
-    <v-tooltip top>
-      <template #activator="{ on }">
-        <v-btn tile small icon tabindex="-1" @click="deleteAssign" v-on="on">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
-      <span>Delete</span>
-    </v-tooltip>
 
-  </v-btn-toggle>
-</v-chip>
+      <v-list dense>
+
+        <v-list-item @click="$emit('config')">
+          <v-list-item-icon><v-icon>settings</v-icon></v-list-item-icon>
+          Settings
+        </v-list-item>
+
+        <v-list-item @click="clearAssign">
+          <v-list-item-icon><v-icon>backspace</v-icon></v-list-item-icon>
+          Clear assignments
+        </v-list-item>
+
+        <v-list-item @click="deleteAssign">
+          <v-list-item-icon><v-icon>delete</v-icon></v-list-item-icon>
+          Delete
+        </v-list-item>
+      </v-list>
+    </v-menu>
+  </v-card-title>
+
+  <v-card-text class="playerspells">
+    <v-list>
+      <SpellAssignee v-for="(spell, i) in playerSpells" :key="i" :assignId="spell.id" />
+    </v-list>
+  </v-card-text>
+</v-card>
 </template>
 <script>
+import SpellAssignee from './SpellAssignee'
 import WowIcon from './WowIcon'
 
 import Color from 'color'
@@ -65,7 +77,7 @@ export default {
   },
 
   mounted() {
-    const chip = this.$el
+    const chip = this.$refs.player
     const handle = chip.querySelector(".handle")
 
     handle.onmousedown = () => {
@@ -100,6 +112,12 @@ export default {
     assignmentCount() {
       return Object.values(this.$store.state.events.events).map(e => e.assignments.filter(a => a == this.assignId)).flat().length
     },
+
+    playerSpells() {
+      return Object.values(this.$store.state.assigns.assigns).filter(a => a.playerId == this.player.id && a.spell != null).sort((a, b) => {
+        return a.spell.id < b.spell.id
+      })
+    },
   },
 
   watch: {
@@ -121,18 +139,39 @@ export default {
 
   components: {
     WowIcon,
+    SpellAssignee,
   }
 }
 </script>
-<style>
-.player.assignee {
-  width: 100%;
-}
-.player.assignee .v-chip__content {
-  width: 100%;
-}
 
-.player.assignee .handle {
-  cursor: grab;
+<style lang="scss">
+.assignee {
+  width: 100%;
+
+  .player {
+    padding: 0;
+
+    .name-field .v-input__control {
+      min-height: 18px;
+
+      input {
+        padding: 0;
+      }
+    }
+  }
+
+  .playerspells {
+    padding-bottom: 0;
+
+    &>.v-list {
+      margin: 0;
+      background-color: transparent;
+      padding: 0;
+    }
+  }
+
+  .handle {
+    cursor: grab;
+  }
 }
 </style>

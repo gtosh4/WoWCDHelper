@@ -1,6 +1,6 @@
 <template>
 <v-card outlined tile class="assignee-group">
-  <v-card-title>
+  <v-card-title class="assignee-title">
     <v-btn tile text left
       @click="expanded = !expanded"
       width="100%"
@@ -12,20 +12,12 @@
 
   <v-list :style="{display: expanded ? '' : 'none'}">
     <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="player-container">
-      <v-card outlined tile>
-        <PlayerAssignee :assignId="player.id" />
-        <v-list>
-          <v-list-item v-for="(spell, i) in playerSpells[player.id]" :key="i">
-            <SpellAssignee :assignId="spell.id" />
-          </v-list-item>
-        </v-list>
-      </v-card>
+      <PlayerAssignee :assignId="player.id" />
     </v-list-item>
   </v-list>
 </v-card>
 </template>
 <script>
-import SpellAssignee from './SpellAssignee'
 import PlayerAssignee from './PlayerAssignee'
 
 import { mapGetters } from 'vuex'
@@ -61,44 +53,32 @@ export default {
         return c
       })
     },
-
-    playerSpells() {
-      return (this.spells || []).reduce((m, spell) => {
-        let pspells = m[spell.playerId]
-        if (!pspells) {
-          pspells = []
-          m[spell.playerId] = pspells
-        }
-        pspells.push(spell)
-        return m
-      }, {})
-    },
   },
 
   components: {
-    SpellAssignee,
     PlayerAssignee,
   },
 }
 </script>
-<style>
-.assignee-group .v-card__title {
-  padding: 0;
-}
+<style lang="scss">
+.assignee-group {
+  .assignee-title.v-card__title {
+    padding: 0;
+  }
+  
+  .v-list-item {
+    padding-left: 0;
+    padding-right: 0;
+  }
 
-.assignee-group .v-list-item {
-  padding-left: 0;
-  padding-right: 0;
-}
+  .player-container.v-list-item {
+    min-height: 20px;
+    padding-left: 4px;
+    margin-bottom: 4px;
 
-.player-container .v-list {
-  padding-left: 28px;
-  padding-right: 28px;
-}
-
-.player-container .v-list-item {
-  min-height: 20px;
-  padding-left: 4px;
-  margin-bottom: 4px;
+    &:not(:first-child) {
+      padding-bottom: 16px;
+    }
+  }
 }
 </style>

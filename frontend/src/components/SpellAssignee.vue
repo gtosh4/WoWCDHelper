@@ -1,36 +1,40 @@
 <template>
-<v-chip label :color="classColour" class="spell assignee">
-  <v-icon class="handle">mdi-drag</v-icon>
+<v-list-item :color="classColour" class="spell">
+  <v-icon class="handle">drag_indicator</v-icon>
   <span>{{ assignmentCount }}</span>
   <Spell :spell="spell" />
-  <v-btn-toggle group class="actions">
-    <v-tooltip top>
-      <template #activator="{ on }">
-        <v-btn tile small icon tabindex="-1" @click="$emit('config')" v-on="on">
-          <v-icon>mdi-cog-outline</v-icon>
-        </v-btn>
-      </template>
-      <span>Settings</span>
-    </v-tooltip>
-    <v-tooltip top>
-      <template #activator="{ on }">
-        <v-btn tile small icon tabindex="-1" @click="clearAssign" v-on="on">
-          <v-icon>mdi-backspace</v-icon>
-        </v-btn>
-      </template>
-      <span>Clear assignments</span>
-    </v-tooltip>
-    <v-tooltip top>
-      <template #activator="{ on }">
-        <v-btn tile small icon tabindex="-1" @click="deleteAssign" v-on="on">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
-      <span>Delete</span>
-    </v-tooltip>
 
-  </v-btn-toggle>
-</v-chip>
+  <v-menu>
+    <template #activator="{ on, attrs }">
+      <v-btn
+        v-bind="attrs"
+        v-on="on"
+        icon
+        tile
+        small
+      >
+        <v-icon>more_vert</v-icon>
+      </v-btn>
+    </template>
+
+    <v-list dense>
+      <v-list-item @click="$emit('config')">
+        <v-list-item-icon><v-icon>settings</v-icon></v-list-item-icon>
+        Settings
+      </v-list-item>
+
+      <v-list-item @click="clearAssign">
+        <v-list-item-icon><v-icon>backspace</v-icon></v-list-item-icon>
+        Clear assignments
+      </v-list-item>
+
+      <v-list-item @click="deleteAssign">
+        <v-list-item-icon><v-icon>delete</v-icon></v-list-item-icon>
+        Delete
+      </v-list-item>
+    </v-list>
+  </v-menu>
+</v-list-item>
 
 </template>
 <script>
@@ -116,25 +120,19 @@ export default {
   },
 }
 </script>
-<style>
-.spell.assignee {
-  width: 100%;
-}
 
-.spell.assignee span {
-  margin-right: 4px;
-}
+<style lang="scss">
+.spell.v-list-item {
+  border-top: 1px solid black;
+  min-height: 24px;
 
-.spell.assignee .v-chip__content {
-  width: 100%;
-}
+  span {
+    margin-right: 4px;
+  }
 
-.spell.assignee .spelldetails {
-  width: 100%;
-}
-
-.spell.assignee .handle {
-  cursor: grab;
+  .spelldetails {
+    width: 100%;
+  }
 }
 </style>
 

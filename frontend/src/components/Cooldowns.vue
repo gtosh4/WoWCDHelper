@@ -44,9 +44,10 @@ export default {
   },
 };
 </script>
+
 <style>
 #cd-palette {
-  min-width: 20vw;
+  min-width: 120px;
   max-width: 40vw;
 }
 </style>

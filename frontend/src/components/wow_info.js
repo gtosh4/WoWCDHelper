@@ -1,28 +1,24 @@
-const visions = {
-  opt: {text: "Vision of Perfection", type: Boolean, default: false, prop: 'vision'},
-  config: spell => {
-    if (spell.cfg.vision) {
-      // 25% reduced
-      spell.cd *= 0.75
-    }
-  },
-}
-
 export const classes = {
   deathknight: {
     colour: {r: 196, g: 31, b: 59},
     specs: {
       blood: {
         icon: "spell_deathknight_bloodpresence",
-        spells: [],
+        spells: [
+          {id: 51052}, // Anti-magic Zone
+        ],
       },
       frost: {
         icon: "spell_deathknight_frostpresence",
-        spells: [],
+        spells: [
+          {id: 51052}, // Anti-magic Zone
+        ],
       },
       unholy: {
         icon: "spell_deathknight_unholypresence",
-        spells: [],
+        spells: [
+          {id: 51052}, // Anti-magic Zone
+        ],
       },
     },
   },
@@ -63,13 +59,11 @@ export const classes = {
             id: 740,
             options: [
               {text: "Inner Peace", type: Boolean, default: false, prop: 'inner_peace'},
-              visions.opt,
             ],
             configure(spell) {
               if (spell.cfg.inner_peace) {
                 spell.cd -= 60
               }
-              visions.config(spell)
             },
           },
           {id: 33891}, // Incarnation: Tree of Life
@@ -140,11 +134,7 @@ export const classes = {
           { // Avenging Wrath
             id: 31884,
             options: [
-              {...visions.opt, default: true}, // Visions is BiS
             ],
-            configure(spell) {
-              visions.config(spell)
-            },
           },
         ],
       },
@@ -175,11 +165,7 @@ export const classes = {
           { // Divine Hymn
             id: 64843,
             options: [
-              {...visions.opt, default: true},
             ],
-            configure(spell) {
-              visions.config(spell)
-            },
           }, 
           {id: 265202}, // Holy Word: Salvation
         ],
@@ -225,12 +211,6 @@ export const classes = {
         spells: [
           { // Healing Tide Totem
             id: 108280,
-            options: [
-              {...visions.opt, default: true},
-            ],
-            configure(spell) {
-              visions.config(spell)
-            },
           },
           {id: 98008}, // Spirit Link Totem
         ],
@@ -295,6 +275,7 @@ export const spells = {
   108280: {id: 108280, name: "Healing Tide Totem", icon: "https://media.wowdb.com/wow/icons/large/ability_shaman_healingtide.jpg", cd: 180},
   98008:  {id: 98008,  name: "Spirit Link Totem", icon: "https://media.wowdb.com/wow/icons/large/spell_shaman_spiritlink.jpg", cd: 180},
   97462:  {id: 97462,  name: "Rallying Cry", icon: "https://media.wowdb.com/wow/icons/large/ability_warrior_rallyingcry.jpg", cd: 180},
+  51052:  {id: 51052,  name: "Anti-Magic Zone", icon: "https://icons.wowdb.com/ptr/large/spell_deathknight_antimagiczone.jpg?36734", cd: 120},
 }
 
 export const healers = [
