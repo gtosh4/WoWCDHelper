@@ -31,7 +31,7 @@
 
       <v-list dense>
 
-        <v-list-item @click="$emit('config')">
+        <v-list-item @click.stop="config = true">
           <v-list-item-icon><v-icon>settings</v-icon></v-list-item-icon>
           Settings
         </v-list-item>
@@ -54,6 +54,14 @@
       <SpellAssignee v-for="(spell, i) in playerSpells" :key="i" :assignId="spell.id" />
     </v-list>
   </v-card-text>
+
+  <v-dialog v-model="config" max-width="40vw">
+    <v-card>
+      <v-card-actions>
+        <v-btn @click="config = null">Close</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </v-card>
 </template>
 <script>
@@ -68,6 +76,7 @@ import {assignProps, dragAssignProps, player} from '../store/utils'
 export default {
   data: () => ({
     nameTmp: "",
+    config: null,
   }),
 
   props: {

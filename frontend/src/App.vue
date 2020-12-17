@@ -10,18 +10,19 @@
     </v-content>
   </v-app>
 </template>
-<script>
-import Planner from './components/Planner';
-import Cooldowns from './components/Cooldowns'
+
+<script lang="ts">
+import Vue from 'vue'
+import Planner from './components/Planner.vue'
+import Cooldowns from './components/Cooldowns.vue'
 
 import {loadFromURL} from './store/plugins/url'
 
-export default {
+export default Vue.extend({
   name: 'App',
   data: () => ({
   }),
-  mounted() {
-  },
+
   watch: {
     '$route':{
       handler(to) {
@@ -30,11 +31,17 @@ export default {
       immediate: true,
     },
   },
-  methods: {
-  },
+
   components: {
     Planner,
     Cooldowns,
   },
-};
+});
 </script>
+
+<style lang="scss">
+#app {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+</style>

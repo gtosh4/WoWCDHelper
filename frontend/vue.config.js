@@ -3,7 +3,6 @@ module.exports = {
     proxy: {
       '/': {
         target: 'http://localhost:8113',
-        ws: false,
       }
     }
   },

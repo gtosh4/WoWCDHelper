@@ -35,8 +35,8 @@
     </v-list>
   </v-menu>
 </v-list-item>
-
 </template>
+
 <script>
 import Spell from './Spell'
 

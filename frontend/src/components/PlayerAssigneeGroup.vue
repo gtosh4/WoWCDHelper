@@ -77,7 +77,7 @@ export default {
     margin-bottom: 4px;
 
     &:not(:first-child) {
-      padding-bottom: 16px;
+      padding-top: 4px;
     }
   }
 }
