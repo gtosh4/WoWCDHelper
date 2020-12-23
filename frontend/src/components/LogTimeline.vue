@@ -1,61 +1,80 @@
 <template>
-<v-card outlined tile>
-  <v-card-title>
-    <v-text-field
-      v-model="logURL"
-      :loading="loading"
-      outlined
-      single-line
-      clearable
-      placeholder="log URL"
-      hint="https://www.warcraftlogs.com/reports/aaaaaaa#fight=1"
-      class="logUrlInput"
-      :rules="[validateLogURL]"
-    >
-    <template #append>
-      <v-icon @click="loadLog">mdi-send</v-icon>
-    </template>
-    </v-text-field>
-  </v-card-title>
-  <svg :viewBox="`0 0 ${width} ${height+assigmentsMaxHeight}`" class="log-timeline">
-    <g :transform="`translate(${margin.left}, ${margin.top})`" id="chart">
-      <path :d="hpLine" fill="slategrey" />
-      <path :d="dtpsLine" fill="none" stroke="crimson" stroke-width="2" />
-      <path v-if="showHealing" :d="hpsLine" fill="none" stroke="springgreen" stroke-width="2" />
-
-      <g v-for="event in events" :key="event.id" :transform="`translate(${xForEvent(event)}, 0)`">
-        <line 
-          :id="`line-event-${event.id}`"
-          :x1="0" :x2="0"
-          y1="0" :y2="chartSize.height + xAxisHeight + assignMargin"
-          stroke-width="1.5"
-          :stroke="colourForEvent(event)"
+  <v-card outlined tile>
+    <v-card-title>
+      <v-text-field
+        v-model="logURL"
+        :loading="loading"
+        outlined
+        single-line
+        clearable
+        placeholder="log URL"
+        hint="https://www.warcraftlogs.com/reports/aaaaaaa#fight=1"
+        class="logUrlInput"
+        :rules="[validateLogURL]"
+      >
+        <template #append>
+          <v-icon @click="loadLog">
+            mdi-send
+          </v-icon>
+        </template>
+      </v-text-field>
+    </v-card-title>
+    <svg :viewBox="`0 0 ${width} ${height+assigmentsMaxHeight}`" class="log-timeline">
+      <g id="chart" :transform="`translate(${margin.left}, ${margin.top})`">
+        <path :d="hpLine" fill="slategrey" />
+        <path
+          :d="dtpsLine"
+          fill="none"
+          stroke="crimson"
+          stroke-width="2"
         />
-        <text
-          :id="`text-event-${event.id}`"
-          :x="-chartSize.height/2"
-          :y="-4"
-          :fill="colourForEvent(event)"
-          transform="rotate(-90)"
-          class="label-text"
-          text-anchor="middle"
-        >
-          {{ event.label || "" }}
-        </text>
-        <g :transform="`translate(${-(assignImageSize/2)}, ${xAxisHeight + chartSize.height + assignMargin + 2})`">
-          <image v-for="(assign, index) in event.assignments" :key="index"
-            x="0" :y="index * (assignImageSize+1)"
-            :height="`${assignImageSize}px`" :width="`${assignImageSize}px`"
-            :href="imageForAssign(assign)"
+        <path
+          v-if="showHealing"
+          :d="hpsLine"
+          fill="none"
+          stroke="springgreen"
+          stroke-width="2"
+        />
+
+        <g v-for="event in events" :key="event.id" :transform="`translate(${xForEvent(event)}, 0)`">
+          <line 
+            :id="`line-event-${event.id}`"
+            :x1="0"
+            :x2="0"
+            y1="0"
+            :y2="chartSize.height + xAxisHeight + assignMargin"
+            stroke-width="1.5"
+            :stroke="colourForEvent(event)"
           />
+          <text
+            :id="`text-event-${event.id}`"
+            :x="-chartSize.height/2"
+            :y="-4"
+            :fill="colourForEvent(event)"
+            transform="rotate(-90)"
+            class="label-text"
+            text-anchor="middle"
+          >
+            {{ event.label || "" }}
+          </text>
+          <g :transform="`translate(${-(assignImageSize/2)}, ${xAxisHeight + chartSize.height + assignMargin + 2})`">
+            <image
+              v-for="(assign, index) in event.assignments"
+              :key="index"
+              x="0"
+              :y="index * (assignImageSize+1)"
+              :height="`${assignImageSize}px`"
+              :width="`${assignImageSize}px`"
+              :href="imageForAssign(assign)"
+            />
+          </g>
         </g>
+        <g ref="hpaxis" />
+        <g ref="dtpsaxis" />
+        <g ref="xaxis" />
       </g>
-      <g ref="hpaxis" />
-      <g ref="dtpsaxis" />
-      <g ref="xaxis" />
-    </g>
-  </svg>
-</v-card>
+    </svg>
+  </v-card>
 </template>
 <script>
 import moment from 'moment'
@@ -63,7 +82,7 @@ import * as d3 from 'd3'
 import Color from 'color'
 
 import { BackendAPI } from '../api/backend'
-import { toColor } from './colour_utils';
+import { toColor } from './colour_utils'
 import {formatDuration} from './duration_utils'
 import {spells, spec, specIcon, classIcon} from './wow_info'
 
@@ -80,6 +99,13 @@ function clearChildren(node) {
 }
 
 export default {
+  props: {
+    showHealing: {
+      type: Boolean,
+      default: false,
+    },
+  },
+
   data: () => ({
     margin: {top: 10, right: 50, bottom: 30, left: 50},
     height: 480,
@@ -98,26 +124,6 @@ export default {
     // "hack" to add reactivity for when the axis are updated
     axisComputation: 0,
   }),
-
-  props: {
-    showHealing: {
-      default: false,
-    },
-  },
-
-  created() {
-  },
-
-  mounted() {
-    this.hpAxis = d3.select(this.$refs.hpaxis)
-    this.dtpsAxis = d3.select(this.$refs.dtpsaxis)
-    this.xAxis = d3.select(this.$refs.xaxis)
-    this.legend = d3.select(this.$refs.legend)
-
-    if (this.logURL) {
-      this.loadLog()
-    }
-  },
 
   computed: {
     logURL: {
@@ -140,7 +146,7 @@ export default {
     },
 
     events() {
-      return this.$store.getters['events/orderedEvents']
+      return this.$store.getters['events/ordered']
     },
 
     assigmentsMaxHeight() {
@@ -223,6 +229,17 @@ export default {
     },
   },
 
+  mounted() {
+    this.hpAxis = d3.select(this.$refs.hpaxis)
+    this.dtpsAxis = d3.select(this.$refs.dtpsaxis)
+    this.xAxis = d3.select(this.$refs.xaxis)
+    this.legend = d3.select(this.$refs.legend)
+
+    if (this.logURL) {
+      this.loadLog()
+    }
+  },
+
   methods: {
     updateAxis() {
       if (this.xAxis) {
@@ -287,7 +304,7 @@ export default {
         })
         .catch(e => {
           this.loading = false
-          console.log("getRaidHealth error", {e, report, fight})
+          console.error("getRaidHealth error", {e, report, fight})
         })
     },
 
@@ -319,10 +336,7 @@ export default {
       }
     },
   },
-
-  components: {
-  },
-};
+}
 </script>
 <style>
 .logUrlInput {

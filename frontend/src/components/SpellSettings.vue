@@ -1,28 +1,27 @@
 <template>
-<v-card>
-  <v-card-title>
-    {{ player.name }}: {{ spell.name }}
-  </v-card-title>
-  <v-list>
-    <v-list-item v-for="(opt, i) in spell.options" :key="i">
-      <v-checkbox v-if="opt.type == Boolean"
-        :input-value="getValue(opt)"
-        @change="v => setOpt(opt, v)"
-      />
-      <span>{{opt.text}}</span>
-    </v-list-item>
-  </v-list>
-</v-card>
+  <v-card>
+    <v-card-title>
+      {{ player.name }}: {{ spell.name }}
+    </v-card-title>
+    <v-list>
+      <v-list-item v-for="(opt, i) in spell.options" :key="i">
+        <v-checkbox
+          v-if="opt.type == Boolean"
+          :input-value="getValue(opt)"
+          @change="v => setOpt(opt, v)"
+        />
+        <span>{{ opt.text }}</span>
+      </v-list-item>
+    </v-list>
+  </v-card>
 </template>
 <script>
 import { assignProps, player, spell } from '../store/utils'
 
 export default {
-  data: () => ({
-  }),
-
   props: {
     assignId: {
+      type: String,
       required: true,
     },
   },
@@ -51,13 +50,7 @@ export default {
       this.spell = s
     },
   },
-
-  mounted() {
-  },
-
-  components: {
-  },
-};
+}
 </script>
 <style>
 </style>

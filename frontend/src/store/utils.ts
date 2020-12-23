@@ -1,11 +1,22 @@
 import {spells, spec} from '../components/wow_info'
+import { DragAssignState } from './modules/dragassign'
 
+interface HasAssign {
+  assignId?: number
+  $store: any
+}
 
-export function assignProps(props) {
-  const p = {}
+interface Prop<T> {
+  get(): T
+  set(v: T): void // eslint-disable-line
+}
+
+export function assignProps(props: string[]) {
+  const p = {} as {[prop: string]: Prop<any>}
+
   props.forEach(prop => {
     p[prop] = {
-      get() {
+      get(this: HasAssign) {
         if (this.assignId === undefined) return undefined
 
         const assign = this.$store.state.assigns.assigns[this.assignId]
@@ -24,19 +35,21 @@ export function assignProps(props) {
         }
         return undefined
       },
-      set(v) {
+
+      set(this: HasAssign, v) {
         const assign = this.assignId === undefined ? {} : this.$store.state.assigns.assigns[this.assignId]
         this.$store.commit('assigns/set', {...assign, [prop]: v})
       },
     }
-  });
+  })
   return p
 }
 
 export function spell() {
   return {
     spell: {
-      get() {
+      get(this: HasAssign) {
+        if (this.assignId === undefined) return undefined
         const assign = this.$store.state.assigns.assigns[this.assignId]
         if (!assign.spell || !assign.spell.id) return undefined
 
@@ -59,7 +72,8 @@ export function spell() {
 
         return s
       },
-      set(v) {
+      set(this: HasAssign, v: {id: number, cfg: any}) {
+        if (this.assignId === undefined) return
         const s = {
           id: v.id,
           cfg: v.cfg,
@@ -73,44 +87,52 @@ export function spell() {
 
 export function player() {
   return {
-    player() {
+    player(this: HasAssign) {
+      if (this.assignId === undefined) return undefined
       const assign = this.$store.state.assigns.assigns[this.assignId]
       return this.$store.state.assigns.assigns[assign.playerId]
     }
   }
 }
 
-export function eventProps(props) {
-  const p = {}
+interface HasEvent {
+  eventId?: number
+  $store: any
+}
+
+export function eventProps(props: string[]) {
+  const p = {} as {[prop: string]: Prop<any>}
+
   props.forEach(prop => {
     p[prop] = {
-      get() {
+      get(this: HasEvent) {
         if (this.eventId === undefined) return undefined
 
         const event = this.$store.state.events.events[this.eventId]
         return event !== undefined ? event[prop] : undefined
       },
-      set(v) {
+      set(this: HasEvent, v) {
         const event = this.eventId === undefined ? {} : this.$store.state.events.events[this.eventId]
         this.$store.commit('events/set', {...event, [prop]: v})
       },
     }
-  });
+  })
   return p
 }
 
 export function dragAssignProps() {
   return {
     draggedAssign: {
-      get() {
-        return this.$store.state.dragassign.info
+      get(this: {$store: any}) {
+        const state = this.$store.state.dragassign as DragAssignState
+        return state.draggedAssign
       },
 
-      set(info) {
-        if (!info || info == {}) {
-          this.$store.commit('dragassign/stop')
+      set(this: {$store: any}, assignId?: number) {
+        if (assignId) {
+          this.$store.commit('dragassign/start', assignId)
         } else {
-          this.$store.commit('dragassign/start', info)
+          this.$store.commit('dragassign/stop')
         }
       },
     },

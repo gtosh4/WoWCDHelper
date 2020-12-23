@@ -1,24 +1,30 @@
 <template>
-<v-avatar tile class="mx-1" size="18">
-  <img v-if="src" :src="src" class="wowicon" draggable="false" ondragstart="return false" />
-</v-avatar>
+  <v-avatar tile class="mx-1" size="18">
+    <img
+      v-if="src"
+      :src="src"
+      class="wowicon"
+      draggable="false"
+      ondragstart="return false"
+    >
+  </v-avatar>
 </template>
 <script>
 import {classIcon, specIcon, abilityIcon, spec} from './wow_info'
 
 export default {
-  data: () => ({
-  }),
-
   props: {
     className: {
       type: String,
+      default: undefined,
     },
     specName: {
       type: String,
+      default: undefined,
     },
     abilityName: {
       type: String,
+      default: undefined,
     },
     size: {
       type: Number,
@@ -39,16 +45,7 @@ export default {
       }
     }
   },
-
-  methods: {
-  },
-
-  mounted() {
-  },
-
-  components: {
-  },
-};
+}
 </script>
 <style>
 </style>

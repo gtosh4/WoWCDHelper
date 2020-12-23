@@ -1,15 +1,24 @@
 <template>
-<v-card>
-  <v-card-text class="import-content">
-    <v-textarea auto-grow full-width outlined v-model="content" />
-  </v-card-text>
+  <v-card>
+    <v-card-text class="import-content">
+      <v-textarea
+        v-model="content"
+        auto-grow
+        full-width
+        outlined
+      />
+    </v-card-text>
 
-  <v-card-actions>
-    <v-btn text @click="doImport">Import</v-btn>
-    <v-spacer />
-    <v-btn text @click="$emit('close')">Close</v-btn>
-  </v-card-actions>
-</v-card>
+    <v-card-actions>
+      <v-btn text @click="doImport">
+        Import
+      </v-btn>
+      <v-spacer />
+      <v-btn text @click="$emit('close')">
+        Close
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 <script>
 import moment from 'moment'
@@ -18,12 +27,6 @@ export default {
   data: () => ({
     content: "",
   }),
-
-  props: {
-  },
-
-  computed: {
-  },
 
   methods: {
     doImport() {
@@ -43,13 +46,7 @@ export default {
       this.$emit("close")
     },
   },
-
-  mounted() {
-  },
-
-  components: {
-  },
-};
+}
 </script>
 <style>
 .import-content {

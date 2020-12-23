@@ -1,36 +1,41 @@
 <template>
-<v-text-field
-  v-model="internalValue"
-  single-line
-  hide-details
-  :placeholder="placeholder"
-  @keydown.esc.stop="cancel"
-  @keydown.enter="save"
-  @blur="save"
-/>
+  <v-text-field
+    v-model="internalValue"
+    single-line
+    hide-details
+    :placeholder="placeholder"
+    @keydown.esc.stop="cancel"
+    @keydown.enter="save"
+    @blur="save"
+  />
 </template>
 <script>
 export default {
+
+  components: {
+  },
+
+  props: {
+    value: {
+      type: String,
+      default: undefined,
+    },
+
+    placeholder: {
+      type: String,
+      default: "",
+    },
+  },
+
   data: () => ({
     internalValue: ""
   }),
-
-  props: {
-    value: String,
-    placeholder: String,
-  },
 
   watch: {
     value: {
       handler() { this.internalValue = this.value },
       immediate: true,
     },
-  },
-
-  mounted() {
-  },
-
-  computed: {
   },
 
   methods: {
@@ -40,14 +45,12 @@ export default {
 
     save() {
       if (this.value == "" && this.internalValue == "") return
+      if (this.value == this.internalValue) return
       
       this.$emit('input', this.internalValue)
     },
   },
-
-  components: {
-  },
-};
+}
 </script>
 <style scoped>
 .v-input {

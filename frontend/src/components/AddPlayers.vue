@@ -1,44 +1,65 @@
 <template>
-<v-card outlined tile class="add-players-all">
-  <v-btn tile text left
-    @click="expanded = !expanded"
-    width="100%"
+  <v-card
+    outlined
+    tile
+    class="add-players-all"
   >
-    <v-icon :class="expandedClass">$vuetify.icons.expand</v-icon>
-    <span>all</span>
-  </v-btn>
-  <v-lazy><v-row no-gutters justify="start" :style="{display: expanded ? '' : 'none'}">
-    <v-col v-for="(classInfo, className) in classes" :key="className" cols="4">
-      <v-card outlined tile class="add-player-class">
+    <v-btn
+      tile
+      text
+      left
+      width="100%"
+      @click="expanded = !expanded"
+    >
+      <v-icon :class="expandedClass">
+        $vuetify.icons.expand
+      </v-icon>
+      <span>all</span>
+    </v-btn>
+    <v-lazy>
+      <v-row no-gutters justify="start" :style="{display: expanded ? '' : 'none'}">
+        <v-col v-for="(classInfo, className) in classes" :key="className" cols="4">
+          <v-card outlined tile class="add-player-class">
 
-        <v-card-title>
-          <WowIcon :className="className" />
-          <span :style="{color: classColour(className)}">{{ className }}</span>
-          <div class="add-player-action">
-            <span>{{ counts[className].total }}</span>
-            <v-btn tile x-small icon @click="$emit('addPlayer', className)">
-              <v-icon>mdi-account-plus</v-icon>
-            </v-btn>
-          </div>
-        </v-card-title>
+            <v-card-title>
+              <WowIcon :class-name="className" />
+              <span :style="{color: classColour(className)}">{{ className }}</span>
+              <div class="add-player-action">
+                <span>{{ counts[className].total }}</span>
+                <v-btn
+                  tile
+                  x-small
+                  icon
+                  @click="$emit('addPlayer', className)"
+                >
+                  <v-icon>mdi-account-plus</v-icon>
+                </v-btn>
+              </div>
+            </v-card-title>
 
-        <v-divider />
-        <v-list>
-          <v-list-item v-for="(specInfo, specName) in classInfo.specs" :key="specName" class="player-select">
-            <WowIcon :className="className" :specName="specName" />
-            <span :style="{color: classColour(className)}">{{ specName }}</span>
-            <div class="add-player-action">
-              <span>{{ counts[className][specName] }}</span>
-              <v-btn tile x-small icon @click="$emit('addPlayer', className, specName)">
-                <v-icon>mdi-account-plus</v-icon>
-              </v-btn>
-            </div>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-col>
-  </v-row></v-lazy>
-</v-card>
+            <v-divider />
+            <v-list>
+              <v-list-item v-for="(specInfo, specName) in classInfo.specs" :key="specName" class="player-select">
+                <WowIcon :class-name="className" :spec-name="specName" />
+                <span :style="{color: classColour(className)}">{{ specName }}</span>
+                <div class="add-player-action">
+                  <span>{{ counts[className][specName] }}</span>
+                  <v-btn
+                    tile
+                    x-small
+                    icon
+                    @click="$emit('addPlayer', className, specName)"
+                  >
+                    <v-icon>mdi-account-plus</v-icon>
+                  </v-btn>
+                </div>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-lazy>
+  </v-card>
 </template>
 <script>
 import WowIcon from './WowIcon'
@@ -47,13 +68,14 @@ import { mapGetters } from 'vuex'
 import { classes, classColour } from './wow_info'
 
 export default {
+  components: {
+    WowIcon,
+  },
+
   data: () => ({
     classes,
     expanded: false,
   }),
-
-  props: {
-  },
 
   computed: {
     ...mapGetters('assigns', ['players']),
@@ -98,10 +120,6 @@ export default {
     specCount(className, specName) {
       return ((this.players[className] || {})[specName] || []).length
     },
-  },
-
-  components: {
-    WowIcon,
   },
 }
 </script>

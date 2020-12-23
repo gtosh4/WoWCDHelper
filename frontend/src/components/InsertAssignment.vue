@@ -1,11 +1,8 @@
 <template>
-<v-chip label color="grey lighten-4" :class="chipClass" />
+  <v-chip label color="grey lighten-4" :class="chipClass" />
 </template>
 <script>
 export default {
-  data: () => ({
-  }),
-
   props: {
     active: {
       type: Boolean,
@@ -17,16 +14,7 @@ export default {
       return ["insert-assign", `insert-assign-${this.active ? 'active': 'inactive'}`]
     },
   },
-
-  methods: {
-  },
-
-  mounted() {
-  },
-
-  components: {
-  },
-};
+}
 </script>
 <style>
 .v-chip.insert-assign {

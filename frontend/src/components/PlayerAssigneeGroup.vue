@@ -1,21 +1,26 @@
 <template>
-<v-card outlined tile class="assignee-group">
-  <v-card-title class="assignee-title">
-    <v-btn tile text left
-      @click="expanded = !expanded"
-      width="100%"
-    >
-      <span>assignees</span>
-      <v-icon :class="expandedClass">$vuetify.icons.expand</v-icon>
-    </v-btn>
-  </v-card-title>
+  <v-card outlined tile class="assignee-group">
+    <v-card-title class="assignee-title">
+      <v-btn
+        tile
+        text
+        left
+        width="100%"
+        @click="expanded = !expanded"
+      >
+        <span>assignees</span>
+        <v-icon :class="expandedClass">
+          $vuetify.icons.expand
+        </v-icon>
+      </v-btn>
+    </v-card-title>
 
-  <v-list :style="{display: expanded ? '' : 'none'}">
-    <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="player-container">
-      <PlayerAssignee :assignId="player.id" />
-    </v-list-item>
-  </v-list>
-</v-card>
+    <v-list :style="{display: expanded ? '' : 'none'}">
+      <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="player-container">
+        <PlayerAssignee :assign-id="player.id" />
+      </v-list-item>
+    </v-list>
+  </v-card>
 </template>
 <script>
 import PlayerAssignee from './PlayerAssignee'
@@ -23,12 +28,13 @@ import PlayerAssignee from './PlayerAssignee'
 import { mapGetters } from 'vuex'
 
 export default {
+  components: {
+    PlayerAssignee,
+  },
+
   data: () => ({
     expanded: true,
   }),
-
-  props: {
-  },
 
   computed: {
     ...mapGetters('assigns', ['players', 'spells']),
@@ -53,10 +59,6 @@ export default {
         return c
       })
     },
-  },
-
-  components: {
-    PlayerAssignee,
   },
 }
 </script>

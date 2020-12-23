@@ -1,27 +1,34 @@
 <template>
-<v-chip-group column class="assignment-group"
-  @dragenter.native.prevent="event => handleDrag(event, true)"
-  @dragleave.native.prevent="event => handleDrag(event, false)"
-  @dragover.native.prevent
-  @drop.native.prevent="draggedOver = false; handleDrop()"
->
-  <template v-for="(assign, index) in assignments">
-    <InsertAssignment :active="assignmentDraggedOver[index]" :key="`insert-${index}`"
-      @dragenter.native.prevent.stop="assignmentDraggedOver[index] = true"
-      @dragleave.native.prevent.stop="assignmentDraggedOver[index] = false"
-      @dragover.native.prevent.stop
-      @drop.native.prevent.stop="assignmentDraggedOver[index] = false; handleDrop(index)"
-    />
+  <v-chip-group
+    column
+    class="assignment-group"
+    @dragenter.native.prevent="event => handleDrag(event, true)"
+    @dragleave.native.prevent="event => handleDrag(event, false)"
+    @dragover.native.prevent
+    @drop.native.prevent="draggedOver = false; handleDrop()"
+  >
+    <template v-for="(assign, index) in assignments">
+      <InsertAssignment
+        :key="`insert-${index}`"
+        :active="assignmentDraggedOver[index]"
+        @dragenter.native.prevent.stop="assignmentDraggedOver[index] = true"
+        @dragleave.native.prevent.stop="assignmentDraggedOver[index] = false"
+        @dragover.native.prevent.stop
+        @drop.native.prevent.stop="assignmentDraggedOver[index] = false; handleDrop(index)"
+      />
 
-    <Assignment :eventId="eventId" :index="index" :key="`assign-${index}`"
-      @dragenter.native.prevent.stop="assignmentDraggedOver[index] = true"
-      @dragleave.native.prevent.stop="assignmentDraggedOver[index] = false"
-      @dragover.native.prevent.stop
-      @drop.native.prevent.stop="assignmentDraggedOver[index] = false; handleDrop(index)"
-    />
-  </template>
-  <InsertAssignment :active="draggedOver" />
-</v-chip-group>
+      <Assignment
+        :key="`assign-${index}`"
+        :event-id="eventId"
+        :index="index"
+        @dragenter.native.prevent.stop="assignmentDraggedOver[index] = true"
+        @dragleave.native.prevent.stop="assignmentDraggedOver[index] = false"
+        @dragover.native.prevent.stop
+        @drop.native.prevent.stop="assignmentDraggedOver[index] = false; handleDrop(index)"
+      />
+    </template>
+    <InsertAssignment :active="draggedOver" />
+  </v-chip-group>
 </template>
 <script>
 import Assignment from './Assignment'
@@ -29,14 +36,22 @@ import InsertAssignment from './InsertAssignment'
 import { eventProps, dragAssignProps } from '../store/utils'
 
 export default {
+  components: {
+    Assignment,
+    InsertAssignment,
+  },
+
+  props: {
+    eventId: {
+      type: Number,
+      required: true,
+    },
+  },
+
   data: () => ({
     draggedOver: false,
     assignmentDraggedOver: [],
   }),
-
-  props: {
-    eventId: {},
-  },
 
   computed: {
     ...eventProps(['assignments']),
@@ -54,9 +69,6 @@ export default {
       },
       immediate: true,
     },
-  },
-
-  mounted() {
   },
 
   methods: {
@@ -84,11 +96,6 @@ export default {
         this.$store.commit('events/addAssignment', {id: this.eventId, assignId: this.draggedAssign.assignId, index})
       }
     },
-  },
-
-  components: {
-    Assignment,
-    InsertAssignment,
   },
 }
 </script>

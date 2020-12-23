@@ -1,27 +1,23 @@
-const state = {
-  info: null,
-}
+import {Module} from 'vuex'
+import { State } from '..'
 
-const getters = {
-}
-
-const actions = {
-}
-
-const mutations = {
-  start(state, info) {
-    state.info = info
-  },
-
-  stop(state) {
-    state.info = null
-  },
+export interface DragAssignState {
+  draggedAssign?: number
 }
 
 export default {
   namespaced: true,
-  state,
-  getters,
-  actions,
-  mutations,
-}
+
+  state: {
+  },
+  
+  mutations: {
+    start(state, assignId) {
+      state.draggedAssign = assignId
+    },
+  
+    stop(state) {
+      state.draggedAssign = undefined
+    },
+  },
+} as Module<DragAssignState, State>

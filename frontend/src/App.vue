@@ -1,13 +1,13 @@
 <template>
   <v-app>
-    <v-content>
+    <v-main>
       <v-container fluid>
         <v-row no-gutters>
           <Planner />
           <Cooldowns />
         </v-row>
       </v-container>
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 
@@ -20,9 +20,12 @@ import {loadFromURL} from './store/plugins/url'
 
 export default Vue.extend({
   name: 'App',
-  data: () => ({
-  }),
 
+  components: {
+    Planner,
+    Cooldowns,
+  },
+  
   watch: {
     '$route':{
       handler(to) {
@@ -31,12 +34,7 @@ export default Vue.extend({
       immediate: true,
     },
   },
-
-  components: {
-    Planner,
-    Cooldowns,
-  },
-});
+})
 </script>
 
 <style lang="scss">

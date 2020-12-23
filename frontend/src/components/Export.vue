@@ -1,26 +1,42 @@
 <template>
-<v-card>
-  <v-tabs v-model="tab">
-    <v-tab v-for="key in tabOrder" :key="key" :href="`#${key}`">
-      <span>{{ formats[key].name }}</span>
-    </v-tab>
-  </v-tabs>
+  <v-card>
+    <v-tabs v-model="tab">
+      <v-tab v-for="key in tabOrder" :key="key" :href="`#${key}`">
+        <span>{{ formats[key].name }}</span>
+      </v-tab>
+    </v-tabs>
 
-  <v-row class="mx-0">
-    <v-checkbox v-model="ignoreEmpty" label="Ignore Empty" />
-  </v-row>
+    <v-row class="mx-0">
+      <v-checkbox v-model="ignoreEmpty" label="Ignore Empty" />
+    </v-row>
 
-  <v-select v-if="tab == 'ertp'" v-model="selectedPlayer" :items="players" clearable dense label="Select a Player" class="mx-2" />
+    <v-select
+      v-if="tab == 'ertp'"
+      v-model="selectedPlayer"
+      :items="players"
+      clearable
+      dense
+      label="Select a Player"
+      class="mx-2"
+    />
 
-  <v-card-text class="export-content">
-    <v-textarea auto-grow readonly full-width outlined :value="text" />
-  </v-card-text>
+    <v-card-text class="export-content">
+      <v-textarea
+        auto-grow
+        readonly
+        full-width
+        outlined
+        :value="text"
+      />
+    </v-card-text>
 
-  <v-card-actions>
-    <v-spacer />
-    <v-btn text @click="$emit('close')">Close</v-btn>
-  </v-card-actions>
-</v-card>
+    <v-card-actions>
+      <v-spacer />
+      <v-btn text @click="$emit('close')">
+        Close
+      </v-btn>
+    </v-card-actions>
+  </v-card>
 </template>
 <script>
 import { sortEvents } from '../store/modules/events'
@@ -111,9 +127,6 @@ export default {
     ignoreEmpty: true,
   }),
 
-  props: {
-  },
-
   computed: {
     text() {
       const format = this.formats[this.tab]
@@ -122,8 +135,8 @@ export default {
         return `Not implemented: ${format.name}`
       }
       return format.run(
-        this.$store.state.events.events,
-        this.$store.state.assigns.assigns,
+        this.$store.state.events,
+        this.$store.state.assigns,
         this.$store.state.name,
         this.config)
     },
@@ -140,15 +153,12 @@ export default {
     },
   },
 
-  methods: {
-  },
-
   mounted() {
   },
 
-  components: {
+  methods: {
   },
-};
+}
 </script>
 <style>
 .export-content {

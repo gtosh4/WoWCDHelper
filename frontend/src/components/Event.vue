@@ -1,37 +1,42 @@
 <template>
-<tr :id="rowId" class="event" :style="rowStyle"
-  @mouseenter="hovered=true"
-  @mouseleave="hovered=false"
->
-  <td class="event-time" :style="timeSyle">
-    <EventTextField v-model="timeStr" placeholder="0:0" />
-  </td>
+  <tr
+    :id="rowId"
+    class="event"
+    :style="rowStyle"
+    @mouseenter="hovered=true"
+    @mouseleave="hovered=false"
+  >
+    <td class="event-time" :style="timeSyle">
+      <EventTextField v-model="timeStr" placeholder="0:0" />
+    </td>
 
-  <td class="event-label" :style="labelStyle">
-    <EventTextField v-model="label" :placeholder="eventId ? 'unnamed' : 'new'" />
-  </td>
+    <td class="event-label" :style="labelStyle">
+      <EventTextField v-model="label" :placeholder="eventId ? 'unnamed' : 'new'" />
+    </td>
 
-  <td class="event-assignments" :style="assignmentsStyle">
-    <v-row no-gutters>
-      <v-col>
-        <AssignmentGroup v-if="eventId !== undefined"
-          :eventId="eventId"
-        />
-      </v-col>
-      <v-col align-right cols="auto">
-        <v-container pa-0 ma-0 fill-height>
-          <EventActions v-if="eventId !== undefined"
-            class="event-actions"
-            @clone="clone"
-            @clear="clear"
-            @remove="remove"
-            @config="$emit('config')"
+    <td class="event-assignments" :style="assignmentsStyle">
+      <v-row no-gutters>
+        <v-col>
+          <AssignmentGroup
+            v-if="eventId !== undefined"
+            :event-id="eventId"
           />
-        </v-container>
-      </v-col>
-    </v-row>
-  </td>
-</tr>
+        </v-col>
+        <v-col align-right cols="auto">
+          <v-container pa-0 ma-0 fill-height>
+            <EventActions
+              v-if="eventId !== undefined"
+              class="event-actions"
+              @clone="clone"
+              @clear="clear"
+              @remove="remove"
+              @config="$emit('config')"
+            />
+          </v-container>
+        </v-col>
+      </v-row>
+    </td>
+  </tr>
 </template>
 <script>
 import EventTextField from './EventTextField'
@@ -46,19 +51,23 @@ import {formatDuration} from './duration_utils'
 const endingNum = /(\d+)$/
 
 export default {
+  components: {
+    AssignmentGroup,
+    EventTextField,
+    EventActions,
+  },
+  
+  props: {
+    eventId: {
+      type: Number,
+      default: undefined, // required except for the empty row at the bottom for adding new events
+    },
+  },
+
   data: () => ({
     draggedOver: false,
     hovered: false,
   }),
-
-  props: {
-    eventId: {
-      required: true,
-    },
-  },
-
-  mounted() {
-  },
 
   computed: {
     ...eventProps(['time', 'label', 'assignments', 'colour']),
@@ -83,10 +92,10 @@ export default {
 
     prevDragSpellTime() {
       if (!this.draggedAssign || !this.time) return
-      const assign = this.$store.state.assigns.assigns[this.draggedAssign.assignId]
+      const assign = this.$store.state.assigns[this.draggedAssign.assignId]
       if (!assign || !assign.spell) return
 
-      const events = this.$store.getters["events/orderedEvents"].filter(e => 
+      const events = this.$store.getters["events/ordered"].filter(e => 
         (assign.eventId === undefined || e.eventId != assign.eventId) &&
         e.assignments.indexOf(assign.id) >= 0 &&
         (e.time && e.time.asSeconds() < this.time.asSeconds())
@@ -152,13 +161,7 @@ export default {
       this.$store.commit('events/delete', this.eventId)
     },
   },
-
-  components: {
-    AssignmentGroup,
-    EventTextField,
-    EventActions,
-  },
-};
+}
 </script>
 <style>
 .v-data-table .event td {

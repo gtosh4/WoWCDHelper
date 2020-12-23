@@ -13,7 +13,7 @@ export interface WowSpec {
 export interface SpecSpell {
   id: number
   options?: SpellOptions<any>[]
-  configure?: (any) => void
+  configure?(spell: any): void // eslint-disable-line
 }
 
 export interface SpellOptions<T> {
@@ -330,23 +330,23 @@ export const healers = [
   {className: 'shaman',  specName: 'restoration'},
 ]
 
-export function classColour(className) {
+export function classColour(className: string): string {
   const c = classes[className].colour
   return `rgb(${c.r}, ${c.g}, ${c.b})`
 }
 
-export function classIcon(className, size="small") {
+export function classIcon(className: string, size="small"): string {
   return `https://wow.zamimg.com/images/wow/icons/${size}/class_${className}.jpg`
 }
 
-export function specIcon(specInfo, size="tiny") {
+export function specIcon(specInfo: WowSpec, size="tiny"): string {
   return `https://wow.zamimg.com/images/wow/icons/${size}/${specInfo.icon}.gif`
 }
 
-export function abilityIcon(abilityName, size="tiny") {
+export function abilityIcon(abilityName: WowSpec, size="tiny"): string {
   return `https://wow.zamimg.com/images/wow/icons/${size}/ability_${abilityName}.gif`
 }
 
-export function spec(className, specName) {
-  return (classes[className] || {}).specs[specName] || {}
+export function spec(className: string, specName: string) {
+  return classes[className]?.specs?.[specName] || {}
 }

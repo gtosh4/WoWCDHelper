@@ -1,12 +1,24 @@
 <template>
   <v-card tile @keydown.esc.stop="close">
-    <v-color-picker v-model="colourPicker" :swatches="swatches" show-swatches flat hide-mode-switch />
+    <v-color-picker
+      v-model="colourPicker"
+      :swatches="swatches"
+      show-swatches
+      flat
+      hide-mode-switch
+    />
 
     <v-card-actions>
-      <v-btn @click="clear">Clear</v-btn>
+      <v-btn @click="clear">
+        Clear
+      </v-btn>
       <v-spacer />
-      <v-btn @click="discard">Discard</v-btn>
-      <v-btn @click="save">Save</v-btn>
+      <v-btn @click="discard">
+        Discard
+      </v-btn>
+      <v-btn @click="save">
+        Save
+      </v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -14,15 +26,16 @@
 import { eventProps } from '../store/utils'
 
 export default {
-  data: () => ({
-    colourPicker: null,
-  }),
-
   props: {
     eventId: {
+      type: Number,
       required: true,
     },
   },
+
+  data: () => ({
+    colourPicker: null,
+  }),
 
   computed: {
     ...eventProps(['colour']),

@@ -1,68 +1,72 @@
 <template>
-<v-card tile :color="classColour" class="assignee">
-  <v-card-title ref="player" class="player">
-    <v-icon class="handle">drag_indicator</v-icon>
-    <WowIcon :className="className" />
-    <WowIcon v-if="specName" :className="className" :specName="specName" />
-    <WowIcon v-else />
-    <v-text-field
-      v-model="nameTmp"
-      solo
-      flat
-      placeholder="Name"
-      hide-details
-      background-color="transparent"
-      @keydown.esc.stop="nameTmp = name"
-      @keydown.enter="name = nameTmp"
-      @blur="name = nameTmp"
-      class="name-field"
-    />
-    <v-menu>
-      <template #activator="{ on, attrs }">
-        <v-btn
-          v-bind="attrs"
-          v-on="on"
-          icon
-          tile
-        >
-          <v-icon>more_vert</v-icon>
-        </v-btn>
-      </template>
+  <v-card tile :color="classColour" class="assignee">
+    <v-card-title ref="player" class="player">
+      <v-icon class="handle">
+        drag_indicator
+      </v-icon>
+      <WowIcon :class-name="className" />
+      <WowIcon v-if="specName" :class-name="className" :spec-name="specName" />
+      <WowIcon v-else />
+      <v-text-field
+        v-model="nameTmp"
+        solo
+        flat
+        placeholder="Name"
+        hide-details
+        background-color="transparent"
+        class="name-field"
+        @keydown.esc.stop="nameTmp = name"
+        @keydown.enter="name = nameTmp"
+        @blur="name = nameTmp"
+      />
+      <v-menu>
+        <template #activator="{ on, attrs }">
+          <v-btn
+            v-bind="attrs"
+            icon
+            tile
+            v-on="on"
+          >
+            <v-icon>more_vert</v-icon>
+          </v-btn>
+        </template>
 
-      <v-list dense>
+        <v-list dense>
 
-        <v-list-item @click.stop="config = true">
-          <v-list-item-icon><v-icon>settings</v-icon></v-list-item-icon>
-          Settings
-        </v-list-item>
+          <v-list-item @click.stop="config = true">
+            <v-list-item-icon><v-icon>settings</v-icon></v-list-item-icon>
+            Settings
+          </v-list-item>
 
-        <v-list-item @click="clearAssign">
-          <v-list-item-icon><v-icon>backspace</v-icon></v-list-item-icon>
-          Clear assignments
-        </v-list-item>
+          <v-list-item @click="clearAssign">
+            <v-list-item-icon><v-icon>backspace</v-icon></v-list-item-icon>
+            Clear assignments
+          </v-list-item>
 
-        <v-list-item @click="deleteAssign">
-          <v-list-item-icon><v-icon>delete</v-icon></v-list-item-icon>
-          Delete
-        </v-list-item>
+          <v-list-item @click="deleteAssign">
+            <v-list-item-icon><v-icon>delete</v-icon></v-list-item-icon>
+            Delete
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </v-card-title>
+
+    <v-card-text class="playerspells">
+      <v-list>
+        <SpellAssignee v-for="(spell, i) in playerSpells" :key="i" :assign-id="spell.id" />
       </v-list>
-    </v-menu>
-  </v-card-title>
+    </v-card-text>
 
-  <v-card-text class="playerspells">
-    <v-list>
-      <SpellAssignee v-for="(spell, i) in playerSpells" :key="i" :assignId="spell.id" />
-    </v-list>
-  </v-card-text>
-
-  <v-dialog v-model="config" max-width="40vw">
-    <v-card>
-      <v-card-actions>
-        <v-btn @click="config = null">Close</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-</v-card>
+    <v-dialog v-model="config" max-width="40vw">
+      <v-card>
+        <v-card-actions>
+          <v-btn @click="config = null">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-card>
 </template>
 <script>
 import SpellAssignee from './SpellAssignee'
@@ -74,39 +78,22 @@ import {classes} from './wow_info'
 import {assignProps, dragAssignProps, player} from '../store/utils'
 
 export default {
-  data: () => ({
-    nameTmp: "",
-    config: null,
-  }),
+  components: {
+    WowIcon,
+    SpellAssignee,
+  },
 
   props: {
     assignId: {
+      type: String,
       required: true,
     },
   },
 
-  mounted() {
-    const chip = this.$refs.player
-    const handle = chip.querySelector(".handle")
-
-    handle.onmousedown = () => {
-      chip.setAttribute('draggable', 'true')
-    }
-    handle.onmouseup = () => {
-      chip.setAttribute('draggable', 'false')
-    }
-
-    chip.ondragstart = (e) => {
-      e.dataTransfer.setData("assignId", this.assignId)
-      this.draggedAssign = {
-        assignId: this.assignId,
-      }
-    }
-    chip.ondragend = () => {
-      chip.setAttribute('draggable', 'false')
-      this.draggedAssign = null
-    }
-  },
+  data: () => ({
+    nameTmp: "",
+    config: null,
+  }),
 
   computed: {
     ...dragAssignProps(),
@@ -136,20 +123,38 @@ export default {
     },
   },
 
+  mounted() {
+    const chip = this.$refs.player
+    const handle = chip.querySelector(".handle")
+
+    handle.onmousedown = () => {
+      chip.setAttribute('draggable', 'true')
+    }
+    handle.onmouseup = () => {
+      chip.setAttribute('draggable', 'false')
+    }
+
+    chip.ondragstart = (e) => {
+      e.dataTransfer.setData("assignId", this.assignId)
+      this.draggedAssign = {
+        assignId: this.assignId,
+      }
+    }
+    chip.ondragend = () => {
+      chip.setAttribute('draggable', 'false')
+      this.draggedAssign = null
+    }
+  },
+
   methods: {
     deleteAssign() {
-      this.$store.commit('deleteAssign', this.assignId)
+      this.$store.dispatch('assigns/remove', this.assignId)
     },
 
     clearAssign() {
-      this.$store.commit('clearAssign', this.assignId)
+      this.$store.commit('events/clearAssignment', this.assignId)
     },
   },
-
-  components: {
-    WowIcon,
-    SpellAssignee,
-  }
 }
 </script>
 
