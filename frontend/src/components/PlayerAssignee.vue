@@ -33,7 +33,7 @@
 
         <v-list dense>
 
-          <v-list-item @click.stop="config = true">
+          <v-list-item @click.stop="$emit('config', assignId)">
             <v-list-item-icon><v-icon>settings</v-icon></v-list-item-icon>
             Settings
           </v-list-item>
@@ -53,24 +53,19 @@
 
     <v-card-text class="playerspells">
       <v-list>
-        <SpellAssignee v-for="(spell, i) in playerSpells" :key="i" :assign-id="spell.id" />
+        <SpellAssignee
+          v-for="(spell, i) in playerSpells"
+          :key="i"
+          :assign-id="spell.id"
+          @config="id => $emit('config', id)"
+        />
       </v-list>
     </v-card-text>
-
-    <v-dialog v-model="config" max-width="40vw">
-      <v-card>
-        <v-card-actions>
-          <v-btn @click="config = null">
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-card>
 </template>
 <script>
-import SpellAssignee from './SpellAssignee'
-import WowIcon from './WowIcon'
+import SpellAssignee from './SpellAssignee.vue'
+import WowIcon from './WowIcon.vue'
 
 import Color from 'color'
 
@@ -92,7 +87,6 @@ export default {
 
   data: () => ({
     nameTmp: "",
-    config: null,
   }),
 
   computed: {

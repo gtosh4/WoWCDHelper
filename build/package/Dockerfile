@@ -1,7 +1,4 @@
 FROM node:slim as vue
-RUN npm install --quiet --global \
-      @vue/cli \
-      @vue/cli-service-global
 WORKDIR /frontend
 
 # Do dependencies first so that they can get cached

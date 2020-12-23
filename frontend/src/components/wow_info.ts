@@ -20,6 +20,7 @@ export interface SpellOptions<T> {
   text: string
   default: T
   prop: string
+  type: 'bool'
 }
 
 export interface Spell {
@@ -89,7 +90,7 @@ export const classes: {[className: string]: WowClass} = {
           { // Tranquility
             id: 740,
             options: [
-              {text: "Inner Peace", default: false, prop: 'inner_peace'},
+              {text: "Inner Peace", default: false, prop: 'inner_peace', type: 'bool'},
             ],
             configure(spell) {
               if (spell.cfg.inner_peace) {
@@ -190,11 +191,13 @@ export const classes: {[className: string]: WowClass} = {
           {id: 246287}, // Evangelism
           {id: 47536, // Rapture
             options: [
-              {text: "Spirit Shell", default: false, prop: 'spirit_shell'},
+              {text: "Spirit Shell", default: false, prop: 'spirit_shell', type: 'bool'},
             ],
             configure(spell) {
               if (spell.cfg.spirit_shell) {
                 Object.assign(spell, spells[109964])
+              } else {
+                Object.assign(spell, spells[47536])
               }
             },
           },

@@ -20,7 +20,7 @@
       </template>
 
       <v-list dense>
-        <v-list-item @click="$emit('config')">
+        <v-list-item @click="$emit('config', assignId)">
           <v-list-item-icon><v-icon>settings</v-icon></v-list-item-icon>
           Settings
         </v-list-item>
@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import Spell from './Spell'
+import Spell from './Spell.vue'
 
 import Color from 'color'
 import {classes, classIcon, specIcon, spec} from './wow_info'
@@ -65,8 +65,8 @@ export default {
   computed: {
     ...dragAssignProps(),
     ...assignProps(['name', 'className', 'specName', 'playerId']),
-    ...spell(),
     ...player(),
+    ...spell(),
 
     classColour() {
       const c = Color(classes[this.player.className].colour)

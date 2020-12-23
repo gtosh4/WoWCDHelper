@@ -17,23 +17,34 @@
 
     <v-list :style="{display: expanded ? '' : 'none'}">
       <v-list-item v-for="(player, index) in sortedPlayers" :key="index" class="player-container">
-        <PlayerAssignee :assign-id="player.id" />
+        <PlayerAssignee :assign-id="player.id" @config="openSettings" />
       </v-list-item>
     </v-list>
+
+    <v-dialog v-model="showSettings">
+      <AssigneeSettings
+        v-if="showSettings"
+        :assign-id="settingsAssignId"
+        @close="settingsAssignId = null"
+      />
+    </v-dialog>
   </v-card>
 </template>
 <script>
-import PlayerAssignee from './PlayerAssignee'
+import PlayerAssignee from './PlayerAssignee.vue'
+import AssigneeSettings from './AssigneeSettings.vue'
 
 import { mapGetters } from 'vuex'
 
 export default {
   components: {
     PlayerAssignee,
+    AssigneeSettings,
   },
 
   data: () => ({
     expanded: true,
+    settingsAssignId: null,
   }),
 
   computed: {
@@ -47,6 +58,19 @@ export default {
       return c
     },
 
+    showSettings: {
+      get() {
+        // return this.settingsAssignId != null
+        return false
+      },
+
+      set(v) {
+        if (!v) {
+          this.settingsAssignId = null
+        }
+      },
+    },
+
     sortedPlayers() {
       return [...this.players].sort((a, b) => {
         let c = a.className.localeCompare(b.className)
@@ -58,6 +82,12 @@ export default {
         c = a.id - b.id
         return c
       })
+    },
+  },
+
+  methods: {
+    openSettings(assignId) {
+      this.settingsAssignId = assignId
     },
   },
 }

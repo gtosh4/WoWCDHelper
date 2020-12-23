@@ -88,10 +88,11 @@ export function spell() {
 export function player() {
   return {
     player(this: HasAssign) {
-      if (this.assignId === undefined) return undefined
+      if (this.assignId == undefined) return undefined
       const assign = this.$store.state.assigns.assigns[this.assignId]
+      if (assign == undefined) return undefined
       return this.$store.state.assigns.assigns[assign.playerId]
-    }
+    },
   }
 }
 

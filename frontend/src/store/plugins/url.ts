@@ -49,7 +49,7 @@ function shortenAssign(assign: Assign) {
 function expandAssign(a: any): Assign {
   if (a.p) {
     const assign = {
-      id: a.id,
+      id: `${a.id}`,
       playerId: a.p,
       type: "spell",
     } as SpellAssign
@@ -62,7 +62,7 @@ function expandAssign(a: any): Assign {
     return assign
   } else {
     const assign = {
-      id: a.id,
+      id: `${a.id}`,
       name: a.n,
       playerId: a.id,
       className: a.c,
