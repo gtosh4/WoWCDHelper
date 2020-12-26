@@ -13,7 +13,7 @@ function nextEventId(state: EventState) {
 }
 
 export function sortEvents(events: {[id: string]: Event}) {
-  return [...Object.values(events)].sort((a, b) => {
+  return Object.values(events).sort((a, b) => {
     if (a.time != null && typeof(a.time.asSeconds) == 'function' && b.time != null && typeof(b.time.asSeconds) == 'function') {
       const t = a.time.asSeconds() - b.time.asSeconds()
       if (t != 0) return t

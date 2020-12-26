@@ -23,6 +23,7 @@
         <template #activator="{ on, attrs }">
           <v-btn
             v-bind="attrs"
+            tabindex="-1"
             icon
             tile
             v-on="on"

@@ -49,7 +49,7 @@ function formatRows(formatLabel, formatPlayer, formatSpell) {
   return (events, assigns, name, config) => {
     var fmtEvts = sortEvents(events)
     if (config.ignoreEmpty) {
-      fmtEvts = fmtEvts.filter(e => e.assignments.length > 0)
+      fmtEvts = fmtEvts.filter(e => e.assignments && e.assignments.length > 0)
     }
     const rows = fmtEvts.map(event => {
       const assignments = [...event.assignments.map(a => assigns[a])]
@@ -135,8 +135,8 @@ export default {
         return `Not implemented: ${format.name}`
       }
       return format.run(
-        this.$store.state.events,
-        this.$store.state.assigns,
+        this.$store.state.events.events,
+        this.$store.state.assigns.assigns,
         this.$store.state.name,
         this.config)
     },
