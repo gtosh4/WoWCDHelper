@@ -1,18 +1,10 @@
-import Vue from 'vue'
-import VueResource from 'vue-resource'
+import App from './App.svelte';
 
-import App from './App.vue'
-import vuetify from './plugins/vuetify'
-import router from './plugins/router'
-import store from './store'
+const app = new App({
+	target: document.body,
+	props: {
+		name: 'world'
+	}
+});
 
-Vue.use(VueResource)
-
-Vue.config.productionTip = false
-
-new Vue({
-  render: h => h(App),
-  vuetify,
-  store,
-  router,
-}).$mount('#app')
+export default app;
