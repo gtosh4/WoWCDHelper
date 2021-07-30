@@ -15,7 +15,8 @@ func registerApi(s *Server) {
 	r := s.router.Group("api")
 
 	r.GET("/class-info", s.handleClassInfo)
-	r.GET("/class/:name/icon", s.handleClassIcon)
+	r.GET("/class/:class/icon", s.handleClassIcon)
+	r.GET("/class/:class/:spec/icon", s.handleSpecIcon)
 }
 
 func (s *Server) classInfo(ctx context.Context) (classes []wowgd.PlayableClass, err error) {
@@ -51,11 +52,6 @@ func (s *Server) handleClassInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, ci)
 }
 
-func (s *Server) classMedia(ctx context.Context, id int) (media *wowgd.PlayableClassMedia, err error) {
-	media, _, err = s.clients.Blizz.WoWPlayableClassMedia(ctx, id)
-	return
-}
-
 func (s *Server) classNameToID(ctx context.Context, name string) (int, error) {
 	var id int
 	ci, err := s.classInfo(ctx)
@@ -79,8 +75,9 @@ func (s *Server) classNameToID(ctx context.Context, name string) (int, error) {
 }
 
 func (s *Server) handleClassIcon(c *gin.Context) {
-	name := c.Param("name")
-	id, err := s.classNameToID(c.Request.Context(), name)
+	class := c.Param("class")
+
+	id, err := s.classNameToID(c.Request.Context(), class)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -89,14 +86,60 @@ func (s *Server) handleClassIcon(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	s.log.Sugar().Debugf("Found id %d for class %s", id, name)
+	s.log.Sugar().Debugf("Found id %d for class %s", id, class)
 
-	media, err := s.classMedia(c.Request.Context(), id)
+	media, _, err := s.clients.Blizz.WoWPlayableClassMedia(c.Request.Context(), id)
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
+	for _, asset := range media.Assets {
+		if asset.Key == "icon" {
+			s.log.Sugar().Debugf("redirecting to %s", asset.Value)
+			c.Redirect(http.StatusTemporaryRedirect, asset.Value)
+			return
+		}
+	}
+	c.AbortWithStatus(http.StatusNotFound)
+}
+
+func (s *Server) classSpecToID(ctx context.Context, class string, spec string) (int, error) {
+	ci, err := s.classInfo(ctx)
+	if err != nil {
+		return 0, err
+	}
+	for _, classInfo := range ci {
+		if strings.EqualFold(class, classInfo.Name) {
+			for _, specInfo := range classInfo.Specializations {
+				if strings.EqualFold(spec, specInfo.Name) {
+					return specInfo.ID, nil
+				}
+			}
+		}
+	}
+
+	return 0, nil
+}
+
+func (s *Server) handleSpecIcon(c *gin.Context) {
+	class := c.Param("class")
+	spec := c.Param("spec")
+	specID, err := s.classSpecToID(c.Request.Context(), class, spec)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if specID == 0 {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	media, _, err := s.clients.Blizz.WoWPlayableSpecializationMedia(c.Request.Context(), specID)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 	for _, asset := range media.Assets {
 		if asset.Key == "icon" {
 			s.log.Sugar().Debugf("redirecting to %s", asset.Value)
