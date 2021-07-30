@@ -1,0 +1,15 @@
+{
+  "_links": {
+    "self": {
+      "href": "https://us.api.blizzard.com/data/wow/media/playable-class/2?namespace=static-9.1.0_39069-us"
+    }
+  },
+  "assets": [
+    {
+      "key": "icon",
+      "value": "https://render-us.worldofwarcraft.com/icons/56/classicon_paladin.jpg",
+      "id": 0
+    }
+  ],
+  "id": 2
+}

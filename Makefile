@@ -10,7 +10,7 @@ FRONTEND_FILES ?= $(shell find . -path './frontend/src/*')
 .PHONY: all
 all: bin/wcdh
 
-bin/wcdh: fmt test $(GO_FILES) bin/frontend/dist vendor/modules.txt
+bin/wcdh: fmt test $(GO_FILES) bin/frontend/dist go.sum
 	go build  -v -o $@ ./cmd/wcdh
 
 frontend/node_modules: frontend/package.json
@@ -23,10 +23,8 @@ bin/frontend/dist: frontend/dist
 	mkdir -p bin/frontend/
 	ln -s ../../frontend/dist $@
 
-vendor/modules.txt: go.mod go.sum
+go.sum: go.mod
 	go mod tidy
-	go mod vendor
-
 
 .PHONY: test
 test:
