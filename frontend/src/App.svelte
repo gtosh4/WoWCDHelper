@@ -1,30 +1,57 @@
 <script lang="ts">
-	export let name: string;
+  import Tab, { Label } from "@smui/tab/styled";
+  import TabBar from "@smui/tab-bar/styled";
+  import Roster from "./roster/Roster.svelte";
+  import Assignments from "./assignments/Assignments.svelte";
+
+  import url from "./url";
+  import { onMount } from "svelte";
+
+  const tabs = [
+    { id: "roster", path: "/#/", component: Roster },
+    { id: "assignments", path: "/#/assignments", component: Assignments },
+  ];
+
+  let active = tabs[0];
+
+  let mounted = false;
+  onMount(() => {
+    const path: string = $url.hash;
+    const tabid = path.replace(/^#\//, "").split("/")[0];
+    const tab = tabs.filter((t) => t.id == tabid);
+    if (tab && tab[0]) active = tab[0];
+    mounted = true;
+  });
+
+  $: if (mounted) {
+    history.pushState(active.path, "", active.path);
+  }
 </script>
 
 <main>
-	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
+  <TabBar {tabs} let:tab bind:active>
+    <Tab {tab} minWidth>
+      <Label>{tab.id}</Label>
+    </Tab>
+  </TabBar>
+
+  {#each tabs as { id, component } (id)}
+    <div class="page-tab" class:active={active.id == id}>
+      <svelte:component this={component} />
+    </div>
+  {/each}
 </main>
 
-<style>
-	main {
-		text-align: center;
-		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
+<style lang="scss">
+  main {
+    width: 100%;
+  }
 
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
-	}
+  .page-tab {
+    display: none;
 
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
-	}
+    &.active {
+      display: inherit;
+    }
+  }
 </style>
