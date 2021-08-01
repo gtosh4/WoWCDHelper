@@ -7,5 +7,5 @@ import (
 )
 
 func registerFrontend(s *Server) {
-	s.router.NoRoute(gin.WrapH(http.FileServer(http.Dir("./web/dist"))))
+	s.router.NoRoute(gin.WrapH(http.FileServer(http.Dir("./frontend/public"))))
 }

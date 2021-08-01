@@ -1,0 +1,140 @@
+---
+# warrior/arms
+71: [
+  97462, # Rallying Cry
+]
+
+# warrior/fury
+72: [
+  97462, # Rallying Cry
+]
+
+# warrior/protection
+73: [
+  97462, # Rallying Cry
+]
+
+# paladin/holy
+65: [
+  31821, # Aura Mastery
+  31884, # Avenging Wrath
+],
+
+# paladin/protection
+66: [],
+
+# paladin/retribution
+70: [],
+
+# hunter/beast_mastery
+253: [],
+
+# hunter/marksmanship
+254: [],
+
+# hunter/survival
+255: [],
+
+# rogue/assassination
+259: [],
+
+# rogue/outlaw
+260: [],
+
+# rogue/sublety
+261: [],
+
+# priest/discipline
+256: [
+  62618, # Power Word: Barrier
+  47536, # Rapture
+],
+
+# priest/holy
+257: [
+  64843, # Divine Hymn
+],
+
+# priest/shadow
+258: [
+  15286, # Vampiric Embrace
+],
+
+# death_knight/blood
+250: [
+  51052, # Anti-magic Zone
+],
+
+# death_knight/frost
+251: [
+  51052, # Anti-magic Zone
+],
+
+# death_knight/unholy
+252: [
+  51052, # Anti-magic Zone
+],
+
+# shaman/elemental
+262: [],
+
+# shaman/enhancement
+263: [],
+
+# shaman/restoration
+264: [
+  108280, # Healing Tide Totem
+  98008, # Spirit Link Totem
+],
+
+# mage/arcane
+62: [],
+
+# mage/fire
+63: [],
+
+# mage/frost
+64: [],
+
+# warlock/affliction
+265: [],
+
+# warlock/demonology
+266: [],
+
+# warlock/destruction
+267: [],
+
+# monk/brewmaster
+268: [],
+
+# monk/windwalker
+269: [],
+
+# monk/mistweaver
+270: [
+  115310, # Revival
+  322118, # Invoke Yu'lon
+],
+
+# druid/balance
+102: [],
+
+# druid/feral
+103: [],
+
+# druid/guardian
+104: [],
+
+# druid/restoration
+105: [
+  740, # Tranquility
+],
+
+# demon_hunter/havoc
+577: [
+  196718, # Darkness
+],
+
+# demon_hunter/vengeance
+581: [],

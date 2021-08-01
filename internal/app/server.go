@@ -6,17 +6,17 @@ import (
 	"github.com/chenjiandongx/ginprom"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/gtosh4/WoWCDHelper/internal/pkg/context"
+	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"go.uber.org/zap"
 )
 
 type Server struct {
 	router  *gin.Engine
 	log     *zap.Logger
-	clients *context.Clients
+	clients *clients.Clients
 }
 
-func NewServer(clients *context.Clients) *Server {
+func NewServer(clients *clients.Clients) *Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	s := &Server{
@@ -31,8 +31,10 @@ func NewServer(clients *context.Clients) *Server {
 
 	registerMetricsHandler(s)
 	registerDebug(s)
+	registerWoWApi(s)
+	registerTeamApi(s)
+
 	registerFrontend(s)
-	registerApi(s)
 
 	return s
 }
