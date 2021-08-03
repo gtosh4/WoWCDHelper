@@ -9,11 +9,11 @@ import (
 
 type (
 	Member struct {
-		ID        uint   `json:"id" gorm:"primaryKey"`
-		Team      Team   `json:"team" gorm:"foreignKey:ID"`
+		ID        uint   `json:"id" gorm:"primaryKey;autoIncrement:true"`
+		TeamID    string `json:"team"`
+		Team      Team   `json:"-" gorm:"foreignKey:TeamID"`
 		Name      string `json:"name"`
 		ClassName string `json:"className"`
-		ClassIcon string `json:"classIcon" gorm:"-"`
 	}
 
 	Roster []Member
@@ -27,6 +27,9 @@ type (
 func (t *Team) BeforeCreate(tx *gorm.DB) (err error) {
 	if t.ID == "" {
 		t.ID = node.Snowflake.Generate().Base58()
+	}
+	if t.LastViewed.IsZero() {
+		t.LastViewed = time.Now()
 	}
 	return nil
 }

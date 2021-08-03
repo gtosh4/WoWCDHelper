@@ -13,22 +13,9 @@
     Icon,
   } from "@smui/segmented-button/styled";
 
-  interface member {
-    id: number;
-    name: string;
-    classIcon: string;
-    className: string;
-  }
-
-  let membersLoaded = false;
-  let members: member[] = [];
-  fetch("/team/test")
-    .then((r) => r.json())
-    .then((r) => {
-      members = r;
-      membersLoaded = true;
-    })
-    .catch((e) => console.error("error loading members", e));
+  import type { Member } from "./api";
+  import { CurrentTeam } from "./api";
+  import WowIcon from "../wow/WowIcon.svelte";
 
   let createName: string = "";
   let createClass: string = "";
@@ -43,14 +30,46 @@
     {
       name: "Delete",
       icon: "delete",
-      exec: (m: member) => {
-        members = [...members.filter((e) => e.id != m.id)];
+      exec: (m: Member) => {
+        CurrentTeam.deleteMember(m.id);
       },
     },
     { name: "Clone", icon: "content_copy", exec: () => {} },
   ];
 
   let hovered: number | null = null;
+
+  let addMember = {
+    name: "Add",
+    icon: "add",
+    color: "green",
+    enabled: false,
+    exec: () => {
+      CurrentTeam.addMember({
+        id: 0,
+        name: createName,
+        className: createClass,
+      });
+      createName = "";
+      createClass = "";
+    },
+  };
+  let clearAdd = {
+    name: "Clear",
+    icon: "clear",
+    color: "red",
+    enabled: false,
+    exec: () => {
+      createName = "";
+      createClass = "";
+    },
+  };
+  $: if (createName && createClass) {
+    addMember = { ...addMember, enabled: true };
+  }
+  $: if (createName || createClass) {
+    clearAdd = { ...clearAdd, enabled: true };
+  }
 </script>
 
 <DataTable class="roster-table">
@@ -59,7 +78,7 @@
       <Cell columnId="name">
         <Label>Name</Label>
       </Cell>
-      <Cell columnId="class" width="42px">
+      <Cell columnId="class">
         <Label>Class</Label>
       </Cell>
       <Cell columnId="actions" />
@@ -67,7 +86,7 @@
   </Head>
 
   <Body>
-    {#each members as member (member.id)}
+    {#each $CurrentTeam as member (member.id)}
       <Row
         on:mouseenter={() => (hovered = member.id)}
         on:mouseleave={() => (hovered = null)}
@@ -76,11 +95,7 @@
           <Textfield variant="outlined" bind:value={member.name} />
         </Cell>
         <Cell>
-          <img
-            src={member.classIcon}
-            alt={member.className}
-            class="class-icon"
-          />
+          <WowIcon className={member.className} />
         </Cell>
         <Cell>
           <SegmentedButton
@@ -110,30 +125,66 @@
       <Cell>
         <Textfield variant="outlined" bind:value={createName} />
       </Cell>
-      <Cell colspan="2">
-        <Select
-          key={(c) => (c && c.id) || ""}
-          bind:value={createClass}
-          width="10em"
-        >
+      <Cell>
+        <Select key={(c) => (c && c.id) || ""} bind:value={createClass}>
+          <Option value="" />
           {#each classes as cls (cls.id)}
             <Option value={cls.name}>{cls.name}</Option>
           {/each}
         </Select>
       </Cell>
+      <Cell>
+        <SegmentedButton
+          segments={[addMember, clearAdd]}
+          let:segment
+          singleSelect
+          key={(segment) => segment.name}
+          class="class-select"
+        >
+          <Segment
+            {segment}
+            title={segment.name}
+            disabled={!segment.enabled}
+            color={segment.color}
+            on:click$preventDefault={segment.exec()}
+          >
+            <Icon class="material-icons" style="width: 1em; height: auto;">
+              {segment.icon}
+            </Icon>
+          </Segment>
+        </SegmentedButton>
+      </Cell>
     </Row>
   </Body>
 </DataTable>
+<Select key={(c) => (c && c.id) || ""} bind:value={createClass} width="10em">
+  {#each classes as cls (cls.id)}
+    <Option value={cls.name}>{cls.name}</Option>
+  {/each}
+</Select>
 
 <style lang="scss">
   .class-icon {
     height: 32px;
   }
 
-  :global(.roster-table) {
-    & tr {
-      height: 42px;
-    }
+  :global(button.mdc-segmented-button__segment:disabled) {
+    cursor: default;
+    pointer-events: none;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.38);
+  }
+
+  :global(.mdc-select__menu.class-select) {
+    position: absolute;
+  }
+
+  :global(.roster-table tr) {
+    height: 42px;
+  }
+
+  :global(.roster-table .mdc-text-field) {
+    height: 100%;
   }
 
   :global(.roster-action) {

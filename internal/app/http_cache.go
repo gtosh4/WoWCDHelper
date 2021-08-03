@@ -28,7 +28,7 @@ func (c *HTTPBigCache) Set(key string, responseBytes []byte) {
 }
 func (c *HTTPBigCache) Delete(key string) {
 	err := c.Cache.Delete(key)
-	if err != nil {
+	if err != nil && !errors.Is(err, bigcache.ErrEntryNotFound) {
 		c.Log.Warnf("got error deleting %s: %v", key, err)
 	}
 }

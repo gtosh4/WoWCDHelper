@@ -1,13 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/FuzzyStatic/blizzard/v2"
+	"github.com/FuzzyStatic/blizzard/v3"
 	"github.com/allegro/bigcache"
 	"github.com/bwmarrin/snowflake"
 	"github.com/gregjones/httpcache"
@@ -18,6 +17,8 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+	gormlogger "gorm.io/gorm/logger"
 	"gorm.io/plugin/prometheus"
 	"moul.io/zapgorm2"
 
@@ -25,7 +26,6 @@ import (
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/node"
 	"github.com/gtosh4/WoWCDHelper/pkg/teams"
-	"github.com/gtosh4/WoWCDHelper/pkg/wow"
 )
 
 var root = &cobra.Command{
@@ -66,7 +66,11 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		logLevel.SetLevel(zap.DebugLevel)
 	}
 	clients.Log = zap.New(
-		zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()), zapcore.AddSync(os.Stdout), logLevel),
+		zapcore.NewCore(
+			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
+			zapcore.AddSync(os.Stdout),
+			logLevel,
+		),
 	)
 
 	node.Snowflake, err = snowflake.NewNode(int64(cfg.NodeID))
@@ -76,6 +80,9 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	dbLog := zapgorm2.New(clients.Log)
+	if cfg.Debug {
+		dbLog.LogLevel = gormlogger.Info
+	}
 	dbLog.SetAsDefault()
 	dbCfg := &gorm.Config{
 		Logger: dbLog,
@@ -106,12 +113,11 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		MetricsCollector: dbMetrics,
 	}))
 
-	clients.Blizz = blizzard.NewClient(
-		cfg.BlizzClientID,
-		cfg.BlizzClientSecret,
-		blizzard.US,
-		blizzard.EnUS,
-	)
+	err = initDB(clients)
+	if err != nil {
+		err = errors.Wrap(err, "could not init DB")
+		return
+	}
 
 	cache, err := bigcache.NewBigCache(bigcache.DefaultConfig(time.Hour))
 	if err != nil {
@@ -119,12 +125,16 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
-	clients.Blizz.SetHTTPClient(wrapBlizzHTTP(clients.Log, cache, clients.Blizz.GetHTTPClient()))
-
-	// initDB requires Blizz API, so make sure this runs after
-	err = initDB(clients)
+	clients.Blizz, err = blizzard.NewClient(
+		blizzard.Config{
+			ClientID:     cfg.BlizzClientID,
+			ClientSecret: cfg.BlizzClientSecret,
+			HTTPClient:   cachedHTTPClient(clients.Log, cache),
+			Region:       blizzard.US,
+			Locale:       blizzard.EnUS,
+		})
 	if err != nil {
-		err = errors.Wrap(err, "could not init DB")
+		err = errors.Wrap(err, "could not create blizz client")
 		return
 	}
 
@@ -133,51 +143,29 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 	return srv.Run(fmt.Sprintf(":%d", cfg.Port))
 }
 
-func wrapBlizzHTTP(log *zap.Logger, cache *bigcache.BigCache, h *http.Client) *http.Client {
+func cachedHTTPClient(log *zap.Logger, cache *bigcache.BigCache) *http.Client {
 	transport := httpcache.NewTransport(&app.HTTPBigCache{
 		Log:   log.Sugar().Named("cache"),
 		Cache: cache,
 	})
-	transport.Transport = h.Transport
-	h.Transport = transport
-	return h
+	return transport.Client()
 }
 
 func initDB(clients *clients.Clients) error {
 	db := clients.DB
 	err := db.AutoMigrate(
-		&teams.Member{},
 		&teams.Team{},
+		&teams.Member{},
 	)
 	if err != nil {
 		return errors.Wrap(err, "error migrating tables")
 	}
 
-	ctx := context.Background()
-
-	iconForClass := func(class string) string {
-		id, err := wow.ClassNameToID(ctx, clients, class)
-		if err != nil {
-			return ""
-		}
-		media, _, err := clients.Blizz.WoWPlayableClassMedia(ctx, id)
-		if err != nil {
-			return ""
-		}
-
-		for _, asset := range media.Assets {
-			if asset.Key == "icon" {
-				return asset.Value
-			}
-		}
-		return ""
-	}
-
 	testTeam := teams.Team{ID: "test"}
 
-	test := teams.Roster{
-		{Team: testTeam, Name: "Tosh", ClassName: "Shaman", ClassIcon: iconForClass("shaman")},
-		{Team: testTeam, Name: "Jess", ClassName: "Priest", ClassIcon: iconForClass("priest")},
+	test := []teams.Member{
+		{Team: testTeam, Name: "Tosh", ClassName: "Shaman"},
+		{Team: testTeam, Name: "Jess", ClassName: "Priest"},
 	}
 
 	err = db.Create(&test).Error
@@ -186,10 +174,10 @@ func initDB(clients *clients.Clients) error {
 	}
 
 	test = append(test, teams.Member{
-		Team: testTeam, Name: "Sci", ClassName: "Paladin", ClassIcon: iconForClass("paladin"),
+		Team: testTeam, Name: "Sci", ClassName: "Paladin",
 	})
 
-	err = db.Create(&test).Error
+	err = db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&test).Error
 	if err != nil {
 		return errors.Wrap(err, "error appending test roster")
 	}

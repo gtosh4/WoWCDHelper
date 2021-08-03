@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/FuzzyStatic/blizzard/v2/wowgd"
+	"github.com/FuzzyStatic/blizzard/wowgd"
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 )
 

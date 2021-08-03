@@ -1,7 +1,7 @@
 <script lang="ts">
   import Tab, { Label } from "@smui/tab/styled";
   import TabBar from "@smui/tab-bar/styled";
-  import Roster from "./roster/Roster.svelte";
+  import Roster from "./team/Roster.svelte";
   import Assignments from "./assignments/Assignments.svelte";
 
   import url from "./url";

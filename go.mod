@@ -3,12 +3,12 @@ module github.com/gtosh4/WoWCDHelper
 go 1.16
 
 // pending merge of https://github.com/FuzzyStatic/blizzard/pull/41
-replace github.com/FuzzyStatic/blizzard v1.2.3 => github.com/gtosh4/blizzard v1.2.4
+// replace github.com/FuzzyStatic/blizzard v1.2.3 => github.com/gtosh4/blizzard v1.2.4
 
 require (
-	github.com/FuzzyStatic/blizzard v1.2.3
+	github.com/FuzzyStatic/blizzard v1.3.0
 	github.com/allegro/bigcache v1.2.1
-	github.com/bwmarrin/snowflake v0.3.0 // indirect
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/chenjiandongx/ginprom v0.0.0-20210617023641-6c809602c38a
 	github.com/gin-contrib/zap v0.0.1
 	github.com/gin-gonic/gin v1.7.2
