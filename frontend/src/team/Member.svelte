@@ -5,15 +5,13 @@
   export let memberId: number;
 
   $: member = TeamMember(memberId);
-
-  $: console.log("member", $member);
 </script>
 
 <div class="member">
   {#if $member}
     <WowIcon
       playerClass={$member.classId}
-      spec={$member.config.primary_spec}
+      spec={$member.config.primarySpec}
       class="icon"
       height={24}
     />

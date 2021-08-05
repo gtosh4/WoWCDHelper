@@ -23,7 +23,7 @@ type (
 	MemberConfig struct {
 		MemberID    uint  `json:"-"`
 		Specs       Specs `json:"specs"`
-		PrimarySpec int   `json:"primary_spec"`
+		PrimarySpec int   `json:"primarySpec"`
 	}
 
 	Roster []Member

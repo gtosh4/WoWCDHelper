@@ -87,11 +87,21 @@ func (s *Server) handleCreateTeam(c *gin.Context) {
 }
 
 func (s *Server) handleNewMember(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
 	var m teams.Member
 	err := c.Bind(&m)
 	if err != nil {
 		return
 	}
+	m.TeamID = id
+
+	s.log.Sugar().Infof("Creating %+v", m)
+
 	err = s.clients.DB.
 		Clauses(clause.OnConflict{UpdateAll: true}).
 		Create(&m).
@@ -100,11 +110,18 @@ func (s *Server) handleNewMember(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+
+	s.log.Sugar().Infof("Created %+v", m)
+
 	c.JSON(http.StatusOK, m)
 }
 
 func (s *Server) handleUpdateMember(c *gin.Context) {
 	id := c.Param("id")
+	if id == "" {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 	memberId, err := strconv.ParseInt(c.Param("member"), 10, 64)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
@@ -139,6 +156,10 @@ func (s *Server) handleUpdateMember(c *gin.Context) {
 
 func (s *Server) handleDeleteMember(c *gin.Context) {
 	id := c.Param("id")
+	if id == "" {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 	memberId, err := strconv.ParseInt(c.Param("member"), 10, 64)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)

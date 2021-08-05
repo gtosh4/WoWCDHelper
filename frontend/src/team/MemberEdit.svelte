@@ -1,75 +1,80 @@
 <script lang="ts">
   import Card, { Actions, ActionButtons } from "@smui/card/styled";
   import Textfield from "@smui/textfield/styled";
-  import Select, { Option } from "@smui/select/styled";
   import Button, { Icon, Label } from "@smui/button/styled";
-  import WowIcon from "../wow/WowIcon.svelte";
+  import ClassSelect from "../wow/ClassSelect.svelte";
 
-  import { TeamMember } from "./api";
-  import { Classes, SortClassByName } from "../wow/api";
+  import { CurrentTeam, TeamMember } from "./api";
+  import type { Member } from "./api";
   import { createEventDispatcher } from "svelte";
+  import SpecSelect from "../wow/SpecSelect.svelte";
 
   export let memberId: number | undefined = undefined;
 
-  $: console.log("edit1", memberId);
-
   const dispatch = createEventDispatcher();
-
-  let memberName = "";
-  let classId = ""; // Use strings: https://github.com/hperrin/svelte-material-ui/issues/252
 
   $: member = memberId ? TeamMember(memberId) : undefined;
 
-  $: if ($member) {
-    memberName = $member.name;
-  }
-  $: if ($member) {
-    classId = `${$member.classId}`;
-  }
+  let localId,
+    localName = "",
+    localClassId = 0,
+    localSpecs: number[] = [],
+    localPrimarySpec = 0;
 
-  $: console.log("edit2", { memberName, classId, member: $member });
+  $: if ($member && localId != $member.id) {
+    localId = $member.id;
+    localName = $member.name;
+    localClassId = $member.classId;
+    localSpecs = $member.config.specs;
+    localPrimarySpec = $member.config.primarySpec;
+  }
 
   function save() {
+    const newMember: Member = {
+      id: localId,
+      name: localName,
+      classId: localClassId,
+      config: {
+        specs: localSpecs,
+        primarySpec: localPrimarySpec,
+      },
+    };
+
     if ($member) {
-      member.update((m) => {
-        m.name = memberName;
-        m.classId = +classId;
-        return m;
-      });
+      $member = newMember;
     } else {
+      CurrentTeam.addMember(newMember);
     }
-    dispatch("close");
+    cancel();
   }
 
   function cancel() {
+    localId = undefined;
+    localClassId = 0;
+    localName = "";
+    localClassId = 0;
+    localSpecs = [];
+    localPrimarySpec = 0;
+
     dispatch("close");
   }
 </script>
 
 <Card padded class="member-edit">
-  <Textfield bind:value={memberName} label="Name" />
+  <Textfield
+    style="width: 100%;"
+    helperLine$style="width: 100%;"
+    bind:value={localName}
+    label="Name"
+  />
 
-  <Select
-    key={(m) => (m && m.id) || 0}
-    bind:value={classId}
-    label="Class"
-    list$dense
-  >
-    <WowIcon
-      slot="leadingIcon"
-      playerClass={classId}
-      class="class-icon"
-      height={24}
-    />
-    {#await $Classes then classes}
-      {#each [...classes.values()].sort(SortClassByName) as cls (cls.id)}
-        <Option value={`${cls.id}`}>
-          <WowIcon playerClass={cls.id} class="class-icon" height={24} />
-          {cls.name}
-        </Option>
-      {/each}
-    {/await}
-  </Select>
+  <ClassSelect bind:value={localClassId} />
+
+  <SpecSelect
+    classId={localClassId}
+    bind:specs={localSpecs}
+    bind:primarySpec={localPrimarySpec}
+  />
 
   <Actions>
     <ActionButtons>

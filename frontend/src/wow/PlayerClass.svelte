@@ -5,16 +5,10 @@
 
   export let playerClass: number;
 
-  $: className = $Classes.then((cs) => cs.get(playerClass).name);
+  $: name = $Classes.get(playerClass).name;
 </script>
 
 <div>
   <WowIcon {playerClass} class="class-icon" height={24} />
-  <span>
-    {#await className}
-      ...
-    {:then name}
-      {name}
-    {/await}
-  </span>
+  <span>{name}</span>
 </div>

@@ -17,7 +17,7 @@ export interface Member {
 
 export interface MemberConfig {
   specs: number[];
-  primary_spec: number;
+  primarySpec: number;
 }
 
 export interface Team {
@@ -60,11 +60,18 @@ function createTeam() {
     }
   });
 
+  const addMember = (m: Member) => {
+    fetch(`/team/${teamId}/member`, { method: "POST", body: JSON.stringify(m) })
+      .then(reload)
+      .catch((e) => console.error(`error adding member`, { m, e }));
+  };
+
   return {
     subscribe: team.subscribe,
     set: team.set,
     update: team.update,
     reload,
+    addMember,
     teamID() {
       return teamId;
     },
@@ -79,8 +86,8 @@ export function SortMemberIds(a: number, b: number) {
   const mB = team.get(b);
   if (mA.classId != mB.classId) {
     return mA.classId - mB.classId;
-  } else if (mA.config.primary_spec != mB.config.primary_spec) {
-    return mA.config.primary_spec - mB.config.primary_spec;
+  } else if (mA.config.primarySpec != mB.config.primarySpec) {
+    return mA.config.primarySpec - mB.config.primarySpec;
   } else if (mA.name < mB.name) return -1;
   else if (mA.name > mB.name) return 1;
   else return mA.id - mB.id;
@@ -101,6 +108,7 @@ export function TeamMember(id: number) {
         console.error("error updating member", { member: m, err: e })
       );
   };
+
   const update = (f: Updater<Member>) => {
     CurrentTeam.update((t) => {
       const oldM = t.get(id);

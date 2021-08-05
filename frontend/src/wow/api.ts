@@ -1,6 +1,5 @@
 import { derived, Readable } from "svelte/store";
 import { writable } from "svelte/store";
-import { asyncable } from "svelte-asyncable";
 
 export interface PlayerClass {
   id: number;
@@ -27,14 +26,27 @@ export function SortClassByName(a, b) {
   else return 0;
 }
 
-export const Classes = asyncable(async () => {
-  return fetch("/wow/classes")
+function createClasses() {
+  const w = writable(new Map<number, PlayerClass>());
+  const r = { subscribe: w.subscribe };
+
+  fetch("/wow/classes")
     .then((r) => r.json() as Promise<PlayerClass[]>)
-    .then((r) => new Map(r.map((cls) => [cls.id, cls])));
-});
+    .then((r) =>
+      w.update((m) => {
+        m.clear();
+        r.forEach((cls) => m.set(cls.id, cls));
+        return m;
+      })
+    );
+
+  return r;
+}
+
+export const Classes = createClasses();
 
 export const ClassList = derived(Classes, (p) =>
-  p.then((r) => [...r.values()].sort(SortClassByName))
+  [...p.values()].sort(SortClassByName)
 );
 
 const specs = new Map<number, Readable<Specialization | undefined>>();

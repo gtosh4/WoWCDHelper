@@ -18,8 +18,6 @@
     src = `/wow/class/${playerClass}/icon`;
     alt = playerClass.toString();
   }
-
-  $: console.log("icon", { src, alt });
 </script>
 
 <img {src} {alt} {...$$restProps} />
