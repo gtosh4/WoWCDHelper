@@ -4,8 +4,8 @@
   import Roster from "./team/Roster.svelte";
   import Assignments from "./assignments/Assignments.svelte";
 
-  import url from "./url";
   import { onMount } from "svelte";
+  import { HashPathPart } from "./url";
 
   const tabs = [
     { id: "roster", path: "/#/", component: Roster },
@@ -14,17 +14,17 @@
 
   let active = tabs[0];
 
+  const TabPath = HashPathPart(1);
+
   let mounted = false;
   onMount(() => {
-    const path: string = $url.hash;
-    const tabid = path.replace(/^#\//, "").split("/")[0];
-    const tab = tabs.filter((t) => t.id == tabid);
-    if (tab && tab[0]) active = tab[0];
+    const tab = tabs.filter((t) => t.id == $TabPath);
+    if (tab && tab.length > 0) active = tab[0];
     mounted = true;
   });
 
   $: if (mounted) {
-    history.pushState(active.path, "", active.path);
+    TabPath.set(active.id);
   }
 </script>
 

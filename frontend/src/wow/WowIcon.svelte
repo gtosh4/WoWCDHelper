@@ -1,20 +1,25 @@
 <script lang="ts">
-  export let className: string = "";
-  export let specName: string = "";
+  export let playerClass: string | number = "";
+  export let spec: string | number = "";
   export let spellName: string | number = "";
 
   let src: string;
   let alt: string;
-  if (spellName) {
+  $: if (spellName) {
     src = `/wow/spell/${spellName}/icon`;
     alt = spellName.toString();
-  } else if (className && specName) {
-    src = `/wow/class/${className}/${specName}/icon`;
-    alt = specName;
-  } else if (className) {
-    src = `/wow/class/${className}/icon`;
-    alt = className;
+  } else if (spec && typeof spec == "number") {
+    src = `/wow/spec/${spec}/icon`;
+    alt = spec.toString();
+  } else if (playerClass && spec) {
+    src = `/wow/class/${playerClass}/${spec}/icon`;
+    alt = spec.toString();
+  } else if (playerClass) {
+    src = `/wow/class/${playerClass}/icon`;
+    alt = playerClass.toString();
   }
+
+  $: console.log("icon", { src, alt });
 </script>
 
 <img {src} {alt} {...$$restProps} />

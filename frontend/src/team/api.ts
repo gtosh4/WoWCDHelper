@@ -1,10 +1,23 @@
-import { writable } from "svelte/store";
-import url from "../url";
+import {
+  derived,
+  get,
+  Readable,
+  Updater,
+  Writable,
+  writable,
+} from "svelte/store";
+import { HashPath, HashPathPart } from "../url";
 
 export interface Member {
   id: number;
   name: string;
-  className: string;
+  classId: number;
+  config: MemberConfig;
+}
+
+export interface MemberConfig {
+  specs: number[];
+  primary_spec: number;
 }
 
 export interface Team {
@@ -13,74 +26,114 @@ export interface Team {
 
 function createTeam() {
   let teamId: string | null = null;
-  const team = writable<Member[]>([]);
+  const team = writable<Map<number, Member>>(new Map());
 
-  let inCreate = false;
-  url.subscribe((href) => {
-    const param = href.searchParams.get("team");
-    if (param && param != teamId) {
-      teamId = param;
-      if (!inCreate) {
-        fetch(`/team/${teamId}`)
-          .then((r) => r.json())
-          .then((r) => {
-            team.set(r);
-          })
-          .catch((e) => console.error(`error loading team ${teamId}`, e));
-      }
-    }
-  });
+  const update = (r: Member[]) =>
+    team.update((t) => {
+      t.clear();
+      r.forEach((m) => t.set(m.id, m));
+      return t;
+    });
 
-  team.subscribe((ms: Member[]) => {
-    let init: Promise<any> = Promise.resolve();
-    if (!teamId) {
-      init = fetch("/team/new", { method: "POST" })
+  const reload = () => {
+    if (teamId) {
+      fetch(`/team/${teamId}`)
         .then((r) => r.json())
-        .then((r) => (teamId = r.id))
-        .then(() => {
-          inCreate = true;
-          url.update((u) => {
-            u.searchParams.set("team", teamId);
-            return u;
-          });
-          inCreate = false;
-        });
+        .then(update)
+        .catch((e) => console.error(`error loading team ${teamId}`, e));
     }
-    init
-      .then(() => {
-        fetch(`/team/${teamId}`, { method: "PUT", body: JSON.stringify(ms) })
-          .then((r) => r.json())
-          .then((r: Member[]) => {
-            // mutate the member list so it doesn't trigger another fetch
-            while (ms.length > 0) ms.pop();
-            r.forEach((m) => ms.push(m));
-          });
-      })
-      .catch((e) => console.error(`error saving team ${teamId}`, e));
+  };
+
+  const TeamPath = HashPathPart(0);
+  TeamPath.subscribe((param) => {
+    if (!param) {
+      fetch("/team/new", { method: "POST" })
+        .then((r) => {
+          const createdId = r.headers.get("Location").replace(/\/team\//, "");
+          teamId = createdId;
+          TeamPath.set(createdId);
+        })
+        .catch((e) => console.error("error creating new team", e));
+    } else if (param != teamId) {
+      teamId = param;
+      reload();
+    }
   });
 
   return {
     subscribe: team.subscribe,
     set: team.set,
     update: team.update,
-
-    updateMember: (m: Member) =>
-      team.update((ms: Member[]) => {
-        ms.filter((e) => e.id == m.id).map((e) => Object.assign(e, m));
-        return ms;
-      }),
-
-    deleteMember: (id: number) =>
-      team.update((ms: Member[]) => {
-        return ms.filter((e) => e.id != id);
-      }),
-
-    addMember: (m: Member) =>
-      team.update((ms: Member[]) => {
-        ms.push(m);
-        return ms;
-      }),
+    reload,
+    teamID() {
+      return teamId;
+    },
   };
 }
 
 export const CurrentTeam = createTeam();
+
+export function SortMemberIds(a: number, b: number) {
+  const team = get(CurrentTeam);
+  const mA = team.get(a);
+  const mB = team.get(b);
+  if (mA.classId != mB.classId) {
+    return mA.classId - mB.classId;
+  } else if (mA.config.primary_spec != mB.config.primary_spec) {
+    return mA.config.primary_spec - mB.config.primary_spec;
+  } else if (mA.name < mB.name) return -1;
+  else if (mA.name > mB.name) return 1;
+  else return mA.id - mB.id;
+}
+
+export function TeamMember(id: number) {
+  const subscribe = derived(CurrentTeam, (t) => t.get(id)).subscribe;
+
+  const set = (m: Member) => {
+    if (m.id != id) return;
+
+    fetch(`/team/${CurrentTeam.teamID()}/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(m),
+    })
+      .then(() => CurrentTeam.update((t) => t.set(id, m)))
+      .catch((e) =>
+        console.error("error updating member", { member: m, err: e })
+      );
+  };
+  const update = (f: Updater<Member>) => {
+    CurrentTeam.update((t) => {
+      const oldM = t.get(id);
+      const newM = f(oldM);
+      if (newM.id != id) return;
+
+      fetch(`/team/${CurrentTeam.teamID()}/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(newM),
+      })
+        .then(() => t.set(id, newM))
+        .catch((e) =>
+          console.error("error updating member", { oldM, newM, err: e })
+        );
+
+      return t;
+    });
+  };
+
+  const remove = () => {
+    fetch(`/team/${CurrentTeam.teamID()}/${id}`, { method: "DELETE" }).then(
+      () =>
+        CurrentTeam.update((t) => {
+          t.delete(id);
+          return t;
+        })
+    );
+  };
+
+  return {
+    subscribe,
+    set,
+    update,
+    remove,
+  };
+}

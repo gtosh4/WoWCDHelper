@@ -8,6 +8,7 @@ import (
 
 	"github.com/FuzzyStatic/blizzard/wowgd"
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
+	"github.com/pkg/errors"
 )
 
 func ClassInfo(ctx context.Context, clients *clients.Clients) (classes []wowgd.PlayableClass, err error) {
@@ -35,25 +36,21 @@ func ClassInfo(ctx context.Context, clients *clients.Clients) (classes []wowgd.P
 }
 
 func ClassNameToID(ctx context.Context, clients *clients.Clients, name string) (int, error) {
-	var id int
+	id, err := strconv.ParseInt(name, 10, 63)
+	if err == nil {
+		return int(id), nil
+	}
 	ci, err := ClassInfo(ctx, clients)
 	if err != nil {
 		return 0, err
 	}
 	for _, info := range ci {
 		if strings.EqualFold(name, info.Name) {
-			id = info.ID
-			break
-		}
-	}
-	if id == 0 {
-		i64, err := strconv.ParseInt(name, 10, 64)
-		if err == nil {
-			id = int(i64)
+			return info.ID, nil
 		}
 	}
 
-	return id, nil
+	return 0, errors.Errorf("class '%s' not found", name)
 }
 
 func ClassSpecToID(ctx context.Context, clients *clients.Clients, class string, spec string) (int, error) {

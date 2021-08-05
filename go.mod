@@ -24,6 +24,7 @@ require (
 	go.uber.org/zap v1.18.1
 	golang.org/x/net v0.0.0-20210525063256-abc453219eb5
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
+	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	google.golang.org/protobuf v1.27.1 // indirect
 	gorm.io/driver/mysql v1.1.1
 	gorm.io/driver/sqlite v1.1.4

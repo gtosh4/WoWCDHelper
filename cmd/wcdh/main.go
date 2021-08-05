@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"golang.org/x/time/rate"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -25,6 +26,7 @@ import (
 	"github.com/gtosh4/WoWCDHelper/internal/app"
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/node"
+	ratelimit "github.com/gtosh4/WoWCDHelper/internal/pkg/rate_limit"
 	"github.com/gtosh4/WoWCDHelper/pkg/teams"
 )
 
@@ -129,7 +131,7 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		blizzard.Config{
 			ClientID:     cfg.BlizzClientID,
 			ClientSecret: cfg.BlizzClientSecret,
-			HTTPClient:   cachedHTTPClient(clients.Log, cache),
+			HTTPClient:   blizzHTTPClient(clients.Log, cache),
 			Region:       blizzard.US,
 			Locale:       blizzard.EnUS,
 		})
@@ -143,18 +145,24 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 	return srv.Run(fmt.Sprintf(":%d", cfg.Port))
 }
 
-func cachedHTTPClient(log *zap.Logger, cache *bigcache.BigCache) *http.Client {
+func blizzHTTPClient(log *zap.Logger, cache *bigcache.BigCache) *http.Client {
 	transport := httpcache.NewTransport(&app.HTTPBigCache{
 		Log:   log.Sugar().Named("cache"),
 		Cache: cache,
 	})
-	return transport.Client()
+	transport.Transport = &ratelimit.Transport{
+		Ratelimiter: rate.NewLimiter(rate.Every(90/time.Second), 90),
+	}
+	client := transport.Client()
+	client.Timeout = 1 * time.Minute
+	return client
 }
 
 func initDB(clients *clients.Clients) error {
 	db := clients.DB
 	err := db.AutoMigrate(
 		&teams.Team{},
+		&teams.MemberConfig{},
 		&teams.Member{},
 	)
 	if err != nil {
@@ -164,8 +172,24 @@ func initDB(clients *clients.Clients) error {
 	testTeam := teams.Team{ID: "test"}
 
 	test := []teams.Member{
-		{Team: testTeam, Name: "Tosh", ClassName: "Shaman"},
-		{Team: testTeam, Name: "Jess", ClassName: "Priest"},
+		{
+			Team:    testTeam,
+			Name:    "Tosh",
+			ClassID: 7, /* Shaman */
+			Config: teams.MemberConfig{
+				Specs:       []int{264},
+				PrimarySpec: 264,
+			},
+		},
+		{
+			Team:    testTeam,
+			Name:    "Jess",
+			ClassID: 5, /* Priest */
+			Config: teams.MemberConfig{
+				Specs:       []int{257},
+				PrimarySpec: 257,
+			},
+		},
 	}
 
 	err = db.Create(&test).Error
@@ -174,7 +198,13 @@ func initDB(clients *clients.Clients) error {
 	}
 
 	test = append(test, teams.Member{
-		Team: testTeam, Name: "Sci", ClassName: "Paladin",
+		Team:    testTeam,
+		Name:    "Sci",
+		ClassID: 2, /* Paladin */
+		Config: teams.MemberConfig{
+			Specs:       []int{65, 70},
+			PrimarySpec: 65,
+		},
 	})
 
 	err = db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&test).Error
