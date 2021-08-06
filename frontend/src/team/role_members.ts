@@ -1,39 +1,29 @@
 import { Readable, writable } from "svelte/store";
 import { Spec } from "../wow/api";
-import { CurrentTeam, SortMemberIds } from "./api";
+import { CurrentTeam, SortMembers } from "./api";
 
-export function RoleMembers(roleName: string): Readable<number[]> {
-  const w = writable<number[]>([]);
+export function RoleMembers(roleName: string): Readable<Promise<number[]>> {
+  const w = writable<Promise<number[]>>(Promise.resolve([]));
 
-  const subs = [];
-
-  CurrentTeam.subscribe((t) => {
-    while (subs.length > 0) {
-      const unsub = subs.pop();
-      unsub();
-    }
-    t.forEach((m) => {
-      if (!m.config.primarySpec) return;
-
-      const spec = Spec(m.config.primarySpec);
-
-      const sub = spec.subscribe((s) => {
-        if (!s) return;
-
-        w.update((members) => {
-          const set = new Set(members);
-          if (s.role.name == roleName) {
-            set.add(m.id);
-          } else {
-            set.delete(m.id);
-          }
-          return [...set].sort(SortMemberIds);
-        });
-      });
-
-      subs.push(sub);
-    });
-  });
+  CurrentTeam.subscribe((p) =>
+    w.set(
+      p.then((t) =>
+        Promise.all(
+          [...t.values()].map((m) => {
+            const specId = m?.config?.primarySpec;
+            return Spec(specId).then((s) => ({ m, s }));
+          })
+        ).then((entries) => {
+          console.log("updating", { roleName, entries });
+          return entries
+            .filter((e) => e.s.role.name == roleName)
+            .map((e) => e.m)
+            .sort(SortMembers)
+            .map((m) => m.id);
+        })
+      )
+    )
+  );
 
   return { subscribe: w.subscribe };
 }

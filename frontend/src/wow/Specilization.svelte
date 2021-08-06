@@ -10,5 +10,11 @@
 
 <div {...$$restProps}>
   <WowIcon spec={specId} class="spec-icon" height={24} />
-  <span>{$spec.name}</span>
+  <span>
+    {#await spec}
+      ...
+    {:then s}
+      {s.name}
+    {/await}
+  </span>
 </div>

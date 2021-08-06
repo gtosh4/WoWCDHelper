@@ -1,12 +1,5 @@
-import {
-  derived,
-  get,
-  Readable,
-  Updater,
-  Writable,
-  writable,
-} from "svelte/store";
-import { HashPath, HashPathPart } from "../url";
+import { derived, get, Updater, writable } from "svelte/store";
+import { HashPathPart } from "../url";
 
 export interface Member {
   id: number;
@@ -20,27 +13,17 @@ export interface MemberConfig {
   primarySpec: number;
 }
 
-export interface Team {
-  id: number;
-}
-
 function createTeam() {
   let teamId: string | null = null;
-  const team = writable<Map<number, Member>>(new Map());
-
-  const update = (r: Member[]) =>
-    team.update((t) => {
-      t.clear();
-      r.forEach((m) => t.set(m.id, m));
-      return t;
-    });
+  const w = writable<Promise<Map<number, Member>>>(Promise.resolve(new Map()));
 
   const reload = () => {
     if (teamId) {
-      fetch(`/team/${teamId}`)
-        .then((r) => r.json())
-        .then(update)
-        .catch((e) => console.error(`error loading team ${teamId}`, e));
+      w.set(
+        fetch(`/team/${teamId}`)
+          .then((r) => r.json() as Promise<Member[]>)
+          .then((r) => new Map(r.map((m) => [m.id, m])))
+      );
     }
   };
 
@@ -49,7 +32,9 @@ function createTeam() {
     if (!param) {
       fetch("/team/new", { method: "POST" })
         .then((r) => {
-          const createdId = r.headers.get("Location").replace(/\/team\//, "");
+          const createdId = r.headers
+            .get("Location")
+            .match(/\/team\/([^/]+)/)[1];
           teamId = createdId;
           TeamPath.set(createdId);
         })
@@ -67,9 +52,7 @@ function createTeam() {
   };
 
   return {
-    subscribe: team.subscribe,
-    set: team.set,
-    update: team.update,
+    subscribe: w.subscribe,
     reload,
     addMember,
     teamID() {
@@ -80,63 +63,46 @@ function createTeam() {
 
 export const CurrentTeam = createTeam();
 
-export function SortMemberIds(a: number, b: number) {
-  const team = get(CurrentTeam);
-  const mA = team.get(a);
-  const mB = team.get(b);
-  if (mA.classId != mB.classId) {
-    return mA.classId - mB.classId;
-  } else if (mA.config.primarySpec != mB.config.primarySpec) {
-    return mA.config.primarySpec - mB.config.primarySpec;
-  } else if (mA.name < mB.name) return -1;
-  else if (mA.name > mB.name) return 1;
-  else return mA.id - mB.id;
+export function SortMembers(a: Member, b: Member) {
+  if (a.classId != b.classId) {
+    return a.classId - b.classId;
+  } else if (a.config.primarySpec != b.config.primarySpec) {
+    return a.config.primarySpec - b.config.primarySpec;
+  } else if (a.name < b.name) return -1;
+  else if (a.name > b.name) return 1;
+  else return a.id - b.id;
 }
 
 export function TeamMember(id: number) {
-  const subscribe = derived(CurrentTeam, (t) => t.get(id)).subscribe;
+  const subscribe = derived(CurrentTeam, (p) =>
+    p.then((t) => t.get(id))
+  ).subscribe;
 
-  const set = (m: Member) => {
+  const set = async (m: Member) => {
     if (m.id != id) return;
 
-    fetch(`/team/${CurrentTeam.teamID()}/${id}`, {
+    return fetch(`/team/${CurrentTeam.teamID()}/${id}`, {
       method: "PUT",
       body: JSON.stringify(m),
-    })
-      .then(() => CurrentTeam.update((t) => t.set(id, m)))
-      .catch((e) =>
-        console.error("error updating member", { member: m, err: e })
-      );
+    }).then(() => CurrentTeam.reload());
   };
 
-  const update = (f: Updater<Member>) => {
-    CurrentTeam.update((t) => {
+  const update = async (f: Updater<Member>) =>
+    get(CurrentTeam).then((t) => {
       const oldM = t.get(id);
       const newM = f(oldM);
       if (newM.id != id) return;
 
-      fetch(`/team/${CurrentTeam.teamID()}/${id}`, {
+      return fetch(`/team/${CurrentTeam.teamID()}/${id}`, {
         method: "PUT",
         body: JSON.stringify(newM),
-      })
-        .then(() => t.set(id, newM))
-        .catch((e) =>
-          console.error("error updating member", { oldM, newM, err: e })
-        );
-
-      return t;
+      }).then(() => CurrentTeam.reload());
     });
-  };
 
-  const remove = () => {
+  const remove = async () =>
     fetch(`/team/${CurrentTeam.teamID()}/${id}`, { method: "DELETE" }).then(
-      () =>
-        CurrentTeam.update((t) => {
-          t.delete(id);
-          return t;
-        })
+      () => CurrentTeam.reload()
     );
-  };
 
   return {
     subscribe,

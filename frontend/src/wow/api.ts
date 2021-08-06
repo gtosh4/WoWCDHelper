@@ -1,6 +1,3 @@
-import { derived, Readable } from "svelte/store";
-import { writable } from "svelte/store";
-
 export interface PlayerClass {
   id: number;
   name: string;
@@ -26,43 +23,26 @@ export function SortClassByName(a, b) {
   else return 0;
 }
 
-function createClasses() {
-  const w = writable(new Map<number, PlayerClass>());
-  const r = { subscribe: w.subscribe };
+export const Classes = fetch("/wow/classes")
+  .then((r) => r.json() as Promise<PlayerClass[]>)
+  .then((r) => new Map(r.map((cls) => [cls.id, cls])));
 
-  fetch("/wow/classes")
-    .then((r) => r.json() as Promise<PlayerClass[]>)
-    .then((r) =>
-      w.update((m) => {
-        m.clear();
-        r.forEach((cls) => m.set(cls.id, cls));
-        return m;
-      })
-    );
-
-  return r;
-}
-
-export const Classes = createClasses();
-
-export const ClassList = derived(Classes, (p) =>
-  [...p.values()].sort(SortClassByName)
+export const ClassList = Classes.then((cs) =>
+  [...cs.values()].sort(SortClassByName)
 );
 
-const specs = new Map<number, Readable<Specialization | undefined>>();
+const specs = new Map<number, Promise<Specialization>>();
 
-export function Spec(id: number): Readable<Specialization | undefined> {
+export function Spec(id?: number): Promise<Specialization> {
+  if (!id) return Promise.reject("'id' undefined");
   if (specs.has(id)) {
     return specs.get(id);
   }
-  const w = writable<Specialization | undefined>(undefined);
-  const r = { subscribe: w.subscribe };
-  specs.set(id, r);
+  const p = fetch(`/wow/spec/${id}`).then(
+    (r) => r.json() as Promise<Specialization>
+  );
 
-  fetch(`/wow/spec/${id}`)
-    .then((r) => r.json())
-    .then((r) => w.set(r))
-    .catch((e) => console.error(`error fetching spec ${id}`, e));
+  specs.set(id, p);
 
-  return r;
+  return p;
 }

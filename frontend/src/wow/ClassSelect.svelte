@@ -2,9 +2,10 @@
   import Button, { Label, Icon } from "@smui/button/styled";
   import Menu from "@smui/menu/styled";
   import List, { Item } from "@smui/list/styled";
+  import LinearProgress from "@smui/linear-progress/styled";
   import PlayerClass from "./PlayerClass.svelte";
 
-  import { Classes, ClassList, SortClassByName } from "./api";
+  import { ClassList } from "./api";
   import { classMap } from "@smui/common/classMap";
 
   export let value = 0;
@@ -16,8 +17,9 @@
     menuOpen = false;
   }
 
-  let selectedIndex;
-  $: selectedIndex = $ClassList.map((cls) => cls.id).indexOf(value);
+  $: selectedIndex = ClassList.then((l) =>
+    l.map((cls) => cls.id).indexOf(value)
+  );
 </script>
 
 <div
@@ -40,18 +42,21 @@
   </div>
 
   <Menu bind:open={menuOpen}>
-    <List dense role="listbox" bind:selectedIndex>
-      {#await $ClassList then cs}
+    {#await ClassList}
+      <LinearProgress indeterminate />
+    {:then cs}
+      <List
+        dense
+        role="listbox"
+        selectedIndex={cs.map((c) => c.id).indexOf(value)}
+      >
         {#each cs as cls, idx (cls.id)}
-          <Item
-            on:SMUI:action={() => select(cls.id)}
-            selected={idx == selectedIndex}
-          >
+          <Item on:SMUI:action={() => select(cls.id)} selected={idx == value}>
             <PlayerClass playerClass={cls.id} />
           </Item>
         {/each}
-      {/await}
-    </List>
+      </List>
+    {/await}
   </Menu>
 </div>
 

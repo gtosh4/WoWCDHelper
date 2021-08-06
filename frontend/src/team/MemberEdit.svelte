@@ -2,6 +2,7 @@
   import Card, { Actions, ActionButtons } from "@smui/card/styled";
   import Textfield from "@smui/textfield/styled";
   import Button, { Icon, Label } from "@smui/button/styled";
+  import LinearProgress from "@smui/linear-progress/styled";
   import ClassSelect from "../wow/ClassSelect.svelte";
 
   import { CurrentTeam, TeamMember } from "./api";
@@ -21,12 +22,16 @@
     localSpecs: number[] = [],
     localPrimarySpec = 0;
 
-  $: if ($member && localId != $member.id) {
-    localId = $member.id;
-    localName = $member.name;
-    localClassId = $member.classId;
-    localSpecs = $member.config.specs;
-    localPrimarySpec = $member.config.primarySpec;
+  $: if ($member) {
+    $member.then((m) => {
+      if (localId != m.id) {
+        localId = m.id;
+        localName = m.name;
+        localClassId = m.classId;
+        localSpecs = m.config.specs;
+        localPrimarySpec = m.config.primarySpec;
+      }
+    });
   }
 
   function save() {
@@ -61,6 +66,9 @@
 </script>
 
 <Card padded class="member-edit">
+  {#await $member}
+    <LinearProgress indeterminate />
+  {/await}
   <Textfield
     style="width: 100%;"
     helperLine$style="width: 100%;"

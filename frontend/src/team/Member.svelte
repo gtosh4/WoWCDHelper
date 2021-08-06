@@ -1,5 +1,7 @@
 <script lang="ts">
+  import LinearProgress from "@smui/linear-progress/styled";
   import WowIcon from "../wow/WowIcon.svelte";
+
   import { TeamMember } from "./api";
 
   export let memberId: number;
@@ -8,15 +10,17 @@
 </script>
 
 <div class="member">
-  {#if $member}
+  {#await $member}
+    <LinearProgress indeterminate />
+  {:then m}
     <WowIcon
-      playerClass={$member.classId}
-      spec={$member.config.primarySpec}
+      playerClass={m.classId}
+      spec={m.config.primarySpec}
       class="icon"
       height={24}
     />
-    <span>{$member.name}</span>
-  {/if}
+    <span>{m.name}</span>
+  {/await}
 </div>
 
 <style lang="scss">
