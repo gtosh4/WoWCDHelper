@@ -13,14 +13,13 @@ export function RoleMembers(roleName: string): Readable<Promise<number[]>> {
             const specId = m?.config?.primarySpec;
             return Spec(specId).then((s) => ({ m, s }));
           })
-        ).then((entries) => {
-          console.log("updating", { roleName, entries });
-          return entries
+        ).then((entries) =>
+          entries
             .filter((e) => e.s.role.name == roleName)
             .map((e) => e.m)
             .sort(SortMembers)
-            .map((m) => m.id);
-        })
+            .map((m) => m.id)
+        )
       )
     )
   );

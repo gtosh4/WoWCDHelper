@@ -3,6 +3,7 @@ import { HashPathPart } from "../url";
 
 export interface Member {
   id: number;
+  team: string;
   name: string;
   classId: number;
   config: MemberConfig;
@@ -46,7 +47,11 @@ function createTeam() {
   });
 
   const addMember = (m: Member) => {
-    fetch(`/team/${teamId}/member`, { method: "POST", body: JSON.stringify(m) })
+    fetch(`/team/${teamId}/member`, {
+      method: "POST",
+      body: JSON.stringify(m),
+      headers: { "Content-Type": "application/json" },
+    })
       .then(reload)
       .catch((e) => console.error(`error adding member`, { m, e }));
   };
@@ -84,6 +89,7 @@ export function TeamMember(id: number) {
     return fetch(`/team/${CurrentTeam.teamID()}/${id}`, {
       method: "PUT",
       body: JSON.stringify(m),
+      headers: { "Content-Type": "application/json" },
     }).then(() => CurrentTeam.reload());
   };
 
@@ -96,6 +102,7 @@ export function TeamMember(id: number) {
       return fetch(`/team/${CurrentTeam.teamID()}/${id}`, {
         method: "PUT",
         body: JSON.stringify(newM),
+        headers: { "Content-Type": "application/json" },
       }).then(() => CurrentTeam.reload());
     });
 

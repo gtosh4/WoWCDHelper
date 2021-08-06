@@ -151,7 +151,7 @@ func blizzHTTPClient(log *zap.Logger, cache *bigcache.BigCache) *http.Client {
 		Cache: cache,
 	})
 	transport.Transport = &ratelimit.Transport{
-		Ratelimiter: rate.NewLimiter(rate.Every(90/time.Second), 90),
+		Ratelimiter: rate.NewLimiter(rate.Every(20/time.Second), 20),
 	}
 	client := transport.Client()
 	client.Timeout = 1 * time.Minute

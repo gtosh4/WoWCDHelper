@@ -22,21 +22,10 @@
     localSpecs: number[] = [],
     localPrimarySpec = 0;
 
-  $: if ($member) {
-    $member.then((m) => {
-      if (localId != m.id) {
-        localId = m.id;
-        localName = m.name;
-        localClassId = m.classId;
-        localSpecs = m.config.specs;
-        localPrimarySpec = m.config.primarySpec;
-      }
-    });
-  }
-
-  function save() {
-    const newMember: Member = {
+  function localMember(): Member {
+    return {
       id: localId,
+      team: CurrentTeam.teamID(),
       name: localName,
       classId: localClassId,
       config: {
@@ -44,9 +33,30 @@
         primarySpec: localPrimarySpec,
       },
     };
+  }
 
-    if ($member) {
-      $member = newMember;
+  $: if ($member) {
+    $member.then((m) => {
+      if (localId != m.id) {
+        console.log("loading member for edit", {
+          member: $member,
+          local: localMember(),
+        });
+        localId = m.id;
+        localName = m.name;
+        localClassId = m.classId;
+        localSpecs.length = 0;
+        m.config.specs.forEach((s) => localSpecs.push(s));
+        localPrimarySpec = m.config.primarySpec;
+      }
+    });
+  }
+
+  function save() {
+    const newMember = localMember();
+
+    if (member) {
+      member.set(newMember);
     } else {
       CurrentTeam.addMember(newMember);
     }
@@ -58,9 +68,8 @@
     localClassId = 0;
     localName = "";
     localClassId = 0;
-    localSpecs = [];
+    localSpecs.length = 0;
     localPrimarySpec = 0;
-
     dispatch("close");
   }
 </script>
@@ -69,6 +78,7 @@
   {#await $member}
     <LinearProgress indeterminate />
   {/await}
+
   <Textfield
     style="width: 100%;"
     helperLine$style="width: 100%;"

@@ -6,9 +6,11 @@ export function ClassSpecs(classId: number): Promise<Specialization[]> {
     if (!c) return [];
 
     return Promise.all(
-      c.specializations.map((specId) => {
-        return Spec(specId.id);
-      })
+      c.specializations
+        .sort((a, b) => a.id - b.id)
+        .map((specId) => {
+          return Spec(specId.id);
+        })
     );
   });
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gtosh4/WoWCDHelper/pkg/teams"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -119,12 +120,14 @@ func (s *Server) handleNewMember(c *gin.Context) {
 func (s *Server) handleUpdateMember(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
+		s.log.Sugar().Warn("empty team id")
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 	memberId, err := strconv.ParseInt(c.Param("member"), 10, 64)
 	if err != nil {
-		c.AbortWithStatus(http.StatusNotFound)
+		s.log.Sugar().With(zap.String("teamId", id)).Warnf("bad member id: %s", c.Param("member"))
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
@@ -147,6 +150,7 @@ func (s *Server) handleUpdateMember(c *gin.Context) {
 		Create(&m).
 		Error
 	if err != nil {
+		s.log.Sugar().With(zap.String("teamId", id), zap.Int64("memberId", memberId)).Warnf("error updating DB: %v", err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
