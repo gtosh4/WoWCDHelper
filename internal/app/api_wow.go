@@ -1,6 +1,7 @@
 package app
 
 import (
+	"io"
 	"net/http"
 	"strconv"
 
@@ -74,8 +75,7 @@ func (s *Server) handleClassIcon(c *gin.Context) {
 
 	for _, asset := range media.Assets {
 		if asset.Key == "icon" {
-			s.log.Sugar().Debugf("redirecting to %s", asset.Value)
-			c.Redirect(http.StatusTemporaryRedirect, asset.Value)
+			s.iconResponse(c, asset.Value)
 			return
 		}
 	}
@@ -116,8 +116,7 @@ func (s *Server) handleSpecIcon(c *gin.Context) {
 	}
 	for _, asset := range media.Assets {
 		if asset.Key == "icon" {
-			s.log.Sugar().Debugf("redirecting to %s", asset.Value)
-			c.Redirect(http.StatusTemporaryRedirect, asset.Value)
+			s.iconResponse(c, asset.Value)
 			return
 		}
 	}
@@ -144,8 +143,7 @@ func (s *Server) handleClassSpecIcon(c *gin.Context) {
 	}
 	for _, asset := range media.Assets {
 		if asset.Key == "icon" {
-			s.log.Sugar().Debugf("redirecting to %s", asset.Value)
-			c.Redirect(http.StatusTemporaryRedirect, asset.Value)
+			s.iconResponse(c, asset.Value)
 			return
 		}
 	}
@@ -167,10 +165,24 @@ func (s *Server) handleSpellIcon(c *gin.Context) {
 	}
 	for _, asset := range media.Assets {
 		if asset.Key == "icon" {
-			s.log.Sugar().Debugf("redirecting to %s", asset.Value)
-			c.Redirect(http.StatusTemporaryRedirect, asset.Value)
+			s.iconResponse(c, asset.Value)
 			return
 		}
 	}
 	c.AbortWithStatus(http.StatusNotFound)
+}
+
+func (s *Server) iconResponse(c *gin.Context, loc string) {
+	resp, err := s.clients.IconClient.Get(loc)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.Status(http.StatusOK)
+
+	_, err = io.Copy(c.Writer, resp.Body)
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 }

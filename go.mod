@@ -7,9 +7,10 @@ go 1.16
 
 require (
 	github.com/FuzzyStatic/blizzard v1.3.0
-	github.com/allegro/bigcache v1.2.1
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/chenjiandongx/ginprom v0.0.0-20210617023641-6c809602c38a
+	github.com/dgraph-io/badger/v3 v3.2103.1
+	github.com/dgraph-io/ristretto v0.1.0
 	github.com/gin-contrib/zap v0.0.1
 	github.com/gin-gonic/gin v1.7.2
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79

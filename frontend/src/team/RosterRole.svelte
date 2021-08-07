@@ -15,7 +15,12 @@
 </script>
 
 <Card {...$$restProps}>
-  <h2>{roleName}</h2>
+  <h2>
+    {roleName}
+    {#await $members then ms}
+      ({ms.length})
+    {/await}
+  </h2>
   {#await $members}
     <LinearProgress indeterminate />
   {:then ms}

@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/FuzzyStatic/blizzard/v3"
-	"github.com/allegro/bigcache"
 	"github.com/bwmarrin/snowflake"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/gregjones/httpcache"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -20,7 +21,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	gormlogger "gorm.io/gorm/logger"
-	"gorm.io/plugin/prometheus"
+	gormprom "gorm.io/plugin/prometheus"
 	"moul.io/zapgorm2"
 
 	"github.com/gtosh4/WoWCDHelper/internal/app"
@@ -38,6 +39,7 @@ var root = &cobra.Command{
 var cfg struct {
 	Debug             bool
 	Port              int
+	CacheDir          string
 	BlizzClientID     string
 	BlizzClientSecret string
 	DBDriver          string
@@ -50,6 +52,7 @@ func main() {
 
 	flags.BoolVar(&cfg.Debug, "debug", false, "enable debug logging")
 	flags.IntVarP(&cfg.Port, "port", "p", 8080, "port to bind to")
+	flags.StringVar(&cfg.CacheDir, "cache", ".cache", "Directory to use for cache")
 	flags.StringVar(&cfg.BlizzClientID, "bnetId", "31708c8133144f6fab3b75e2ece62d3d", "Battle.net API client ID")
 	flags.StringVar(&cfg.BlizzClientSecret, "bnetSecret", "", "Battle.net API client secret")
 	flags.StringVar(&cfg.DBDriver, "db", "sqlite3", "database driver to use")
@@ -60,20 +63,20 @@ func main() {
 }
 
 func serve(cmd *cobra.Command, args []string) (err error) {
-	clients := &clients.Clients{}
+	c := &clients.Clients{}
 
-	zap.L()
 	logLevel := zap.NewAtomicLevel()
 	if cfg.Debug {
 		logLevel.SetLevel(zap.DebugLevel)
 	}
-	clients.Log = zap.New(
+	c.Log = zap.New(
 		zapcore.NewCore(
 			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
 			zapcore.AddSync(os.Stdout),
 			logLevel,
 		),
 	)
+	zap.ReplaceGlobals(c.Log)
 
 	node.Snowflake, err = snowflake.NewNode(int64(cfg.NodeID))
 	if err != nil {
@@ -81,7 +84,7 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
-	dbLog := zapgorm2.New(clients.Log)
+	dbLog := zapgorm2.New(c.Log)
 	if cfg.Debug {
 		dbLog.LogLevel = gormlogger.Info
 	}
@@ -90,15 +93,15 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		Logger: dbLog,
 	}
 
-	var dbMetrics []prometheus.MetricsCollector
+	var dbMetrics []gormprom.MetricsCollector
 	switch cfg.DBDriver {
 	case "sqlite3":
-		clients.DB, err = gorm.Open(sqlite.Open(cfg.DSN), dbCfg)
+		c.DB, err = gorm.Open(sqlite.Open(cfg.DSN), dbCfg)
 
 	case "mysql":
-		clients.DB, err = gorm.Open(mysql.Open(cfg.DSN), dbCfg)
-		dbMetrics = []prometheus.MetricsCollector{
-			&prometheus.MySQL{
+		c.DB, err = gorm.Open(mysql.Open(cfg.DSN), dbCfg)
+		dbMetrics = []gormprom.MetricsCollector{
+			&gormprom.MySQL{
 				VariableNames: []string{"Threads_running"},
 			},
 		}
@@ -110,28 +113,36 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		err = errors.Wrap(err, "could not open DB")
 		return
 	}
-	clients.DB.Use(prometheus.New(prometheus.Config{
+	c.DB.Use(gormprom.New(gormprom.Config{
 		DBName:           "db",
 		MetricsCollector: dbMetrics,
 	}))
 
-	err = initDB(clients)
+	err = initDB(c)
 	if err != nil {
 		err = errors.Wrap(err, "could not init DB")
 		return
 	}
 
-	cache, err := bigcache.NewBigCache(bigcache.DefaultConfig(time.Hour))
+	cacheOpts := badger.DefaultOptions(cfg.CacheDir).
+		WithLogger(&clients.BadgerZapLogger{Log: c.Log.Sugar().Named("cache")})
+	c.Cache, err = badger.Open(cacheOpts)
 	if err != nil {
-		err = errors.Wrap(err, "could not create cache")
+		err = errors.Wrap(err, "could not init cache")
 		return
 	}
 
-	clients.Blizz, err = blizzard.NewClient(
+	err = prometheus.Register(clients.NewBadgerMetricCollector(c.Cache))
+	if err != nil {
+		err = errors.Wrap(err, "could not register cache metrics")
+		return
+	}
+
+	c.Blizz, err = blizzard.NewClient(
 		blizzard.Config{
 			ClientID:     cfg.BlizzClientID,
 			ClientSecret: cfg.BlizzClientSecret,
-			HTTPClient:   blizzHTTPClient(clients.Log, cache),
+			HTTPClient:   blizzHTTPClient(c),
 			Region:       blizzard.US,
 			Locale:       blizzard.EnUS,
 		})
@@ -140,16 +151,37 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		return
 	}
 
-	srv := app.NewServer(clients)
+	c.IconClient = iconHTTPClient(c)
+
+	srv := app.NewServer(c)
 
 	return srv.Run(fmt.Sprintf(":%d", cfg.Port))
 }
 
-func blizzHTTPClient(log *zap.Logger, cache *bigcache.BigCache) *http.Client {
-	transport := httpcache.NewTransport(&app.HTTPBigCache{
-		Log:   log.Sugar().Named("cache"),
-		Cache: cache,
-	})
+func blizzHTTPClient(c *clients.Clients) *http.Client {
+	cache := &clients.HTTPCache{
+		Log:    c.Log.Sugar().Named("blizz-cache"),
+		Cache:  c.Cache,
+		Prefix: "blizz",
+	}
+	prometheus.Register(cache)
+	transport := httpcache.NewTransport(cache)
+	transport.Transport = &ratelimit.Transport{
+		Ratelimiter: rate.NewLimiter(rate.Every(20/time.Second), 20),
+	}
+	client := transport.Client()
+	client.Timeout = 1 * time.Minute
+	return client
+}
+
+func iconHTTPClient(c *clients.Clients) *http.Client {
+	cache := &clients.HTTPCache{
+		Log:    c.Log.Sugar().Named("icon-cache"),
+		Cache:  c.Cache,
+		Prefix: "icon",
+	}
+	prometheus.Register(cache)
+	transport := httpcache.NewTransport(cache)
 	transport.Transport = &ratelimit.Transport{
 		Ratelimiter: rate.NewLimiter(rate.Every(20/time.Second), 20),
 	}

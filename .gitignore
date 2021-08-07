@@ -64,3 +64,4 @@ typings/
 *.pb.go
 
 cache/
+.cache/
