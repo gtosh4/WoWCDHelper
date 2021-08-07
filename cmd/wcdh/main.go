@@ -56,7 +56,7 @@ func main() {
 	flags.StringVar(&cfg.BlizzClientID, "bnetId", "31708c8133144f6fab3b75e2ece62d3d", "Battle.net API client ID")
 	flags.StringVar(&cfg.BlizzClientSecret, "bnetSecret", "", "Battle.net API client secret")
 	flags.StringVar(&cfg.DBDriver, "db", "sqlite3", "database driver to use")
-	flags.StringVar(&cfg.DSN, "dsn", "file::memory:?cache=shared", "database/sql DSN string")
+	flags.StringVar(&cfg.DSN, "dsn", "file:wowcdh.db?cache=shared&mode=rwc", "database/sql DSN string")
 	flags.IntVar(&cfg.NodeID, "nodeID", 1, "node id (used for snowflake UUID generation)")
 
 	root.Execute()

@@ -1,15 +1,15 @@
 <script lang="ts">
   import Tab, { Label } from "@smui/tab/styled";
   import TabBar from "@smui/tab-bar/styled";
-  import Roster from "./team/Roster.svelte";
+  import Team from "./team/Team.svelte";
   import Assignments from "./assignments/Assignments.svelte";
 
   import { onMount } from "svelte";
   import { HashPathPart } from "./url";
 
   const tabs = [
-    { id: "roster", path: "/#/", component: Roster },
-    { id: "assignments", path: "/#/assignments", component: Assignments },
+    { id: "roster", path: "", component: Team },
+    { id: "assignments", path: "assignments", component: Assignments },
   ];
 
   let active = tabs[0];
@@ -18,7 +18,7 @@
 
   let mounted = false;
   onMount(() => {
-    const tab = tabs.filter((t) => t.id == $TabPath);
+    const tab = tabs.filter((t) => t.id == $TabPath || t.path == $TabPath);
     if (tab && tab.length > 0) active = tab[0];
     mounted = true;
   });

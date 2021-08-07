@@ -1,4 +1,11 @@
-import { derived, get, Updater, writable } from "svelte/store";
+import {
+  derived,
+  get,
+  Readable,
+  Updater,
+  Writable,
+  writable,
+} from "svelte/store";
 import { HashPathPart } from "../url";
 
 export interface Member {
@@ -78,7 +85,13 @@ export function SortMembers(a: Member, b: Member) {
   else return a.id - b.id;
 }
 
-export function TeamMember(id: number) {
+interface teamMember extends Readable<Promise<Member>> {
+  update(f: Updater<Member>);
+  set(m: Member);
+  remove();
+}
+
+export function TeamMember(id: number): teamMember {
   const subscribe = derived(CurrentTeam, (p) =>
     p.then((t) => t.get(id))
   ).subscribe;

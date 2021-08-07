@@ -116,10 +116,6 @@
 </Card>
 
 <style lang="scss">
-  :global(.class-icon) {
-    padding-right: 4px;
-  }
-
   :global(.member-edit) {
     :global(.smui-select--standard.mdc-select--with-leading-icon
         .mdc-select__anchor) {

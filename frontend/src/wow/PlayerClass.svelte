@@ -9,7 +9,7 @@
 </script>
 
 <div {...$$restProps}>
-  <WowIcon {playerClass} class="class-icon" height={24} />
+  <WowIcon {playerClass} height={24} />
   <span>
     {#await name}
       ...

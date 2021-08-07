@@ -7,8 +7,10 @@
 
   import { ClassList } from "./api";
   import { classMap } from "@smui/common/classMap";
+  import WowIcon from "./WowIcon.svelte";
 
   export let value = 0;
+  export let small = false;
 
   let menuOpen = false;
 
@@ -16,10 +18,6 @@
     value = id;
     menuOpen = false;
   }
-
-  $: selectedIndex = ClassList.then((l) =>
-    l.map((cls) => cls.id).indexOf(value)
-  );
 </script>
 
 <div
@@ -32,12 +30,16 @@
 >
   <div class="anchor mdc-select__anchor">
     <Button on:click={() => (menuOpen = true)}>
-      {#if value > 0}
-        <PlayerClass playerClass={value} />
+      {#if small}
+        <WowIcon playerClass={value} height={24} />
       {:else}
-        <Label>Class</Label>
+        {#if value > 0}
+          <PlayerClass playerClass={value} />
+        {:else}
+          <Label>Class</Label>
+        {/if}
+        <Icon class="material-icons" style="margin: 0;">arrow_drop_down</Icon>
       {/if}
-      <Icon class="material-icons" style="margin: 0;">arrow_drop_down</Icon>
     </Button>
   </div>
 
@@ -61,4 +63,9 @@
 </div>
 
 <style lang="scss">
+  .class-select {
+    :global(.class-icon) {
+      padding-right: 4px;
+    }
+  }
 </style>
