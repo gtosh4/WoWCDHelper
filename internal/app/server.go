@@ -1,45 +1,83 @@
 package app
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/chenjiandongx/ginprom"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Server struct {
 	router  *gin.Engine
-	log     *zap.Logger
+	Log     *zap.Logger
 	clients *clients.Clients
+	srv     *http.Server
 }
 
-func NewServer(clients *clients.Clients) *Server {
+func NewServer(c *clients.Clients, addr string) *Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	s := &Server{
 		router:  gin.New(),
-		log:     clients.Log.Named("server"),
-		clients: clients,
+		Log:     c.Log.Named("server"),
+		clients: c,
 	}
 
-	s.router.Use(ginzap.Ginzap(s.log, time.RFC3339, true))
-	s.router.Use(ginzap.RecoveryWithZap(s.log, true))
+	s.router.Use(clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel))
+	s.router.Use(ginzap.RecoveryWithZap(s.Log, true))
 	s.router.Use(ginprom.PromMiddleware(nil))
 
 	registerMetricsHandler(s)
 	registerDebug(s)
 	registerWoWApi(s)
 	registerTeamApi(s)
+	registerEncounterApi(s)
 
 	registerFrontend(s)
+
+	s.Log.Info("Routes:")
+	for _, route := range s.router.Routes() {
+		s.Log.With(zap.String("method", route.Method)).Info(route.Path)
+	}
+
+	s.srv = &http.Server{Addr: addr, Handler: s.router}
 
 	return s
 }
 
-func (s *Server) Run(addr string) error {
-	s.log.Sugar().Infof("Listening at %s", addr)
-	return s.router.Run(addr)
+func (s *Server) Run() error {
+	s.Log.Sugar().Infof("Listening at %s", s.srv.Addr)
+	return s.srv.ListenAndServe()
+}
+
+func (s *Server) Close() error {
+	return s.srv.Close()
+}
+
+func (s *Server) db(c *gin.Context) *gorm.DB {
+	return s.clients.DB.WithContext(c)
+}
+
+func (s *Server) log(c *gin.Context) *zap.SugaredLogger {
+	log := s.Log.Sugar()
+	for _, param := range c.Params {
+		log = log.With(zap.String(param.Key, param.Value))
+	}
+	log = log.With("handler", c.HandlerName())
+	return log
+}
+
+func (s *Server) errAbort(c *gin.Context, err error) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		c.AbortWithStatus(http.StatusNotFound)
+	} else {
+		s.log(c).Warnf("%s %s error: %+v", c.Request.Method, c.Request.URL, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+	}
 }

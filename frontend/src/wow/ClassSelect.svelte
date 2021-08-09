@@ -52,8 +52,11 @@
         role="listbox"
         selectedIndex={cs.map((c) => c.id).indexOf(value)}
       >
-        {#each cs as cls, idx (cls.id)}
-          <Item on:SMUI:action={() => select(cls.id)} selected={idx == value}>
+        {#each cs as cls (cls.id)}
+          <Item
+            on:SMUI:action={() => select(cls.id)}
+            selected={cls.id == value}
+          >
             <PlayerClass playerClass={cls.id} />
           </Item>
         {/each}
@@ -62,9 +65,9 @@
   </Menu>
 </div>
 
-<style lang="scss">
+<style lang="scss" global>
   .class-select {
-    :global(.class-icon) {
+    .class-icon {
       padding-right: 4px;
     }
   }

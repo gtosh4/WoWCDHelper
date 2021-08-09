@@ -2,7 +2,7 @@
   import LinearProgress from "@smui/linear-progress/styled";
   import WowIcon from "../wow/WowIcon.svelte";
 
-  import { TeamMember } from "./api";
+  import { TeamMember } from "./members_api";
 
   export let memberId: number;
 

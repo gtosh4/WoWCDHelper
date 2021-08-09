@@ -26,10 +26,9 @@ type (
 		PrimarySpec int   `json:"primarySpec"`
 	}
 
-	Roster []Member
-
 	Team struct {
 		ID         string    `json:"id" gorm:"primaryKey"`
+		Name       string    `json:"name"`
 		LastViewed time.Time `json:"-" gorm:"index"`
 	}
 

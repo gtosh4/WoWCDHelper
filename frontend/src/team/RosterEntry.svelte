@@ -5,11 +5,12 @@
   import WowIcon from "../wow/WowIcon.svelte";
 
   import { createEventDispatcher } from "svelte";
-  import { TeamMember } from "./api";
+  import { Members } from "./members_api";
+  import EncounterRow from "./EncounterRow.svelte";
 
   export let memberId: number;
 
-  $: member = TeamMember(memberId);
+  $: member = Members.member(memberId);
 
   let loadedId;
   let classId = 0;
@@ -25,15 +26,28 @@
 
   function save() {
     member.update((m) => {
-      m.name = name;
-      return m;
+      if (m.name != name) {
+        m.name = name;
+        return m;
+      }
+      return undefined;
     });
   }
+
+  function keypress(e) {
+    if (e.keyCode === 13) save();
+  }
+
+  let hovered = false;
 
   const dispatch = createEventDispatcher();
 </script>
 
-<Row class="roster-entry">
+<Row
+  class="roster-entry"
+  on:mouseenter={() => (hovered = true)}
+  on:mouseleave={() => (hovered = false)}
+>
   <Cell class="roster-member">
     <div style="height: 100%; align-items: center; display: inline-flex">
       <WowIcon playerClass={classId} height={24} style="padding-right: 8px;" />
@@ -41,37 +55,57 @@
 
     <Textfield
       bind:value={name}
-      style="width: 10em"
+      class={hovered ? "name name--hovered" : "name"}
       input$placeholder="Name"
       on:blur={save}
+      on:keyup={keypress}
     />
 
     <Button
       on:click={() => dispatch("configure")}
-      color="white"
-      style="min-width: 32px"
+      class={hovered ? "configure configure--active" : "configure"}
     >
-      <Icon class="material-icons" style="margin-right: 0">settings</Icon>
+      <Icon class="material-icons" style="margin-right: 0; color: white">
+        settings
+      </Icon>
     </Button>
   </Cell>
-  <Cell />
+
+  <EncounterRow {memberId} />
 </Row>
 
-<style lang="scss">
-  :global(.roster-entry) {
-    $line-height: 32px;
+<style lang="scss" global>
+  .roster-entry {
+    $line-height: auto;
 
     height: $line-height;
 
-    :global(td.mdc-data-table__cell) {
+    td.mdc-data-table__cell {
       height: $line-height;
     }
 
-    :global(.roster-member) {
+    .roster-member {
       display: flex;
 
-      :global(label.smui-text-field--standard) {
-        height: $line-height - 4px;
+      .name {
+        $width: 12em;
+
+        width: $width;
+        height: auto;
+
+        &.name--hovered {
+          width: calc(#{$width} - 18px - 8px - 8px);
+        }
+      }
+      .configure {
+        display: none;
+        min-width: unset;
+        width: calc(18px+8px+8px);
+        height: $line-height;
+
+        &.configure--active {
+          display: unset;
+        }
       }
     }
   }

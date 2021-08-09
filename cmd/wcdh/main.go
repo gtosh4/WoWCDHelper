@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/FuzzyStatic/blizzard/v3"
@@ -28,6 +30,7 @@ import (
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/node"
 	ratelimit "github.com/gtosh4/WoWCDHelper/internal/pkg/rate_limit"
+	"github.com/gtosh4/WoWCDHelper/pkg/encounters"
 	"github.com/gtosh4/WoWCDHelper/pkg/teams"
 )
 
@@ -38,6 +41,7 @@ var root = &cobra.Command{
 
 var cfg struct {
 	Debug             bool
+	ShortTime         bool
 	Port              int
 	CacheDir          string
 	BlizzClientID     string
@@ -51,6 +55,7 @@ func main() {
 	flags := root.Flags()
 
 	flags.BoolVar(&cfg.Debug, "debug", false, "enable debug logging")
+	flags.BoolVar(&cfg.ShortTime, "short-time", false, "enable short time in logs")
 	flags.IntVarP(&cfg.Port, "port", "p", 8080, "port to bind to")
 	flags.StringVar(&cfg.CacheDir, "cache", ".cache", "Directory to use for cache")
 	flags.StringVar(&cfg.BlizzClientID, "bnetId", "31708c8133144f6fab3b75e2ece62d3d", "Battle.net API client ID")
@@ -69,9 +74,14 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 	if cfg.Debug {
 		logLevel.SetLevel(zap.DebugLevel)
 	}
+	logCfg := zap.NewDevelopmentEncoderConfig()
+	logCfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	if cfg.ShortTime {
+		logCfg.EncodeTime = clients.ShortTimeEncoder(time.Now())
+	}
 	c.Log = zap.New(
 		zapcore.NewCore(
-			zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()),
+			zapcore.NewConsoleEncoder(logCfg),
 			zapcore.AddSync(os.Stdout),
 			logLevel,
 		),
@@ -153,9 +163,23 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 
 	c.IconClient = iconHTTPClient(c)
 
-	srv := app.NewServer(c)
+	srv := app.NewServer(c, fmt.Sprintf(":%d", cfg.Port))
 
-	return srv.Run(fmt.Sprintf(":%d", cfg.Port))
+	exitCh := make(chan os.Signal, 1)
+	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		sig := <-exitCh
+		c.Log.Sugar().Infof("got signal %s shutting down", sig)
+		if err := srv.Close(); err != nil {
+			c.Log.Sugar().Warnf("error closing http server: %v", err)
+		}
+	}()
+
+	err = srv.Run()
+	if err != http.ErrServerClosed {
+		return err
+	}
+	return nil
 }
 
 func blizzHTTPClient(c *clients.Clients) *http.Client {
@@ -196,6 +220,11 @@ func initDB(clients *clients.Clients) error {
 		&teams.Team{},
 		&teams.MemberConfig{},
 		&teams.Member{},
+		&encounters.EventInstance{},
+		&encounters.Assignment{},
+		&encounters.Event{},
+		&encounters.Encounter{},
+		&encounters.Roster{},
 	)
 	if err != nil {
 		return errors.Wrap(err, "error migrating tables")
@@ -205,6 +234,7 @@ func initDB(clients *clients.Clients) error {
 
 	test := []teams.Member{
 		{
+			ID:      1,
 			Team:    testTeam,
 			Name:    "Tosh",
 			ClassID: 7, /* Shaman */
@@ -214,6 +244,7 @@ func initDB(clients *clients.Clients) error {
 			},
 		},
 		{
+			ID:      2,
 			Team:    testTeam,
 			Name:    "Jess",
 			ClassID: 5, /* Priest */
@@ -224,12 +255,13 @@ func initDB(clients *clients.Clients) error {
 		},
 	}
 
-	err = db.Create(&test).Error
+	err = db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&test).Error
 	if err != nil {
 		return errors.Wrap(err, "error creating test roster")
 	}
 
 	test = append(test, teams.Member{
+		ID:      3,
 		Team:    testTeam,
 		Name:    "Sci",
 		ClassID: 2, /* Paladin */

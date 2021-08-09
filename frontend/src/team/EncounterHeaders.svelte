@@ -1,0 +1,56 @@
+<script lang="ts">
+  import { Cell } from "@smui/data-table/styled";
+  import CircularProgress from "@smui/circular-progress/styled";
+  import Button, { Icon } from "@smui/button/styled";
+
+  import { Encounters } from "./encounters_api";
+  import EncounterNameField from "./EncounterNameField.svelte";
+
+  function newEncounter() {
+    Encounters.addEncounter({
+      id: undefined,
+      name: "",
+    });
+  }
+</script>
+
+{#await $Encounters}
+  <Cell>
+    <CircularProgress indeterminate />
+  </Cell>
+{:then encounters}
+  <Cell />
+  {#each encounters as enc, i (i)}
+    <Cell class="encounter-header">
+      <div>
+        <EncounterNameField encounterId={enc.id} />
+      </div>
+    </Cell>
+  {/each}
+{/await}
+<Cell style="vertical-align: bottom;">
+  <Button style="min-width: 32px" on:click={newEncounter}>
+    <Icon class="material-icons" style="margin-right: 0; color: green">
+      add
+    </Icon>
+  </Button>
+</Cell>
+
+<style lang="scss" global>
+  th.encounter-header {
+    height: 7em; // 90 degree triangle with 8em hypotenuse with some padding
+    white-space: nowrap;
+    overflow: visible;
+    vertical-align: bottom;
+
+    & > div {
+      transform: rotate(-45deg);
+      width: 1em;
+    }
+
+    .encounter-name {
+      width: 8em;
+      height: auto;
+    }
+  }
+</style>

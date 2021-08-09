@@ -5,11 +5,13 @@
   import Button, { Icon, Label } from "@smui/button/styled";
   import MemberEdit from "./MemberEdit.svelte";
   import RosterEntry from "./RosterEntry.svelte";
+  import EncounterHeaders from "./EncounterHeaders.svelte";
 
-  import { CurrentTeam, SortMembers } from "./api";
-  import type { Member } from "./api";
+  import { Members, SortMembers } from "./members_api";
+  import type { Encounter, Member } from "./team_api";
   import { writable } from "svelte/store";
   import { Spec } from "../wow/api";
+  import { Encounters } from "./encounters_api";
 
   let open = false;
   let editMemberId: number | undefined;
@@ -31,7 +33,7 @@
     dps: [] as Member[],
   });
 
-  $: $CurrentTeam.then((t) => {
+  $: $Members.then((t) => {
     const newTeam = {
       tanks: [] as Member[],
       healers: [] as Member[],
@@ -64,13 +66,17 @@
       teamLoaded = true;
     });
   });
+
+  function removeEncounter(id: number) {
+    Encounters.encounter(id).remove();
+  }
 </script>
 
-<DataTable class="team">
+<DataTable class="roster">
   <Head>
     <Row>
       <Cell />
-      <Cell />
+      <EncounterHeaders />
     </Row>
   </Head>
 
@@ -94,13 +100,32 @@
       />
     {/each}
 
-    <Row class="roster-new">
-      <Cell>
+    <Row>
+      <Cell class="roster-new">
         <Button on:click={() => showEdit(undefined)}>
           <Icon class="material-icons">add</Icon>
           <Label>Add Member</Label>
         </Button>
       </Cell>
+
+      {#await $Encounters}
+        <Cell />
+      {:then encounters}
+        <Cell />
+        {#each encounters as enc, i (i)}
+          <Cell>
+            <Button
+              style="min-width: 32px"
+              on:click={() => removeEncounter(enc.id)}
+            >
+              <Icon class="material-icons" style="margin-right: 0; color: red">
+                remove_circle
+              </Icon>
+            </Button>
+          </Cell>
+        {/each}
+      {/await}
+
       <Cell />
     </Row>
   </Body>
@@ -110,21 +135,22 @@
   <MemberEdit on:close={close} memberId={editMemberId} />
 </Dialog>
 
-<style lang="scss">
-  :global(.roster-new) {
-    $line-height: 32px;
+<style lang="scss" global>
+  .roster {
+    .roster-new {
+      $line-height: 32px;
 
-    height: $line-height;
-
-    :global(td.mdc-data-table__cell) {
       height: $line-height;
+
+      td.mdc-data-table__cell {
+        height: $line-height;
+      }
     }
   }
-
-  :global(.add-member) {
+  .add-member {
     overflow-y: visible;
 
-    :global(.mdc-dialog__surface) {
+    .mdc-dialog__surface {
       overflow-y: visible;
     }
   }

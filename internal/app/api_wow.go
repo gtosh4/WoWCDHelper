@@ -10,7 +10,7 @@ import (
 )
 
 func registerWoWApi(s *Server) {
-	r := s.router.Group("wow")
+	r := s.router.Group("/wow")
 
 	r.GET("/classes", s.handleClasses)
 	r.GET("/class/:class", s.handleClassInfo)
@@ -65,7 +65,7 @@ func (s *Server) handleClassIcon(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	s.log.Sugar().Debugf("Found id %d for class %s", id, class)
+	s.log(c).Debugf("Found id %d for class %s", id, class)
 
 	media, _, err := s.clients.Blizz.WoWPlayableClassMedia(c, id)
 	if err != nil {
@@ -179,10 +179,12 @@ func (s *Server) iconResponse(c *gin.Context, loc string) {
 		return
 	}
 	c.Status(http.StatusOK)
+	c.Header("Content-Type", resp.Header.Get("Content-Type"))
+	c.Header("Etag", resp.Header.Get("Etag"))
 
 	_, err = io.Copy(c.Writer, resp.Body)
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		s.log(c).Warnf("icon copy failed: %v", err)
 		return
 	}
 }

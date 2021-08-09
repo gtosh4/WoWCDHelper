@@ -4,17 +4,18 @@
   import Button, { Icon, Label } from "@smui/button/styled";
   import LinearProgress from "@smui/linear-progress/styled";
   import ClassSelect from "../wow/ClassSelect.svelte";
-
-  import { CurrentTeam, TeamMember } from "./api";
-  import type { Member } from "./api";
-  import { createEventDispatcher } from "svelte";
   import SpecSelect from "../wow/SpecSelect.svelte";
+
+  import { Members } from "./members_api";
+  import { TeamId } from "./team_api";
+  import type { Member } from "./team_api";
+  import { createEventDispatcher } from "svelte";
 
   export let memberId: number | undefined = undefined;
 
   const dispatch = createEventDispatcher();
 
-  $: member = memberId ? TeamMember(memberId) : undefined;
+  $: member = memberId ? Members.member(memberId) : undefined;
 
   let localId,
     localName = "",
@@ -25,7 +26,7 @@
   function localMember(): Member {
     return {
       id: localId,
-      team: CurrentTeam.teamID(),
+      team: $TeamId,
       name: localName,
       classId: localClassId,
       config: {
@@ -35,13 +36,9 @@
     };
   }
 
-  $: if ($member) {
+  $: if (memberId != undefined) {
     $member.then((m) => {
       if (localId != m.id) {
-        console.log("loading member for edit", {
-          member: $member,
-          local: localMember(),
-        });
         localId = m.id;
         localName = m.name;
         localClassId = m.classId;
@@ -52,25 +49,41 @@
     });
   }
 
-  function save() {
-    const newMember = localMember();
-
-    if (member) {
-      member.set(newMember);
-    } else {
-      CurrentTeam.addMember(newMember);
-    }
-    cancel();
-  }
-
-  function cancel() {
+  $: if (memberId == undefined) {
     localId = undefined;
     localClassId = 0;
     localName = "";
     localClassId = 0;
     localSpecs.length = 0;
     localPrimarySpec = 0;
+  }
+
+  function remove() {
+    if (member) {
+      member.remove();
+    }
+    close();
+  }
+
+  function save() {
+    const newMember = localMember();
+
+    if (member) {
+      member.set(newMember);
+    } else {
+      Members.addMember(newMember);
+    }
+    close();
+  }
+
+  function close() {
     dispatch("close");
+    localId = undefined;
+    localClassId = 0;
+    localName = "";
+    localClassId = 0;
+    localSpecs.length = 0;
+    localPrimarySpec = 0;
   }
 </script>
 
@@ -96,15 +109,25 @@
 
   <Actions>
     <ActionButtons>
+      {#if member}
+        <Button on:click={remove}>
+          {#if $$slots.removeLabel}
+            <slot name="removeLabel" />
+          {:else}
+            <Icon class="material-icons" style="color: red">delete</Icon>
+            <Label>Remove</Label>
+          {/if}
+        </Button>
+      {/if}
       <Button on:click={save}>
         {#if $$slots.saveLabel}
           <slot name="saveLabel" />
         {:else}
-          <Icon class="material-icons">save</Icon>
+          <Icon class="material-icons" style="color: green">save</Icon>
           <Label>Save</Label>
         {/if}
       </Button>
-      <Button on:click={cancel}>
+      <Button on:click={close}>
         {#if $$slots.cancelLabel}
           <slot name="cancelLabel" />
         {:else}
@@ -120,6 +143,11 @@
     :global(.smui-select--standard.mdc-select--with-leading-icon
         .mdc-select__anchor) {
       padding-left: 0;
+    }
+
+    :global(.class-select) {
+      padding-top: 4px;
+      padding-bottom: 4px;
     }
   }
 </style>

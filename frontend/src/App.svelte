@@ -1,14 +1,14 @@
 <script lang="ts">
   import Tab, { Label } from "@smui/tab/styled";
   import TabBar from "@smui/tab-bar/styled";
-  import Team from "./team/Team.svelte";
+  import Roster from "./team/Roster.svelte";
   import Assignments from "./assignments/Assignments.svelte";
 
   import { onMount } from "svelte";
   import { HashPathPart } from "./url";
 
   const tabs = [
-    { id: "roster", path: "", component: Team },
+    { id: "roster", path: "", component: Roster },
     { id: "assignments", path: "assignments", component: Assignments },
   ];
 
