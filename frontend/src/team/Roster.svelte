@@ -8,7 +8,7 @@
   import EncounterHeaders from "./EncounterHeaders.svelte";
 
   import { Members, SortMembers } from "./members_api";
-  import type { Encounter, Member } from "./team_api";
+  import type { Member } from "./team_api";
   import { writable } from "svelte/store";
   import { Spec } from "../wow/api";
   import { Encounters } from "./encounters_api";
@@ -131,12 +131,16 @@
   </Body>
   <LinearProgress bind:closed={teamLoaded} indeterminate slot="progress" />
 </DataTable>
-<Dialog bind:open class="add-member">
+<Dialog bind:open class="add-member" on:MDCDialog:closed={close}>
   <MemberEdit on:close={close} memberId={editMemberId} />
 </Dialog>
 
 <style lang="scss" global>
   .roster {
+    .mdc-data-table__table-container {
+      overflow: visible;
+    }
+
     .roster-new {
       $line-height: 32px;
 

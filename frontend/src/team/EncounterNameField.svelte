@@ -4,14 +4,14 @@
 
   export let encounterId: number;
 
-  let loadedEncounter = false;
+  let loadedEncounter: number | null = null;
   let localName = "";
 
   $: encounter = Encounters.encounter(encounterId);
   $: $encounter.then((e) => {
-    if (!loadedEncounter) {
+    if (loadedEncounter != e.id) {
       localName = e.name || "";
-      loadedEncounter = true;
+      loadedEncounter = e.id;
     }
   });
 

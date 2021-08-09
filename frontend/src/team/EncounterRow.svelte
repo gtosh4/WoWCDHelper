@@ -30,7 +30,6 @@
   });
 
   function toggleAll() {
-    console.log("toggling", { selectAll, rms, member, encounters });
     if (selectAll == null || selectAll == true) {
       encounters.remove();
     } else {
@@ -64,7 +63,7 @@
     </Button>
   </Cell>
   {#each encounters as enc, i (i)}
-    <Cell>
+    <Cell style="overflow: visible">
       <RosterSpecSelect {memberId} encounterId={enc.id} />
     </Cell>
   {/each}

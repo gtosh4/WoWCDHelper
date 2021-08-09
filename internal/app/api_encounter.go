@@ -4,16 +4,20 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"github.com/gtosh4/WoWCDHelper/pkg/encounters"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 func registerEncounterApi(s *Server) {
 	teamR := s.router.Group("/team/:team")
+	teamR.Use(clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel))
 	teamR.GET("/encounters", s.handleGetEncounters)
 	teamR.POST("/encounter", s.handleNewEncounter)
 

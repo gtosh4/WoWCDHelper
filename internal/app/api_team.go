@@ -4,21 +4,28 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"github.com/gtosh4/WoWCDHelper/pkg/encounters"
 	"github.com/gtosh4/WoWCDHelper/pkg/teams"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 func registerTeamApi(s *Server) {
-	s.router.POST("/teams", s.handleCreateTeam)
+	teamsR := s.router.Group("/team")
+	teamsR.Use(clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel))
+	teamsR.POST("", s.handleCreateTeam)
 
-	teamR := s.router.Group("/team/:team")
-	teamR.GET("/members", s.handleGetTeam)
-	teamR.PUT("/members", s.handleSetTeam)
+	teamR := teamsR.Group("/:team")
+	teamR.GET("", s.handleGetTeam)
+	teamR.PUT("", s.handleSetTeam)
+	teamR.GET("/members", s.handleGetTeamMembers)
+	teamR.PUT("/members", s.handleSetTeamMembers)
 	teamR.POST("/member", s.handleNewMember)
 
 	memberR := teamR.Group("/member/:member")
@@ -52,6 +59,49 @@ func (s *Server) handleGetTeam(c *gin.Context) {
 		return
 	}
 
+	var team teams.Team
+	err := s.db(c).
+		Where(&teams.Team{ID: teamId}).
+		First(&team).
+		Error
+
+	if err != nil {
+		s.errAbort(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, team)
+}
+
+func (s *Server) handleSetTeam(c *gin.Context) {
+	teamId := c.Param("team")
+	if teamId == "" {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	var team teams.Team
+	err := c.Bind(&team)
+	if err != nil {
+		return
+	}
+	team.ID = teamId
+
+	err = s.db(c).
+		Save(&team).
+		Error
+	if err != nil {
+		s.errAbort(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, team)
+}
+
+func (s *Server) handleGetTeamMembers(c *gin.Context) {
+	teamId := c.Param("team")
+	if teamId == "" {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
 	members := []teams.Member{}
 	err := s.db(c).
 		Where("team_id = ?", teamId).
@@ -66,7 +116,7 @@ func (s *Server) handleGetTeam(c *gin.Context) {
 	c.JSON(http.StatusOK, members)
 }
 
-func (s *Server) handleSetTeam(c *gin.Context) {
+func (s *Server) handleSetTeamMembers(c *gin.Context) {
 	teamId := c.Param("team")
 	if teamId == "" {
 		c.AbortWithStatus(http.StatusBadRequest)
@@ -230,7 +280,6 @@ func (s *Server) handleSetMemberEncounters(c *gin.Context) {
 		s.log(c).Warnf("bind err: %v", err)
 		return
 	}
-	log.Infof("bound %+v", rm)
 	rm.MemberID = memberId
 
 	var roster []encounters.Roster
@@ -253,14 +302,12 @@ func (s *Server) handleSetMemberEncounters(c *gin.Context) {
 			})
 		}
 
-		log.Infof("creating %v", roster)
 		return tx.Clauses(clause.OnConflict{UpdateAll: true}).Create(&roster).Error
 	})
 	if err != nil {
 		s.errAbort(c, err)
 		return
 	}
-	log.Infof("created %v", roster)
 	c.JSON(http.StatusOK, roster)
 }
 

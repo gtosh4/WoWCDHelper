@@ -1,6 +1,7 @@
 <script lang="ts">
   import Button, { Icon } from "@smui/button/styled";
   import Menu from "@smui/menu/styled";
+  import { Anchor } from "@smui/menu-surface";
   import List, { Item } from "@smui/list/styled";
   import CircularProgress from "@smui/circular-progress/styled";
   import WowIcon from "../wow/WowIcon.svelte";
@@ -9,6 +10,7 @@
   import { Members } from "./members_api";
   import { Encounters } from "./encounters_api";
   import type { RosterMember } from "./team_api";
+  import { CreateAnchor } from "../anchor";
 
   export let memberId: number;
   export let encounterId: number;
@@ -30,7 +32,6 @@
 
   $: {
     $rosterMember.then((rm) => {
-      console.log("updating rm", { memberId, encounterId, rm, selected });
       if (rm) {
         selected = rm.spec;
       } else {
@@ -78,6 +79,10 @@
       rosterMember.remove();
     }
   }
+
+  let anchorElem;
+  const anchor = CreateAnchor();
+  anchor.addClass("mdc-select__anchor");
 </script>
 
 <div
@@ -89,7 +94,7 @@
   })}
 >
   {#if specs.length > 1}
-    <div class="anchor mdc-select__anchor">
+    <div class={$anchor} use:Anchor={anchor} bind:this={anchorElem}>
       <Button on:click={() => (menuOpen = true)}>
         {#await Promise.all([$rosterMember, $member])}
           <CircularProgress indeterminate />
@@ -105,27 +110,35 @@
           {/if}
         {/await}
       </Button>
-    </div>
 
-    <Menu bind:open={menuOpen}>
-      <List dense role="listbox" {selectedIndex}>
-        <Item on:SMUI:action={() => select(null)}>
-          <Icon class="material-icons">clear</Icon>
-        </Item>
-        <Item on:SMUI:action={() => select(0)}>
-          {#await $member}
-            <CircularProgress indeterminate />
-          {:then member}
-            <WowIcon playerClass={member.classId} height={24} />
-          {/await}
-        </Item>
-        {#each specs as spec}
-          <Item on:SMUI:action={() => select(spec)} selected={spec == selected}>
-            <WowIcon {spec} height={24} />
+      <Menu
+        bind:open={menuOpen}
+        anchor={false}
+        bind:anchorElement={anchorElem}
+        class="spec-menu"
+      >
+        <List dense role="listbox" {selectedIndex}>
+          <Item on:SMUI:action={() => select(null)}>
+            <Icon class="material-icons">backspace</Icon>
           </Item>
-        {/each}
-      </List>
-    </Menu>
+          <Item on:SMUI:action={() => select(0)}>
+            {#await $member}
+              <CircularProgress indeterminate />
+            {:then member}
+              <WowIcon playerClass={member.classId} height={24} />
+            {/await}
+          </Item>
+          {#each specs as spec}
+            <Item
+              on:SMUI:action={() => select(spec)}
+              selected={spec == selected}
+            >
+              <WowIcon {spec} height={24} />
+            </Item>
+          {/each}
+        </List>
+      </Menu>
+    </div>
   {:else}
     <Button on:click={toggle}>
       {#if selected}
@@ -157,6 +170,10 @@
 
     .material-icons {
       font-size: 24px;
+    }
+
+    .spec-menu {
+      min-width: 24px;
     }
   }
 </style>

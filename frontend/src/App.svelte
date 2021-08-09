@@ -1,11 +1,15 @@
 <script lang="ts">
+  import TopAppBar, { Row, Section } from "@smui/top-app-bar/styled";
   import Tab, { Label } from "@smui/tab/styled";
   import TabBar from "@smui/tab-bar/styled";
+  import Textfield from "@smui/textfield/styled";
+  import CircularProgress from "@smui/circular-progress/styled";
   import Roster from "./team/Roster.svelte";
   import Assignments from "./assignments/Assignments.svelte";
 
   import { onMount } from "svelte";
   import { HashPathPart } from "./url";
+  import { TeamStore } from "./team/team_api";
 
   const tabs = [
     { id: "roster", path: "", component: Roster },
@@ -26,14 +30,58 @@
   $: if (mounted) {
     TabPath.set(active.id);
   }
+
+  const team = TeamStore;
+  let localName = "";
+  let loadedTeam: string | null = null;
+  $: $team.then((t) => {
+    if (t && loadedTeam != t.id) {
+      localName = t.name;
+      loadedTeam = t.id;
+    }
+  });
+
+  function save() {
+    console.log("starting save", { localName });
+    $team.then((t) => {
+      console.log("save", { t, localName });
+      if (t && t.name != localName) {
+        t.name = localName;
+        team.set(t);
+      }
+    });
+  }
+
+  function keypress(e) {
+    if (e.keyCode === 13) save();
+  }
 </script>
 
 <main>
-  <TabBar {tabs} let:tab bind:active>
-    <Tab {tab} minWidth>
-      <Label>{tab.id}</Label>
-    </Tab>
-  </TabBar>
+  <TopAppBar variant="static" dense class="team-bar">
+    <Row>
+      <Section>
+        {#await $team}
+          <CircularProgress indeterminate />
+        {:then _team}
+          <Textfield
+            bind:value={localName}
+            on:blur={save}
+            on:keyup={keypress}
+            style="height: 44px"
+            input$placeholder="Roster Name"
+          />
+        {/await}
+      </Section>
+      <Section align="end">
+        <TabBar {tabs} let:tab bind:active style="width: unset">
+          <Tab {tab} minWidth>
+            <Label>{tab.id}</Label>
+          </Tab>
+        </TabBar>
+      </Section>
+    </Row>
+  </TopAppBar>
 
   {#each tabs as { id, component } (id)}
     <div class="page-tab" class:active={active.id == id}>
@@ -42,9 +90,14 @@
   {/each}
 </main>
 
-<style lang="scss">
+<style lang="scss" global>
   main {
     width: 100%;
+  }
+
+  .team-bar {
+    display: inline-flex;
+    background-color: #333333;
   }
 
   .page-tab {

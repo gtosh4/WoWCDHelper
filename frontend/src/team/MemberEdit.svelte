@@ -36,6 +36,8 @@
     };
   }
 
+  let specsClassId;
+
   $: if (memberId != undefined) {
     $member.then((m) => {
       if (localId != m.id) {
@@ -44,6 +46,7 @@
         localClassId = m.classId;
         localSpecs.length = 0;
         m.config.specs.forEach((s) => localSpecs.push(s));
+        specsClassId = m.classId;
         localPrimarySpec = m.config.primarySpec;
       }
     });
@@ -54,6 +57,11 @@
     localClassId = 0;
     localName = "";
     localClassId = 0;
+    localSpecs.length = 0;
+    localPrimarySpec = 0;
+  }
+
+  $: if (specsClassId != localClassId) {
     localSpecs.length = 0;
     localPrimarySpec = 0;
   }
@@ -85,6 +93,12 @@
     localSpecs.length = 0;
     localPrimarySpec = 0;
   }
+
+  $: saveEnabled =
+    localName != "" &&
+    localClassId > 0 &&
+    localSpecs.length > 0 &&
+    localPrimarySpec > 0;
 </script>
 
 <Card padded class="member-edit">
@@ -119,7 +133,7 @@
           {/if}
         </Button>
       {/if}
-      <Button on:click={save}>
+      <Button on:click={save} disabled={!saveEnabled}>
         {#if $$slots.saveLabel}
           <slot name="saveLabel" />
         {:else}

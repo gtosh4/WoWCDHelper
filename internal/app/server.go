@@ -2,7 +2,6 @@ package app
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/chenjiandongx/ginprom"
 	ginzap "github.com/gin-contrib/zap"
@@ -29,7 +28,6 @@ func NewServer(c *clients.Clients, addr string) *Server {
 		clients: c,
 	}
 
-	s.router.Use(clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel))
 	s.router.Use(ginzap.RecoveryWithZap(s.Log, true))
 	s.router.Use(ginprom.PromMiddleware(nil))
 

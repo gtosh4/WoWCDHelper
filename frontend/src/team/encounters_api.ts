@@ -1,4 +1,4 @@
-import { derived, get, Readable, writable } from "svelte/store";
+import { derived, get, Readable, Updater, writable } from "svelte/store";
 import { Member, TeamId } from "./team_api";
 import type { Encounter, RosterMember } from "./team_api";
 
@@ -15,7 +15,7 @@ interface rosterStore extends Readable<Promise<RosterMember[]>> {
 }
 
 interface encounterStore extends Readable<Promise<Encounter>> {
-  set(e: Encounter): Promise<Encounter>;
+  update(f: Updater<Encounter>): Promise<Encounter>;
   remove(): Promise<any>;
   roster: rosterStore;
 }
@@ -158,17 +158,20 @@ function createEncounters() {
       p.then((t) => t.find((e) => e.id == id))
     ).subscribe;
 
-    const set = (e: Encounter) => {
-      if (e.id != id) return;
-
-      return fetch(`/team/${get(TeamId)}/encounter/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(e),
-        headers: { "Content-Type": "application/json" },
-      })
-        .then(() => reload())
-        .then((p) => p.find((e) => e.id == id));
-    };
+    const update = (f: Updater<Encounter>) =>
+      get({ subscribe }).then((oldE) => {
+        const newE = f(oldE);
+        if (newE == undefined) {
+          return Promise.resolve(oldE);
+        }
+        return fetch(`/team/${get(TeamId)}/encounter/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(newE),
+          headers: { "Content-Type": "application/json" },
+        })
+          .then(() => reload())
+          .then((p) => p.find((e) => e.id == id));
+      });
 
     const remove = () =>
       fetch(`/team/${get(TeamId)}/encounter/${id}`, {
@@ -177,7 +180,7 @@ function createEncounters() {
 
     return {
       subscribe,
-      set,
+      update,
       remove,
       roster: roster(id),
     };

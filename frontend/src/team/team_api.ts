@@ -1,4 +1,4 @@
-import type { Readable } from "svelte/store";
+import { get, Readable, writable } from "svelte/store";
 import { HashPathPart } from "../url";
 
 function createTeamId(): Readable<string> {
@@ -22,6 +22,32 @@ function createTeamId(): Readable<string> {
 }
 
 export const TeamId = createTeamId();
+
+function createTeamStore() {
+  const team = writable<Promise<Team>>(Promise.resolve(null));
+
+  TeamId.subscribe((teamId) =>
+    team.set(fetch(`/team/${teamId}`).then((r) => r.json() as Promise<Team>))
+  );
+
+  const set = (t: Team) =>
+    fetch(`/team/${get(TeamId)}`, {
+      method: "PUT",
+      body: JSON.stringify(t),
+      headers: { "Content-Type": "application/json" },
+    }).then((r) => {
+      const p = r.json() as Promise<Team>;
+      team.set(p);
+      return p;
+    });
+
+  return {
+    subscribe: team.subscribe,
+    set,
+  };
+}
+
+export const TeamStore = createTeamStore();
 
 export interface Member {
   id: number;
