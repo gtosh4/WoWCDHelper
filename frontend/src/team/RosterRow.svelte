@@ -6,7 +6,7 @@
 
   import { createEventDispatcher } from "svelte";
   import { Members } from "./members_api";
-  import EncounterRow from "./EncounterRow.svelte";
+  import EncounterCells from "./EncounterCells.svelte";
 
   export let memberId: number;
 
@@ -71,7 +71,7 @@
     </Button>
   </Cell>
 
-  <EncounterRow {memberId} />
+  <EncounterCells {memberId} />
 </Row>
 
 <style lang="scss" global>

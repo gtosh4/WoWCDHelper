@@ -4,7 +4,7 @@
   import LinearProgress from "@smui/linear-progress/styled";
   import Button, { Icon, Label } from "@smui/button/styled";
   import MemberEdit from "./MemberEdit.svelte";
-  import RosterEntry from "./RosterEntry.svelte";
+  import RosterRow from "./RosterRow.svelte";
   import EncounterHeaders from "./EncounterHeaders.svelte";
 
   import { Members, SortMembers } from "./members_api";
@@ -82,19 +82,19 @@
 
   <Body>
     {#each $team.tanks as member (member.id)}
-      <RosterEntry
+      <RosterRow
         memberId={member.id}
         on:configure={() => showEdit(member.id)}
       />
     {/each}
     {#each $team.healers as member (member.id)}
-      <RosterEntry
+      <RosterRow
         memberId={member.id}
         on:configure={() => showEdit(member.id)}
       />
     {/each}
     {#each $team.dps as member (member.id)}
-      <RosterEntry
+      <RosterRow
         memberId={member.id}
         on:configure={() => showEdit(member.id)}
       />
