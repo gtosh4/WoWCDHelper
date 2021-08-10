@@ -5,7 +5,7 @@ function createTeamId(): Readable<string> {
   const TeamPath = HashPathPart(0);
   TeamPath.subscribe((param) => {
     if (!param) {
-      fetch("/teams", { method: "POST" })
+      fetch("/team", { method: "POST" })
         .then((r) => {
           const createdId = r.headers
             .get("Location")

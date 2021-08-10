@@ -46,6 +46,17 @@ func Ginzap(logger *zap.Logger, timeFormat string, utc bool, level zapcore.Level
 		}
 
 		if len(c.Errors) > 0 {
+			logger := logger.With(
+				zap.Int("status", c.Writer.Status()),
+				zap.String("method", c.Request.Method),
+				zap.String("path", path),
+				zap.String("query", query),
+				zap.String("ip", c.ClientIP()),
+				zap.String("user-agent", c.Request.UserAgent()),
+				zap.String("time", end.Format(timeFormat)),
+				zap.Duration("latency", latency),
+				zap.String("handler", c.HandlerName()),
+			)
 			// Append error field if this is an erroneous request.
 			for _, e := range c.Errors.Errors() {
 				logger.Error(e)

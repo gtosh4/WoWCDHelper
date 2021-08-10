@@ -17,11 +17,11 @@ import (
 )
 
 func registerTeamApi(s *Server) {
-	teamsR := s.router.Group("/team")
-	teamsR.Use(clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel))
-	teamsR.POST("", s.handleCreateTeam)
+	router := s.router.Group("/team")
+	router.Use(clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel))
+	router.POST("", s.handleCreateTeam)
 
-	teamR := teamsR.Group("/:team")
+	teamR := router.Group("/:team")
 	teamR.GET("", s.handleGetTeam)
 	teamR.PUT("", s.handleSetTeam)
 	teamR.GET("/members", s.handleGetTeamMembers)

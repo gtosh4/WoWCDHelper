@@ -15,11 +15,11 @@
 </script>
 
 {#await $Encounters}
-  <Cell>
+  <Cell class="encounter-header">
     <CircularProgress indeterminate />
   </Cell>
 {:then encounters}
-  <Cell />
+  <Cell class="encounter-header" />
   {#each encounters as enc, i (i)}
     <Cell class="encounter-header">
       <div>

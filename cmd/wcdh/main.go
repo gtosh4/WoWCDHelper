@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -61,7 +62,7 @@ func main() {
 	flags.StringVar(&cfg.BlizzClientID, "bnetId", "31708c8133144f6fab3b75e2ece62d3d", "Battle.net API client ID")
 	flags.StringVar(&cfg.BlizzClientSecret, "bnetSecret", "", "Battle.net API client secret")
 	flags.StringVar(&cfg.DBDriver, "db", "sqlite3", "database driver to use")
-	flags.StringVar(&cfg.DSN, "dsn", "file:wowcdh.db?cache=shared&mode=rwc", "database/sql DSN string")
+	flags.StringVar(&cfg.DSN, "dsn", "file:wowcdh.db?cache=shared&mode=rwc&_busy_timeout=10000", "database/sql DSN string")
 	flags.IntVar(&cfg.NodeID, "nodeID", 1, "node id (used for snowflake UUID generation)")
 
 	root.Execute()
@@ -103,13 +104,27 @@ func serve(cmd *cobra.Command, args []string) (err error) {
 		Logger: dbLog,
 	}
 
+	db, err := sql.Open(cfg.DBDriver, cfg.DSN)
+	if err != nil {
+		err = errors.Wrap(err, "could not open db")
+		return
+	}
+
 	var dbMetrics []gormprom.MetricsCollector
 	switch cfg.DBDriver {
 	case "sqlite3":
-		c.DB, err = gorm.Open(sqlite.Open(cfg.DSN), dbCfg)
+		c.DB, err = gorm.Open(&sqlite.Dialector{
+			DriverName: cfg.DBDriver,
+			DSN:        cfg.DSN,
+			Conn:       db,
+		}, dbCfg)
 
 	case "mysql":
-		c.DB, err = gorm.Open(mysql.Open(cfg.DSN), dbCfg)
+		c.DB, err = gorm.Open(mysql.New(mysql.Config{
+			DriverName: cfg.DBDriver,
+			DSN:        cfg.DSN,
+			Conn:       db,
+		}), dbCfg)
 		dbMetrics = []gormprom.MetricsCollector{
 			&gormprom.MySQL{
 				VariableNames: []string{"Threads_running"},

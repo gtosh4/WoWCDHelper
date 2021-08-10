@@ -75,7 +75,6 @@ func (s *Server) errAbort(c *gin.Context, err error) {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		s.log(c).Warnf("%s %s error: %+v", c.Request.Method, c.Request.URL, err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
 }
