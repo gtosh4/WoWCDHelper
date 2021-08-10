@@ -44,48 +44,53 @@
 </script>
 
 <Row
-  class="roster-entry"
+  class="roster-row"
   on:mouseenter={() => (hovered = true)}
   on:mouseleave={() => (hovered = false)}
 >
-  <Cell class="roster-member">
-    <div style="height: 100%; align-items: center; display: inline-flex">
-      <WowIcon playerClass={classId} height={24} style="padding-right: 8px;" />
+  <Cell style="vertical-align: bottom;">
+    <div class="roster-member">
+      <div style="height: 100%; align-items: center; display: inline-flex">
+        <WowIcon
+          playerClass={classId}
+          height={24}
+          style="padding-right: 8px;"
+        />
+      </div>
+
+      <Textfield
+        bind:value={name}
+        class={hovered ? "name name--hovered" : "name"}
+        input$placeholder="Name"
+        on:blur={save}
+        on:keyup={keypress}
+      />
+
+      <Button
+        on:click={() => dispatch("configure")}
+        class={hovered ? "configure configure--active" : "configure"}
+      >
+        <Icon class="material-icons" style="margin-right: 0; color: white">
+          settings
+        </Icon>
+      </Button>
     </div>
-
-    <Textfield
-      bind:value={name}
-      class={hovered ? "name name--hovered" : "name"}
-      input$placeholder="Name"
-      on:blur={save}
-      on:keyup={keypress}
-    />
-
-    <Button
-      on:click={() => dispatch("configure")}
-      class={hovered ? "configure configure--active" : "configure"}
-    >
-      <Icon class="material-icons" style="margin-right: 0; color: white">
-        settings
-      </Icon>
-    </Button>
   </Cell>
 
   <EncounterCells {memberId} />
 </Row>
 
 <style lang="scss" global>
-  .roster-entry {
-    $line-height: auto;
-
-    height: $line-height;
+  .roster-row {
+    height: auto;
 
     td.mdc-data-table__cell {
-      height: $line-height;
+      height: auto;
     }
 
     .roster-member {
-      display: flex;
+      display: inline-flex;
+      height: 100%;
 
       .name {
         $width: 12em;
@@ -101,7 +106,7 @@
         display: none;
         min-width: unset;
         width: calc(18px+8px+8px);
-        height: $line-height;
+        height: 100%;
 
         &.configure--active {
           display: unset;

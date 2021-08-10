@@ -12,6 +12,7 @@
   import { writable } from "svelte/store";
   import { Spec } from "../wow/api";
   import { Encounters } from "./encounters_api";
+  import RoleRow from "./RoleRow.svelte";
 
   let open = false;
   let editMemberId: number | undefined;
@@ -81,18 +82,21 @@
   </Head>
 
   <Body>
+    <RoleRow roleName="Tanks" roleType="TANK" />
     {#each $team.tanks as member (member.id)}
       <RosterRow
         memberId={member.id}
         on:configure={() => showEdit(member.id)}
       />
     {/each}
+    <RoleRow roleName="Healers" roleType="HEALER" />
     {#each $team.healers as member (member.id)}
       <RosterRow
         memberId={member.id}
         on:configure={() => showEdit(member.id)}
       />
     {/each}
+    <RoleRow roleName="DPS" roleType="DAMAGE" />
     {#each $team.dps as member (member.id)}
       <RosterRow
         memberId={member.id}

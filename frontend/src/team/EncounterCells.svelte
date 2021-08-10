@@ -29,6 +29,12 @@
     }
   });
 
+  const icons = new Map([
+    [true, "check_box"],
+    [false, "check_box_outline_blank"],
+    [null, "indeterminate_check_box"],
+  ]);
+
   function toggleAll() {
     if (selectAll == null || selectAll == true) {
       encounters.remove();
@@ -49,19 +55,14 @@
     <CircularProgress indeterminate />
   </Cell>
 {:then encounters}
-  <Cell>
-    <Button class="member-encounter-all" on:click={toggleAll}>
+  <Cell class="member-encounter-all">
+    <Button on:click={toggleAll}>
       <Icon class="material-icons">
-        {#if selectAll == null}
-          indeterminate_check_box
-        {:else if selectAll == true}
-          check_box
-        {:else}
-          check_box_outline_blank
-        {/if}
+        {icons.get(selectAll)}
       </Icon>
     </Button>
   </Cell>
+
   {#each encounters as enc, i (i)}
     <Cell style="overflow: visible">
       <RosterSpecSelect {memberId} encounterId={enc.id} />
@@ -72,6 +73,9 @@
 
 <style lang="scss" global>
   .member-encounter-all {
+    padding-left: 2px;
+    padding-right: 2px;
+
     button.mdc-button {
       min-width: 24px;
     }
