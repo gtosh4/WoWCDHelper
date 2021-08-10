@@ -27,18 +27,18 @@ if (isBrowser) {
 }
 
 function hashSplit(url: URL): string[] {
-  return url.hash.replace(/^#\//, "").split("/");
+  return url.pathname.split("/").slice(1);
 }
 
-export const HashPath = {
+export const Path = {
   subscribe: derived(href, ($href): string[] => hashSplit(new URL($href)))
     .subscribe,
 
   update: (f: Updater<string[]>) => {
     const url = new URL(window.location.href);
-    const hashPath = hashSplit(url);
-    const nextHashPath = f(hashPath);
-    url.hash = `#/${nextHashPath.join("/")}`;
+    const path = hashSplit(url);
+    const nextPath = f(path);
+    url.pathname = `/${nextPath.join("/")}`;
     history.pushState(null, "", url.toString());
   },
 
@@ -49,14 +49,14 @@ export const HashPath = {
   },
 };
 
-export function HashPathPart(idx: number) {
+export function PathPart(idx: number) {
   return {
-    subscribe: derived(HashPath, (path) =>
+    subscribe: derived(Path, (path) =>
       path && path.length > idx ? path[idx] : undefined
     ).subscribe,
 
     update: (f: Updater<string>) => {
-      return HashPath.update((path) => {
+      return Path.update((path) => {
         if (path.length > idx) {
           path[idx] = f(path[idx]);
         } else if (path.length == idx) {
@@ -67,7 +67,7 @@ export function HashPathPart(idx: number) {
     },
 
     set: (value: string) => {
-      HashPath.update((path) => {
+      Path.update((path) => {
         if (path.length > idx) {
           path[idx] = value;
         }

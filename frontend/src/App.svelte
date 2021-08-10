@@ -8,7 +8,7 @@
   import Assignments from "./assignments/Assignments.svelte";
 
   import { onMount } from "svelte";
-  import { HashPathPart } from "./url";
+  import { PathPart } from "./url";
   import { TeamStore } from "./team/team_api";
 
   const tabs = [
@@ -18,7 +18,7 @@
 
   let active = tabs[0];
 
-  const TabPath = HashPathPart(1);
+  const TabPath = PathPart(1);
 
   let mounted = false;
   onMount(() => {
@@ -73,6 +73,7 @@
           />
         {/await}
       </Section>
+
       <Section align="end">
         <TabBar {tabs} let:tab bind:active style="width: unset">
           <Tab {tab} minWidth>

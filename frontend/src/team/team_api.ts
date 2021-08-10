@@ -1,8 +1,8 @@
 import { get, Readable, writable } from "svelte/store";
-import { HashPathPart } from "../url";
+import { PathPart } from "../url";
 
 function createTeamId(): Readable<string> {
-  const TeamPath = HashPathPart(0);
+  const TeamPath = PathPart(0);
   TeamPath.subscribe((param) => {
     if (!param) {
       fetch("/team", { method: "POST" })
