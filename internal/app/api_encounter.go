@@ -4,36 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"github.com/gtosh4/WoWCDHelper/pkg/encounters"
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
-
-func registerEncounterApi(s *Server) {
-	teamR := s.router.Group("/team/:team")
-	teamR.Use(clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel))
-	teamR.GET("/encounters", s.handleGetEncounters)
-	teamR.POST("/encounter", s.handleNewEncounter)
-
-	encR := teamR.Group("/encounter/:encounter")
-	encR.DELETE("", s.handleDeleteEncounter)
-	encR.PUT("", s.handleSetEncounter)
-	encR.GET("/events", s.handleGetEvents)
-	encR.PUT("/events", s.handleSetEvents)
-	encR.POST("/event", s.handleNewEvent)
-	encR.GET("/roster", s.handleGetRoster)
-	encR.PUT("/roster", s.handleSetRoster)
-	encR.PUT("/roster/:member", s.handleSetRosterMember)
-	encR.DELETE("/roster/:member", s.handleDeleteRosterMember)
-
-	encR.GET("/assignments", s.handleGetAssignments)
-}
 
 func encounterParams(c *gin.Context) (teamId string, encId uint, err error) {
 	teamId = c.Param("team")

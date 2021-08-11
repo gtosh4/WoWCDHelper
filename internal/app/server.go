@@ -35,7 +35,6 @@ func NewServer(c *clients.Clients, addr string) *Server {
 	registerDebug(s)
 	registerWoWApi(s)
 	registerTeamApi(s)
-	registerEncounterApi(s)
 
 	registerFrontend(s)
 

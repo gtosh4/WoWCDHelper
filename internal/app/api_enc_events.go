@@ -2,7 +2,6 @@ package app
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gtosh4/WoWCDHelper/pkg/encounters"
@@ -11,15 +10,9 @@ import (
 )
 
 func (s *Server) handleNewEvent(c *gin.Context) {
-	teamId := c.Param("team")
-	encIdStr := c.Param("encounter")
-	if teamId == "" || encIdStr == "" {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	encId, err := strconv.ParseUint(encIdStr, 10, 64)
+	_, encId, err := encounterParams(c)
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		s.log(c).Warnf("params err: %v", err)
 		return
 	}
 
@@ -47,20 +40,15 @@ func (s *Server) handleNewEvent(c *gin.Context) {
 }
 
 func (s *Server) handleGetEvents(c *gin.Context) {
-	teamId := c.Param("team")
-	encIdStr := c.Param("encounter")
-	if teamId == "" || encIdStr == "" {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	encId, err := strconv.ParseUint(encIdStr, 10, 64)
+	teamId, encId, err := encounterParams(c)
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		s.log(c).Warnf("params err: %v", err)
 		return
 	}
 
 	es := []encounters.Event{}
 	err = s.db(c).
+		Preload("Encounter").
 		Where(&teams.Team{ID: teamId}).
 		Where(&encounters.Encounter{ID: uint(encId)}).
 		Preload("Instances").
@@ -75,15 +63,9 @@ func (s *Server) handleGetEvents(c *gin.Context) {
 }
 
 func (s *Server) handleSetEvents(c *gin.Context) {
-	teamId := c.Param("team")
-	encIdStr := c.Param("encounter")
-	if teamId == "" || encIdStr == "" {
-		c.AbortWithStatus(http.StatusBadRequest)
-		return
-	}
-	encId, err := strconv.ParseUint(encIdStr, 10, 64)
+	_, encId, err := encounterParams(c)
 	if err != nil {
-		c.AbortWithStatus(http.StatusBadRequest)
+		s.log(c).Warnf("params err: %v", err)
 		return
 	}
 
@@ -97,6 +79,7 @@ func (s *Server) handleSetEvents(c *gin.Context) {
 	}
 	err = s.db(c).Transaction(func(tx *gorm.DB) error {
 		err := tx.
+			Preload("Encounter").
 			Where(&encounters.Encounter{ID: uint(encId)}).
 			Delete(&encounters.Event{}).
 			Error

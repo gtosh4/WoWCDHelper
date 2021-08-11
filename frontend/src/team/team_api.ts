@@ -77,7 +77,7 @@ export interface Event {
   id: number;
   label: string;
   color: string;
-  instances: EventInstance[];
+  instances?: EventInstance[];
 }
 
 export interface EventInstance {
