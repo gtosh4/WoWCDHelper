@@ -38,7 +38,7 @@ func (s *Server) handleGetTeamMembers(c *gin.Context) {
 
 	members := []teams.Member{}
 	err := s.db(c).
-		Where("team_id = ?", teamId).
+		Where(&teams.Member{TeamID: teamId}).
 		Preload("Config").
 		Find(&members).
 		Error
@@ -113,6 +113,28 @@ func (s *Server) handleNewMember(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusCreated, fmt.Sprintf("/team/%s/member/%d", m.TeamID, m.ID))
+}
+
+func (s *Server) handleGetMember(c *gin.Context) {
+	teamId, memberId, err := memberParams(c)
+	if err != nil {
+		s.log(c).Warnf("params err: %v", err)
+		return
+	}
+
+	var m teams.Member
+
+	err = s.db(c).
+		Where(&teams.Member{TeamID: teamId, ID: memberId}).
+		Preload("Config").
+		First(&m).
+		Error
+	if err != nil {
+		s.errAbort(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, m)
 }
 
 func (s *Server) handleUpdateMember(c *gin.Context) {

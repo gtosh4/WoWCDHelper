@@ -3,18 +3,20 @@
   import CircularProgress from "@smui/circular-progress/styled";
   import Button, { Icon } from "@smui/button/styled";
 
-  import { Encounters } from "./encounters_api";
   import EncounterNameField from "./EncounterNameField.svelte";
+  import { TeamStore } from "./team_store";
+
+  $: encounters = $TeamStore.Encounters;
 
   function newEncounter() {
-    Encounters.addEncounter({
+    $TeamStore.newEncounter({
       id: undefined,
       name: "",
     });
   }
 </script>
 
-{#await $Encounters}
+{#await $encounters}
   <Cell class="encounter-header">
     <CircularProgress indeterminate />
   </Cell>

@@ -13,7 +13,7 @@ interface AsyncRWStore<T> extends Readable<Promise<T>> {
   reload(): Promise<T>;
   set(v: T): void;
   update(f: Updater<T>): void;
-  remove(): void;
+  remove(): Promise<void>;
 
   directUpdate(f: Updater<T>): void;
 }
@@ -31,13 +31,15 @@ class apiResource<T> implements AsyncRWStore<T> {
     run: Subscriber<Promise<T>>,
     invalidate?: (value?: Promise<T>) => void
   ): Unsubscriber {
+    const unsub = this.direct.subscribe(run, invalidate);
     if (get(this.direct) == undefined) {
       this.reload();
     }
-    return this.direct.subscribe(run, invalidate);
+    return unsub;
   }
 
   public reload(): Promise<T> {
+    console.log("reloading", { url: this.url });
     const p = fetch(this.url).then((r) => r.json() as Promise<T>);
     this.direct.set(p);
     return p;
@@ -48,11 +50,18 @@ class apiResource<T> implements AsyncRWStore<T> {
       method: "PUT",
       body: JSON.stringify(v),
       headers: { "Content-Type": "application/json" },
-    }).then(this.reload);
+    }).then((r) => {
+      const contentType = r.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") >= 0) {
+        this.direct.set(r.json());
+      } else {
+        this.reload();
+      }
+    });
   }
 
-  public remove(): void {
-    fetch(this.url, { method: "DELETE" });
+  public remove(): Promise<void> {
+    return fetch(this.url, { method: "DELETE" }).then(() => {});
   }
 
   public update(f: Updater<T>): void {
@@ -68,35 +77,71 @@ class apiResource<T> implements AsyncRWStore<T> {
     get(this.direct).then((oldV) => {
       const newV = f(oldV);
       if (!equal(oldV, newV)) {
-        return this.direct.set(Promise.resolve(newV));
+        this.direct.set(Promise.resolve(newV));
       }
     });
   }
 }
 
 class cell {
+  private store: store;
+
   public memberId: number;
   public memberInfo: AsyncRWStore<Member>;
   public encounterId: number;
   public encounterInfo: AsyncRWStore<Encounter>;
-  public rosterMember: AsyncRWStore<RosterMember>;
+
+  public rosterMember: Writable<Promise<RosterMember>>;
 
   constructor(s: store, r: row, c: column) {
+    this.store = s;
     this.memberId = r.memberId;
     this.memberInfo = r.memberInfo;
     this.encounterId = c.encounterId;
     this.encounterInfo = c.encounterInfo;
 
-    this.rosterMember = new apiResource(
-      `/team/${s.teamId}/encounters/${this.encounterId}/roster/${this.memberId}`
-    );
+    this.rosterMember = writable(Promise.resolve<RosterMember>(undefined));
 
-    this.rosterMember.subscribe((p) =>
-      p.then((rm) => {
-        r.updateFromCell(rm);
-        c.updateFromCell(rm);
-      })
-    );
+    let firstRun = true;
+    this.rosterMember.subscribe((p) => {
+      if (!firstRun) {
+        p.then((rm) => {
+          console.trace("cell propagation", {
+            memberId: this.memberId,
+            encounterId: this.encounterId,
+            rm,
+          });
+          r.updateFromCell(this.encounterId, rm);
+          c.updateFromCell(this.memberId, rm);
+        });
+      } else {
+        firstRun = false;
+      }
+    });
+  }
+
+  update(f: Updater<RosterMember>): Promise<RosterMember> {
+    return get(this.rosterMember).then((oldV) => {
+      const newV = f(oldV);
+      if (!equal(oldV, newV)) {
+        return fetch(
+          `/team/${this.store.teamId}/encounter/${this.encounterId}/roster/${this.memberId}`,
+          {
+            method: "PUT",
+            body: JSON.stringify(newV),
+            headers: { "Content-Type": "application/json" },
+          }
+        ).then((r) => r.json() as Promise<RosterMember>);
+      }
+      return Promise.resolve(oldV);
+    });
+  }
+
+  remove(): Promise<void> {
+    return fetch(
+      `/team/${this.store.teamId}/encounter/${this.encounterId}/roster/${this.memberId}`,
+      { method: "DELETE" }
+    ).then(() => this.rosterMember.set(Promise.resolve(undefined)));
   }
 }
 
@@ -117,26 +162,47 @@ class row {
 
     this.inUpdate = false;
     this.memberEncounters.subscribe((p) => {
+      console.trace("updating row", {
+        encounterId: this.memberId,
+        inUpdate: this.inUpdate,
+      });
       if (this.inUpdate) return;
+      if (!p) return;
 
       p.then((rms) => {
         rms.forEach((rm) => {
-          s.cell(memberId, rm.encounter_id).rosterMember.directUpdate(() => rm);
+          console.log("row cell update", { memberId: this.memberId, rm });
+          s.cell(memberId, rm.encounter_id).rosterMember.set(
+            Promise.resolve(rm)
+          );
         });
       });
     });
   }
 
-  updateFromCell(rm: RosterMember) {
+  remove(): Promise<void> {
+    return this.memberInfo.remove();
+  }
+
+  updateFromCell(encounterId: number, rm?: RosterMember) {
     this.inUpdate = true;
     this.memberEncounters.directUpdate((rms) => {
+      if (!rms) {
+        return rm ? [rm] : rms;
+      }
       const idx = rms.findIndex(
-        (m) => m.encounter_id == rm.encounter_id && m.member_id == rm.member_id
+        (m) => m.encounter_id == encounterId && m.member_id == this.memberId
       );
       if (idx >= 0) {
-        rms[idx] = rm;
+        if (rm) {
+          rms[idx] = rm;
+        } else {
+          rms.splice(idx, 1);
+        }
       } else {
-        rms.push(rm);
+        if (rm) {
+          rms.push(rm);
+        }
       }
       return rms;
     });
@@ -161,27 +227,47 @@ class column {
 
     this.inUpdate = false;
     this.encounterMembers.subscribe((p) => {
+      console.log("updating col", {
+        encounterId: this.encounterId,
+        inUpdate: this.inUpdate,
+      });
       if (this.inUpdate) return;
+      if (!p) return;
 
       p.then((rms) => {
         rms.forEach((rm) => {
-          s.cell(rm.member_id, encounterId).rosterMember.directUpdate(() => rm);
+          console.log("col cell update", { encounterId: this.encounterId, rm });
+          s.cell(rm.member_id, encounterId).rosterMember.set(
+            Promise.resolve(rm)
+          );
         });
       });
     });
   }
 
-  updateFromCell(rm: RosterMember) {
-    this.inUpdate = true;
+  remove() {
+    this.encounterInfo.remove();
+  }
 
+  updateFromCell(memberId: number, rm: RosterMember) {
+    this.inUpdate = true;
     this.encounterMembers.directUpdate((rms) => {
+      if (!rms) {
+        return rm ? [rm] : rms;
+      }
       const idx = rms.findIndex(
-        (m) => m.encounter_id == rm.encounter_id && m.member_id == rm.member_id
+        (m) => m.encounter_id == this.encounterId && m.member_id == memberId
       );
       if (idx >= 0) {
-        rms[idx] = rm;
+        if (rm) {
+          rms[idx] = rm;
+        } else {
+          rms.splice(idx, 1);
+        }
       } else {
-        rms.push(rm);
+        if (rm) {
+          rms.push(rm);
+        }
       }
       return rms;
     });
@@ -239,6 +325,7 @@ class store {
     if (this.cells.has(key)) {
       return this.cells.get(key);
     }
+    console.trace("new cell", { memberId, encounterId });
     const c = new cell(this, this.row(memberId), this.column(encounterId));
     this.cells.set(key, c);
     return c;

@@ -7,10 +7,9 @@
   import WowIcon from "../wow/WowIcon.svelte";
 
   import { classMap } from "@smui/common/classMap";
-  import { Members } from "./members_api";
-  import { Encounters } from "./encounters_api";
-  import type { RosterMember } from "./team_api";
   import { CreateAnchor } from "../anchor";
+  import { TeamStore } from "./team_store";
+  import type { RosterMember } from "./team_api";
 
   export let memberId: number;
   export let encounterId: number;
@@ -19,26 +18,24 @@
   let primarySpec: number = 0;
   let selected: number | null = null;
 
-  $: member = Members.member(memberId);
+  $: member = $TeamStore.cell(memberId, encounterId);
+  $: memberInfo = member.memberInfo;
+  $: rosterMember = member.rosterMember;
 
-  $: if ($member) {
-    $member.then((m) => {
-      specs = m.config.specs;
-      primarySpec = m.config.primarySpec;
-    });
-  }
+  $: infoP = $memberInfo.then((m) => {
+    specs = m.config.specs;
+    primarySpec = m.config.primarySpec;
+    return m;
+  });
 
-  $: rosterMember = Encounters.encounter(encounterId).roster.member(memberId);
-
-  $: {
-    $rosterMember.then((rm) => {
-      if (rm) {
-        selected = rm.spec;
-      } else {
-        selected = null;
-      }
-    });
-  }
+  $: selectedP = $rosterMember.then((rm) => {
+    if (rm) {
+      selected = rm.spec;
+    } else {
+      selected = null;
+    }
+    return rm;
+  });
 
   let selectedIndex;
   $: if (selected != null) {
@@ -74,9 +71,9 @@
     menuOpen = false;
 
     if (id != null) {
-      rosterMember.set(localMember());
+      member.update(() => localMember());
     } else {
-      rosterMember.remove();
+      member.remove();
     }
   }
 
@@ -96,9 +93,9 @@
   {#if specs.length > 1}
     <div class={$anchor} use:Anchor={anchor} bind:this={anchorElem}>
       <Button on:click={() => (menuOpen = true)}>
-        {#await Promise.all([$rosterMember, $member])}
+        {#await Promise.all([infoP, selectedP])}
           <CircularProgress indeterminate />
-        {:then [rm, m]}
+        {:then [m, rm]}
           {#if rm}
             <WowIcon
               playerClass={m.classId}
@@ -122,7 +119,7 @@
             <Icon class="material-icons">backspace</Icon>
           </Item>
           <Item on:SMUI:action={() => select(0)}>
-            {#await $member}
+            {#await infoP}
               <CircularProgress indeterminate />
             {:then member}
               <WowIcon playerClass={member.classId} height={24} />
@@ -142,7 +139,7 @@
   {:else}
     <Button on:click={toggle}>
       {#if selected}
-        {#await $member}
+        {#await infoP}
           <Icon class="material-icons">check_box</Icon>
         {:then m}
           <WowIcon

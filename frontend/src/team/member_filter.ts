@@ -23,3 +23,13 @@ export function RoleMembers<T extends RosterMember | Member>(
       entries.filter((e) => e.s.role.type == roleType).map((e) => e.m)
     );
 }
+
+export function SortMembers(a: Member, b: Member) {
+  if (a.classId != b.classId) {
+    return a.classId - b.classId;
+  } else if (a.config.primarySpec != b.config.primarySpec) {
+    return a.config.primarySpec - b.config.primarySpec;
+  } else if (a.name < b.name) return -1;
+  else if (a.name > b.name) return 1;
+  else return a.id - b.id;
+}

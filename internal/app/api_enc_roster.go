@@ -71,6 +71,32 @@ func (s *Server) handleSetRoster(c *gin.Context) {
 	c.JSON(http.StatusOK, roster)
 }
 
+func (s *Server) handleGetRosterMember(c *gin.Context) {
+	_, encId, err := encounterParams(c)
+	if err != nil {
+		s.log(c).Warnf("params err: %v", err)
+		return
+	}
+	_, memberId, err := memberParams(c)
+	if err != nil {
+		s.log(c).Warnf("params err: %v", err)
+		return
+	}
+
+	var rm encounters.Roster
+
+	err = s.db(c).
+		Where(&encounters.Roster{EncounterID: encId, MemberID: memberId}).
+		First(&rm).
+		Error
+	if err != nil {
+		s.errAbort(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, rm)
+}
+
 func (s *Server) handleSetRosterMember(c *gin.Context) {
 	_, encId, err := encounterParams(c)
 	if err != nil {
@@ -101,7 +127,7 @@ func (s *Server) handleSetRosterMember(c *gin.Context) {
 		return
 	}
 
-	c.AbortWithStatus(http.StatusNoContent)
+	c.JSON(http.StatusOK, rm)
 }
 
 func (s *Server) handleDeleteRosterMember(c *gin.Context) {

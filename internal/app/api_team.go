@@ -24,10 +24,11 @@ func registerTeamApi(s *Server) {
 	teamR.POST("/members", s.handleNewMember)
 
 	memberR := teamR.Group("/member/:member")
+	memberR.GET("", s.handleGetMember)
 	memberR.PUT("", s.handleUpdateMember)
 	memberR.DELETE("", s.handleDeleteMember)
 	memberR.GET("/encounters", s.handleGetMemberEncounters)
-	memberR.POST("/encounters", s.handleSetMemberEncounters)
+	memberR.PUT("/encounters", s.handleSetMemberEncounters)
 	memberR.DELETE("/encounters", s.handlRemoveMemberEncounters)
 
 	teamR.GET("/encounters", s.handleGetEncounters)
@@ -44,6 +45,7 @@ func registerTeamApi(s *Server) {
 	rosterR := encR.Group("/roster")
 	rosterR.GET("", s.handleGetRoster)
 	rosterR.PUT("", s.handleSetRoster)
+	rosterR.GET("/:member", s.handleGetRosterMember)
 	rosterR.PUT("/:member", s.handleSetRosterMember)
 	rosterR.DELETE("/:member", s.handleDeleteRosterMember)
 

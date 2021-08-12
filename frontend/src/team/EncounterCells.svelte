@@ -3,22 +3,23 @@
   import CircularProgress from "@smui/circular-progress/styled";
   import Button, { Icon } from "@smui/button/styled";
 
-  import { Encounters } from "./encounters_api";
   import RosterSpecSelect from "./RosterSpecSelect.svelte";
-  import { Members } from "./members_api";
+  import { TeamStore } from "./team_store";
 
   export let memberId: number;
 
-  $: member = Members.member(memberId);
-  $: encounters = member.encounters;
+  $: storeRow = $TeamStore.row(memberId);
+  $: member = storeRow.memberInfo;
+  $: encounters = $TeamStore.Encounters;
+  $: memberEncounters = storeRow.memberEncounters;
 
   let selectAll: boolean | null = false;
 
-  $: rms = $encounters.then(
-    (vs) => new Map(vs.map((m) => [m.encounter_id, m]))
+  $: rms = $memberEncounters.then(
+    (members) => new Map(members.map((m) => [m.encounter_id, m]))
   );
 
-  $: Promise.all([$Encounters, rms]).then(([encs, rms]) => {
+  $: Promise.all([$encounters, rms]).then(([encs, rms]) => {
     const count = rms.size;
     if (count == 0) {
       selectAll = false;
@@ -37,20 +38,22 @@
 
   function toggleAll() {
     if (selectAll == null || selectAll == true) {
-      encounters.remove();
+      memberEncounters.remove();
     } else {
-      $member.then((m) =>
-        encounters.set({
-          encounter_id: undefined,
-          member_id: memberId,
-          spec: m.config.primarySpec,
-        })
+      Promise.all([$member, $encounters]).then(([m, es]) =>
+        storeRow.memberEncounters.set([
+          ...es.map((e) => ({
+            encounter_id: e.id,
+            member_id: memberId,
+            spec: m.config.primarySpec,
+          })),
+        ])
       );
     }
   }
 </script>
 
-{#await $Encounters}
+{#await $encounters}
   <Cell>
     <CircularProgress indeterminate />
   </Cell>

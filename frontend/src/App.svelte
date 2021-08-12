@@ -9,7 +9,7 @@
 
   import { onMount } from "svelte";
   import { PathPart } from "./url";
-  import { TeamStore } from "./team/team_api";
+  import { TeamStore } from "./team/team_store";
 
   const tabs = [
     { id: "roster", path: "", component: Roster },
@@ -31,7 +31,7 @@
     TabPath.set(active.id);
   }
 
-  const team = TeamStore;
+  const team = $TeamStore.Team;
   let localName = "";
   let loadedTeam: string | null = null;
   $: $team.then((t) => {

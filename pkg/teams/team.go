@@ -13,7 +13,7 @@ import (
 type (
 	Member struct {
 		ID      uint         `json:"id" gorm:"primaryKey;autoIncrement:true"`
-		TeamID  string       `json:"team"`
+		TeamID  string       `json:"team" gorm:"constraint:OnDelete:CASCADE"`
 		Team    Team         `json:"-" gorm:"foreignKey:TeamID"`
 		Name    string       `json:"name"`
 		ClassID int          `json:"classId"`
@@ -21,7 +21,7 @@ type (
 	}
 
 	MemberConfig struct {
-		MemberID    uint  `json:"-"`
+		MemberID    uint  `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 		Specs       Specs `json:"specs"`
 		PrimarySpec int   `json:"primarySpec"`
 	}
