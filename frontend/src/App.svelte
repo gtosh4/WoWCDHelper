@@ -34,22 +34,17 @@
   const team = $TeamStore.Team;
   let localName = "";
   let loadedTeam: string | null = null;
-  $: $team.then((t) => {
-    if (t && loadedTeam != t.id) {
-      localName = t.name;
-      loadedTeam = t.id;
-    }
-  });
+  $: if ($team && loadedTeam != $team.id) {
+    localName = $team.name;
+    loadedTeam = $team.id;
+  }
 
   function save() {
     console.log("starting save", { localName });
-    $team.then((t) => {
-      console.log("save", { t, localName });
-      if (t && t.name != localName) {
-        t.name = localName;
-        team.set(t);
-      }
-    });
+    if ($team && $team.name != localName) {
+      const t = { ...$team, name: localName };
+      $team = t;
+    }
   }
 
   function keypress(e) {

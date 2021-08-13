@@ -9,26 +9,23 @@
   export let memberId: number;
 
   $: storeRow = $TeamStore.row(memberId);
-  $: member = storeRow.memberInfo;
+  $: member = storeRow.member;
   $: encounters = $TeamStore.Encounters;
-  $: memberEncounters = storeRow.memberEncounters;
+  $: memberEncounters = storeRow.encounters;
 
   let selectAll: boolean | null = false;
 
-  $: rms = $memberEncounters.then(
-    (members) => new Map(members.map((m) => [m.encounter_id, m]))
-  );
-
-  $: Promise.all([$encounters, rms]).then(([encs, rms]) => {
-    const count = rms.size;
-    if (count == 0) {
+  $: {
+    const rmCount = $memberEncounters ? $memberEncounters.length : 0;
+    const encCount = $encounters ? $encounters.length : 0;
+    if (rmCount == 0) {
       selectAll = false;
-    } else if (count == encs.length) {
+    } else if (rmCount == encCount) {
       selectAll = true;
     } else {
       selectAll = null;
     }
-  });
+  }
 
   const icons = new Map([
     [true, "check_box"],
@@ -38,17 +35,15 @@
 
   function toggleAll() {
     if (selectAll == null || selectAll == true) {
-      memberEncounters.remove();
+      storeRow.encounterAPI.remove();
     } else {
-      Promise.all([$member, $encounters]).then(([m, es]) =>
-        storeRow.memberEncounters.set([
-          ...es.map((e) => ({
-            encounter_id: e.id,
-            member_id: memberId,
-            spec: m.config.primarySpec,
-          })),
-        ])
-      );
+      storeRow.encounterAPI.put([
+        ...$encounters.map((e) => ({
+          encounter_id: e.id,
+          member_id: memberId,
+          spec: $member.config.primarySpec,
+        })),
+      ]);
     }
   }
 </script>

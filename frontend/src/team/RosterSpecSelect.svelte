@@ -18,31 +18,27 @@
   let primarySpec: number = 0;
   let selected: number | null = null;
 
-  $: member = $TeamStore.cell(memberId, encounterId);
-  $: memberInfo = member.memberInfo;
-  $: rosterMember = member.rosterMember;
+  $: memberInfo = $TeamStore.row(memberId).member;
+  $: cell = $TeamStore.cell(memberId, encounterId);
+  $: rosterMember = cell.rosterMember;
 
-  $: infoP = $memberInfo.then((m) => {
-    specs = m.config.specs;
-    primarySpec = m.config.primarySpec;
-    return m;
-  });
+  $: if ($memberInfo) {
+    specs = $memberInfo.config.specs;
+    primarySpec = $memberInfo.config.primarySpec;
+  }
 
-  $: selectedP = $rosterMember.then((rm) => {
-    if (rm) {
-      selected = rm.spec;
-    } else {
-      selected = null;
-    }
-    return rm;
-  });
+  $: if ($rosterMember) {
+    selected = $rosterMember.spec;
+  } else {
+    selected = null;
+  }
 
   let selectedIndex;
   $: if (selected != null) {
     if (selected == 0) {
       selectedIndex = 1;
     } else {
-      selectedIndex = specs.indexOf(selected);
+      selectedIndex = specs.indexOf(selected) + 2;
     }
   } else {
     selectedIndex = 0;
@@ -71,9 +67,9 @@
     menuOpen = false;
 
     if (id != null) {
-      member.update(() => localMember());
+      cell.rosterMember.put(localMember());
     } else {
-      member.remove();
+      cell.rosterMember.remove();
     }
   }
 
@@ -93,19 +89,17 @@
   {#if specs.length > 1}
     <div class={$anchor} use:Anchor={anchor} bind:this={anchorElem}>
       <Button on:click={() => (menuOpen = true)}>
-        {#await Promise.all([infoP, selectedP])}
+        {#if $memberInfo == undefined}
           <CircularProgress indeterminate />
-        {:then [m, rm]}
-          {#if rm}
-            <WowIcon
-              playerClass={m.classId}
-              spec={selected && selected > 0 ? selected : undefined}
-              height={24}
-            />
-          {:else}
-            <Icon class="material-icons">check_box_outline_blank</Icon>
-          {/if}
-        {/await}
+        {:else if $rosterMember}
+          <WowIcon
+            playerClass={$memberInfo.classId}
+            spec={selected && selected > 0 ? selected : undefined}
+            height={24}
+          />
+        {:else}
+          <Icon class="material-icons">check_box_outline_blank</Icon>
+        {/if}
       </Button>
 
       <Menu
@@ -119,11 +113,11 @@
             <Icon class="material-icons">backspace</Icon>
           </Item>
           <Item on:SMUI:action={() => select(0)}>
-            {#await infoP}
+            {#if $memberInfo == undefined}
               <CircularProgress indeterminate />
-            {:then member}
-              <WowIcon playerClass={member.classId} height={24} />
-            {/await}
+            {:else}
+              <WowIcon playerClass={$memberInfo.classId} height={24} />
+            {/if}
           </Item>
           {#each specs as spec}
             <Item
@@ -139,15 +133,15 @@
   {:else}
     <Button on:click={toggle}>
       {#if selected}
-        {#await infoP}
+        {#if $memberInfo == undefined}
           <Icon class="material-icons">check_box</Icon>
-        {:then m}
+        {:else}
           <WowIcon
-            playerClass={m.classId}
+            playerClass={$memberInfo.classId}
             spec={selected && selected > 0 ? selected : undefined}
             height={24}
           />
-        {/await}
+        {/if}
       {:else}
         <Icon class="material-icons">check_box_outline_blank</Icon>
       {/if}

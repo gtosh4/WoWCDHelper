@@ -1,4 +1,4 @@
-import { writable, derived, get } from "svelte/store";
+import { writable, derived, get, readable } from "svelte/store";
 import type {
   Readable,
   Subscriber,
@@ -9,282 +9,253 @@ import type {
 import { Encounter, Member, RosterMember, Team, TeamId } from "./team_api";
 import equal from "fast-deep-equal/es6";
 
-interface AsyncRWStore<T> extends Readable<Promise<T>> {
-  reload(): Promise<T>;
-  set(v: T): void;
-  update(f: Updater<T>): void;
-  remove(): Promise<void>;
+class apiResource<T> {
+  url: string;
+  listener: (v: T) => void;
 
-  directUpdate(f: Updater<T>): void;
-}
-
-class apiResource<T> implements AsyncRWStore<T> {
-  public url: string;
-  private direct: Writable<Promise<T>>;
-
-  constructor(url: string) {
+  constructor(url: string, listener?: (v: T) => void) {
     this.url = url;
-    this.direct = writable(undefined);
-  }
-
-  public subscribe(
-    run: Subscriber<Promise<T>>,
-    invalidate?: (value?: Promise<T>) => void
-  ): Unsubscriber {
-    const unsub = this.direct.subscribe(run, invalidate);
-    if (get(this.direct) == undefined) {
-      this.reload();
+    if (listener) {
+      this.listener = listener;
+    } else {
+      this.listener = () => {};
     }
-    return unsub;
   }
 
-  public reload(): Promise<T> {
-    console.log("reloading", { url: this.url });
+  get(): Promise<T> {
     const p = fetch(this.url).then((r) => r.json() as Promise<T>);
-    this.direct.set(p);
+    p.then((v) => this.listener(v));
     return p;
   }
 
-  public set(v: T): void {
-    fetch(this.url, {
+  put(v: T): Promise<T> {
+    return fetch(this.url, {
       method: "PUT",
       body: JSON.stringify(v),
       headers: { "Content-Type": "application/json" },
     }).then((r) => {
       const contentType = r.headers.get("content-type");
       if (contentType && contentType.indexOf("application/json") >= 0) {
-        this.direct.set(r.json());
+        const p = r.json().then((r) => r.json() as Promise<T>);
+        p.then((v) => this.listener(v));
+        return p;
       } else {
+        return this.get();
+      }
+    });
+  }
+
+  remove(): Promise<void> {
+    return fetch(this.url, { method: "DELETE" }).then(() =>
+      this.listener(undefined)
+    );
+  }
+}
+
+export enum LoadingState {
+  Uninitialized,
+  Loading,
+  Loaded,
+}
+
+class resourceWritable<T> extends apiResource<T> implements Writable<T> {
+  public state: LoadingState;
+  private _w: Writable<T>;
+
+  constructor(url: string, w?: Writable<T>) {
+    super(url);
+    if (w) {
+      this._w = w;
+    } else {
+      this._w = writable(undefined, () => {
         this.reload();
-      }
+      });
+    }
+    this.state = LoadingState.Uninitialized;
+  }
+
+  get(): Promise<T> {
+    if (this.state == LoadingState.Uninitialized) {
+      this.state = LoadingState.Loading;
+    }
+    return super.get().then((v) => {
+      this._w.set(v);
+      this.state = LoadingState.Loaded;
+      return v;
     });
   }
 
-  public remove(): Promise<void> {
-    return fetch(this.url, { method: "DELETE" }).then(() => {});
-  }
-
-  public update(f: Updater<T>): void {
-    get(this.direct).then((oldV) => {
-      const newV = f(oldV);
-      if (!equal(oldV, newV)) {
-        return this.set(newV);
-      }
+  put(v: T): Promise<T> {
+    return super.put(v).then((v2) => {
+      this._w.set(v2);
+      return v2;
     });
   }
 
-  public directUpdate(f: Updater<T>): void {
-    get(this.direct).then((oldV) => {
-      const newV = f(oldV);
-      if (!equal(oldV, newV)) {
-        this.direct.set(Promise.resolve(newV));
-      }
-    });
+  remove(): Promise<void> {
+    return super.remove().then(() => this._w.set(undefined));
+  }
+
+  reload(): Promise<void> {
+    return this.get().then(() => {});
+  }
+
+  subscribe(
+    run: Subscriber<T>,
+    invalidate?: (value?: T) => void
+  ): Unsubscriber {
+    return this._w.subscribe(run, invalidate);
+  }
+
+  set(value: T): void {
+    this.put(value).then((v) => this._w.set(v));
+  }
+
+  update(updater: Updater<T>): void {
+    const oldV = get(this._w);
+    const newV = updater(oldV);
+    if (!equal(oldV, newV)) {
+      this.set(newV);
+    }
   }
 }
 
 class cell {
-  private store: store;
+  memberId: number;
+  encounterId: number;
 
-  public memberId: number;
-  public memberInfo: AsyncRWStore<Member>;
-  public encounterId: number;
-  public encounterInfo: AsyncRWStore<Encounter>;
-
-  public rosterMember: Writable<Promise<RosterMember>>;
+  rosterMember: resourceWritable<RosterMember>;
+  _rosterMember: Writable<RosterMember>;
 
   constructor(s: store, r: row, c: column) {
-    this.store = s;
     this.memberId = r.memberId;
-    this.memberInfo = r.memberInfo;
     this.encounterId = c.encounterId;
-    this.encounterInfo = c.encounterInfo;
 
-    this.rosterMember = writable(Promise.resolve<RosterMember>(undefined));
-
-    let firstRun = true;
-    this.rosterMember.subscribe((p) => {
-      if (!firstRun) {
-        p.then((rm) => {
-          console.trace("cell propagation", {
-            memberId: this.memberId,
-            encounterId: this.encounterId,
-            rm,
-          });
-          r.updateFromCell(this.encounterId, rm);
-          c.updateFromCell(this.memberId, rm);
-        });
-      } else {
-        firstRun = false;
-      }
-    });
-  }
-
-  update(f: Updater<RosterMember>): Promise<RosterMember> {
-    return get(this.rosterMember).then((oldV) => {
-      const newV = f(oldV);
-      if (!equal(oldV, newV)) {
-        return fetch(
-          `/team/${this.store.teamId}/encounter/${this.encounterId}/roster/${this.memberId}`,
-          {
-            method: "PUT",
-            body: JSON.stringify(newV),
-            headers: { "Content-Type": "application/json" },
-          }
-        ).then((r) => r.json() as Promise<RosterMember>);
-      }
-      return Promise.resolve(oldV);
-    });
-  }
-
-  remove(): Promise<void> {
-    return fetch(
-      `/team/${this.store.teamId}/encounter/${this.encounterId}/roster/${this.memberId}`,
-      { method: "DELETE" }
-    ).then(() => this.rosterMember.set(Promise.resolve(undefined)));
+    this._rosterMember = writable(undefined);
+    this.rosterMember = new resourceWritable(
+      `/team/${s.teamId}/encounter/${this.encounterId}/roster/${this.memberId}`,
+      this._rosterMember
+    );
   }
 }
 
-class row {
-  public memberId: number;
-  public memberInfo: AsyncRWStore<Member>;
-  public memberEncounters: AsyncRWStore<RosterMember[]>;
+function rosterMembersDerived<T>(
+  r: Readable<T>,
+  f: (t: T) => cell[]
+): Readable<RosterMember[]> {
+  return readable(undefined, (set) => {
+    const unsubs = [];
 
-  private inUpdate: boolean; // prevent cyclic updates cell -> row -> cell etc
+    const unsubAll = () => {
+      while (unsubs.length > 0) {
+        const uns = unsubs.pop();
+        uns();
+      }
+    };
+
+    r.subscribe((es) => {
+      unsubAll();
+
+      if (es == undefined) {
+        set(undefined);
+        return;
+      }
+
+      // on first subscribe, only send once
+      // instead of every time we subscribe to a cell
+      let init = true;
+
+      const cells = f(es);
+      const rms = Array(cells.length).fill(undefined);
+      cells.forEach((c, idx) => {
+        c._rosterMember.subscribe((rm) => {
+          rms[idx] = rm;
+          if (!init) {
+            set(rms);
+          }
+        });
+      });
+      set(rms);
+    });
+
+    return unsubAll;
+  });
+}
+
+class row {
+  memberId: number;
+
+  member: resourceWritable<Member>;
+  _member: Writable<Member>;
+
+  encounters: Readable<RosterMember[]>;
+  encounterAPI: apiResource<RosterMember[]>;
 
   constructor(s: store, memberId: number) {
     this.memberId = memberId;
 
-    this.memberInfo = new apiResource(`/team/${s.teamId}/member/${memberId}`);
-    this.memberEncounters = new apiResource(
-      `/team/${s.teamId}/member/${memberId}/encounters`
+    this._member = writable(undefined);
+    this.member = new resourceWritable(
+      `/team/${s.teamId}/member/${this.memberId}`,
+      this._member
     );
 
-    this.inUpdate = false;
-    this.memberEncounters.subscribe((p) => {
-      console.trace("updating row", {
-        encounterId: this.memberId,
-        inUpdate: this.inUpdate,
-      });
-      if (this.inUpdate) return;
-      if (!p) return;
-
-      p.then((rms) => {
-        rms.forEach((rm) => {
-          console.log("row cell update", { memberId: this.memberId, rm });
-          s.cell(memberId, rm.encounter_id).rosterMember.set(
-            Promise.resolve(rm)
-          );
-        });
-      });
-    });
-  }
-
-  remove(): Promise<void> {
-    return this.memberInfo.remove();
-  }
-
-  updateFromCell(encounterId: number, rm?: RosterMember) {
-    this.inUpdate = true;
-    this.memberEncounters.directUpdate((rms) => {
-      if (!rms) {
-        return rm ? [rm] : rms;
-      }
-      const idx = rms.findIndex(
-        (m) => m.encounter_id == encounterId && m.member_id == this.memberId
-      );
-      if (idx >= 0) {
-        if (rm) {
-          rms[idx] = rm;
-        } else {
-          rms.splice(idx, 1);
-        }
-      } else {
-        if (rm) {
-          rms.push(rm);
-        }
-      }
-      return rms;
-    });
-    this.inUpdate = false;
+    this.encounters = rosterMembersDerived(s.Encounters, (es) =>
+      es.map((e) => s.cell(this.memberId, e.id))
+    );
+    this.encounterAPI = new apiResource(
+      `/team/${s.teamId}/member/${this.memberId}/encounters`,
+      (rms) =>
+        rms &&
+        rms.forEach(
+          (m) => m && s.cell(m.member_id, m.encounter_id)._rosterMember.set(m)
+        )
+    );
   }
 }
 
 class column {
-  public encounterId: number;
-  public encounterInfo: AsyncRWStore<Encounter>;
-  public encounterMembers: AsyncRWStore<RosterMember[]>;
+  encounterId: number;
 
-  private inUpdate: boolean; // prevent cyclic updates cell -> column -> cell etc
+  encounter: resourceWritable<Encounter>;
+  _encounter: Writable<Encounter>;
+
+  members: Readable<RosterMember[]>;
+  memberAPI: apiResource<RosterMember[]>;
 
   constructor(s: store, encounterId: number) {
     this.encounterId = encounterId;
 
-    this.encounterInfo = new apiResource(`/team/${s.teamId}/encounter`);
-    this.encounterMembers = new apiResource(
-      `/team/${s.teamId}/encounter/${encounterId}/roster`
+    this._encounter = writable(undefined);
+    this.encounter = new resourceWritable(
+      `/team/${s.teamId}/encounter/${this.encounterId}`,
+      this._encounter
     );
 
-    this.inUpdate = false;
-    this.encounterMembers.subscribe((p) => {
-      console.log("updating col", {
-        encounterId: this.encounterId,
-        inUpdate: this.inUpdate,
-      });
-      if (this.inUpdate) return;
-      if (!p) return;
-
-      p.then((rms) => {
-        rms.forEach((rm) => {
-          console.log("col cell update", { encounterId: this.encounterId, rm });
-          s.cell(rm.member_id, encounterId).rosterMember.set(
-            Promise.resolve(rm)
-          );
-        });
-      });
-    });
-  }
-
-  remove() {
-    this.encounterInfo.remove();
-  }
-
-  updateFromCell(memberId: number, rm: RosterMember) {
-    this.inUpdate = true;
-    this.encounterMembers.directUpdate((rms) => {
-      if (!rms) {
-        return rm ? [rm] : rms;
-      }
-      const idx = rms.findIndex(
-        (m) => m.encounter_id == this.encounterId && m.member_id == memberId
-      );
-      if (idx >= 0) {
-        if (rm) {
-          rms[idx] = rm;
-        } else {
-          rms.splice(idx, 1);
-        }
-      } else {
-        if (rm) {
-          rms.push(rm);
-        }
-      }
-      return rms;
-    });
-    this.inUpdate = false;
+    this.members = rosterMembersDerived(s.Members, (ms) =>
+      ms.map((m) => s.cell(m.id, this.encounterId))
+    );
+    this.memberAPI = new apiResource(
+      `/team/${s.teamId}/encounter/${this.encounterId}/encounters`,
+      (rms) =>
+        rms &&
+        rms.forEach(
+          (m) => m && s.cell(m.member_id, m.encounter_id)._rosterMember.set(m)
+        )
+    );
   }
 }
 
 class store {
-  public teamId: string;
+  teamId: string;
 
   private cells: Map<string, cell>;
   private rows: Map<number, row>;
   private columns: Map<number, column>;
 
-  public Team: AsyncRWStore<Team>;
-  public Members: AsyncRWStore<Member[]>;
-  public Encounters: AsyncRWStore<Encounter[]>;
+  Team: resourceWritable<Team>;
+  Members: resourceWritable<Member[]>;
+  Encounters: resourceWritable<Encounter[]>;
 
   constructor(teamId: string) {
     this.teamId = teamId;
@@ -293,12 +264,28 @@ class store {
     this.rows = new Map();
     this.columns = new Map();
 
-    this.Team = new apiResource(`/team/${teamId}`);
-    this.Members = new apiResource(`/team/${teamId}/members`);
-    this.Encounters = new apiResource(`/team/${teamId}/encounters`);
+    this.Team = new resourceWritable(`/team/${teamId}`);
+
+    this.Members = new resourceWritable(`/team/${teamId}/members`);
+    this.Members.subscribe((ms) => {
+      if (!ms) return;
+      ms.forEach((m) => {
+        const row = this.row(m.id);
+        row._member.set(m);
+      });
+    });
+
+    this.Encounters = new resourceWritable(`/team/${teamId}/encounters`);
+    this.Encounters.subscribe((es) => {
+      if (!es) return;
+      es.forEach((e) => {
+        const col = this.column(e.id);
+        col._encounter.set(e);
+      });
+    });
   }
 
-  public row(memberId: number): row {
+  row(memberId: number): row {
     if (this.rows.has(memberId)) {
       return this.rows.get(memberId);
     }
@@ -307,7 +294,7 @@ class store {
     return r;
   }
 
-  public column(encounterId: number): column {
+  column(encounterId: number): column {
     if (this.columns.has(encounterId)) {
       return this.columns.get(encounterId);
     }
@@ -320,18 +307,17 @@ class store {
     return `${memberId}/${encounterId}`;
   }
 
-  public cell(memberId: number, encounterId: number): cell {
+  cell(memberId: number, encounterId: number): cell {
     const key = this.cellKey(memberId, encounterId);
     if (this.cells.has(key)) {
       return this.cells.get(key);
     }
-    console.trace("new cell", { memberId, encounterId });
     const c = new cell(this, this.row(memberId), this.column(encounterId));
     this.cells.set(key, c);
     return c;
   }
 
-  public newMember(m: Member): Promise<row> {
+  newMember(m: Member): Promise<row> {
     return fetch(`/team/${this.teamId}/members`, {
       method: "POST",
       body: JSON.stringify(m),
@@ -344,7 +330,7 @@ class store {
     });
   }
 
-  public newEncounter(e: Encounter): Promise<column> {
+  newEncounter(e: Encounter): Promise<column> {
     return fetch(`/team/${this.teamId}/encounters`, {
       method: "POST",
       body: JSON.stringify(e),

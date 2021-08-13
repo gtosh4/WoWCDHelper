@@ -129,7 +129,7 @@ func (c *HTTPCache) Collect(ch chan<- prometheus.Metric) {
 
 	c.Cache.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
-		opts.Prefix = []byte(c.Prefix + "/")
+		opts.Prefix = c.key("")
 		opts.PrefetchValues = false
 		iter := txn.NewIterator(opts)
 		defer iter.Close()

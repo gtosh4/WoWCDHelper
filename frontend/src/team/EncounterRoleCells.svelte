@@ -1,14 +1,13 @@
 <script lang="ts">
   import { Cell } from "@smui/data-table/styled";
   import CircularProgress from "@smui/circular-progress/styled";
-
-  import { Encounters } from "./encounters_api";
+  import { TeamStore } from "./team_store";
 
   export let roleType: string;
 
-  $: rosters = $Encounters.then((encs) =>
-    encs.map((enc) => Encounters.encounter(enc.id).roster)
-  );
+  $: encounters = $TeamStore.Encounters;
+
+  $: rosters = $encounters.map((e) => {});
 </script>
 
 {#await rosters}

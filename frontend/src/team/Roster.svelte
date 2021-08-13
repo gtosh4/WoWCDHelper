@@ -30,28 +30,36 @@
   $: members = $TeamStore.Members;
   $: encounters = $TeamStore.Encounters;
 
-  $: team = Promise.all([
-    RoleMembers($members, "TANK").then((ms) => ({
-      tanks: ms.sort(SortMembers),
-    })),
-    RoleMembers($members, "HEALER").then((ms) => ({
-      healers: ms.sort(SortMembers),
-    })),
-    RoleMembers($members, "DAMAGE").then((ms) => ({
-      dps: ms.sort(SortMembers),
-    })),
-  ]).then((roleMembers) => {
-    teamLoaded = true;
+  let team: Promise<{
+    tanks: Member[];
+    healers: Member[];
+    dps: Member[];
+  }> = new Promise(() => {});
 
-    return roleMembers.reduce((team, role) => ({ ...team, ...role }), {}) as {
-      tanks: Member[];
-      healers: Member[];
-      dps: Member[];
-    };
-  });
+  $: if ($members) {
+    team = Promise.all([
+      RoleMembers($members, "TANK").then((ms) => ({
+        tanks: ms.sort(SortMembers),
+      })),
+      RoleMembers($members, "HEALER").then((ms) => ({
+        healers: ms.sort(SortMembers),
+      })),
+      RoleMembers($members, "DAMAGE").then((ms) => ({
+        dps: ms.sort(SortMembers),
+      })),
+    ]).then((roleMembers) => {
+      teamLoaded = true;
+
+      return roleMembers.reduce((team, role) => ({ ...team, ...role }), {}) as {
+        tanks: Member[];
+        healers: Member[];
+        dps: Member[];
+      };
+    });
+  }
 
   function removeEncounter(id: number) {
-    $TeamStore.column(id).encounterInfo.remove();
+    $TeamStore.column(id).encounter.remove();
   }
 </script>
 
@@ -94,11 +102,9 @@
           </Button>
         </Cell>
 
-        {#await $encounters}
-          <Cell />
-        {:then encounters}
-          <Cell />
-          {#each encounters as enc, i (i)}
+        <Cell />
+        {#if $encounters}
+          {#each $encounters as enc, i (i)}
             <Cell>
               <Button
                 style="min-width: 32px"
@@ -113,7 +119,7 @@
               </Button>
             </Cell>
           {/each}
-        {/await}
+        {/if}
 
         <Cell />
       </Row>

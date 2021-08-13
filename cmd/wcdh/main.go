@@ -203,7 +203,7 @@ func blizzHTTPClient(c *clients.Clients) *http.Client {
 		Cache:  c.Cache,
 		Prefix: "blizz",
 	}
-	prometheus.Register(cache)
+	prometheus.MustRegister(cache)
 	transport := httpcache.NewTransport(cache)
 	transport.Transport = &ratelimit.Transport{
 		Ratelimiter: rate.NewLimiter(rate.Every(20/time.Second), 20),
@@ -219,7 +219,7 @@ func iconHTTPClient(c *clients.Clients) *http.Client {
 		Cache:  c.Cache,
 		Prefix: "icon",
 	}
-	prometheus.Register(cache)
+	prometheus.MustRegister(cache)
 	transport := httpcache.NewTransport(cache)
 	transport.Transport = &ratelimit.Transport{
 		Ratelimiter: rate.NewLimiter(rate.Every(20/time.Second), 20),
@@ -244,6 +244,7 @@ func initDB(clients *clients.Clients) error {
 	if err != nil {
 		return errors.Wrap(err, "error migrating tables")
 	}
+	clients.Log.Info("DB migration success")
 
 	testTeam := teams.Team{ID: "test"}
 

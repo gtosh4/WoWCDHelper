@@ -5,33 +5,35 @@
   import WowIcon from "../wow/WowIcon.svelte";
 
   import { createEventDispatcher } from "svelte";
-  import { Members } from "./members_api";
   import EncounterCells from "./EncounterCells.svelte";
+  import { LoadingState, TeamStore } from "./team_store";
 
   export let memberId: number;
 
-  $: member = Members.member(memberId);
+  $: row = $TeamStore.row(memberId);
+  $: member = row.member;
+
+  $: if (row.member.state == LoadingState.Uninitialized) {
+    row.member.reload();
+  }
 
   let loadedId;
   let classId = 0;
   let name = "";
 
-  $: $member.then((m) => {
-    if (loadedId != memberId) {
-      loadedId = memberId;
-      classId = m.classId;
-      name = m.name;
-    }
-  });
+  $: if ($member && loadedId != memberId) {
+    loadedId = memberId;
+    classId = $member.classId;
+    name = $member.name;
+  }
 
   function save() {
-    member.update((m) => {
-      if (m.name != name) {
-        m.name = name;
-        return m;
-      }
-      return undefined;
-    });
+    if ($member) {
+      row.member.put({
+        ...$member,
+        name,
+      });
+    }
   }
 
   function keypress(e) {

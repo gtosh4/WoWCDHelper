@@ -13,6 +13,7 @@ require (
 	github.com/dgraph-io/ristretto v0.1.0
 	github.com/gin-contrib/zap v0.0.1
 	github.com/gin-gonic/gin v1.7.2
+	github.com/gogo/protobuf v1.3.2
 	github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
 	github.com/mattn/go-sqlite3 v1.14.8 // indirect
 	github.com/pkg/errors v0.9.1

@@ -4,13 +4,23 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"github.com/gtosh4/WoWCDHelper/pkg/wow"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func registerWoWApi(s *Server) {
 	r := s.router.Group("/wow")
+
+	cache := clients.NewGinCache(s.clients, "wow", time.Hour)
+	if err := cache.Flush(); err != nil {
+		s.Log.Sugar().Warnf("error flushing /wow cache: %v", err)
+	}
+	r.Use(cache.Handle)
+	prometheus.MustRegister(cache)
 
 	r.GET("/classes", s.handleClasses)
 	r.GET("/class/:class", s.handleClassInfo)

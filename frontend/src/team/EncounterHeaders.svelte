@@ -4,7 +4,7 @@
   import Button, { Icon } from "@smui/button/styled";
 
   import EncounterNameField from "./EncounterNameField.svelte";
-  import { TeamStore } from "./team_store";
+  import { LoadingState, TeamStore } from "./team_store";
 
   $: encounters = $TeamStore.Encounters;
 
@@ -16,20 +16,20 @@
   }
 </script>
 
-{#await $encounters}
+{#if encounters.state == LoadingState.Loading}
   <Cell class="encounter-header">
     <CircularProgress indeterminate />
   </Cell>
-{:then encounters}
+{:else}
   <Cell class="encounter-header" />
-  {#each encounters as enc, i (i)}
+  {#each $encounters as enc, i (i)}
     <Cell class="encounter-header">
       <div>
         <EncounterNameField encounterId={enc.id} />
       </div>
     </Cell>
   {/each}
-{/await}
+{/if}
 <Cell style="vertical-align: bottom;">
   <Button style="min-width: 32px" on:click={newEncounter}>
     <Icon class="material-icons" style="margin-right: 0; color: green">
