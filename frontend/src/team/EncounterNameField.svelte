@@ -15,6 +15,8 @@
     loadedEncounter = $encounter.id;
   }
 
+  $: console.info("enf", { encounterId, localName, loadedEncounter });
+
   function save() {
     encounter.update((e) => {
       if (e.name != localName) {
@@ -35,4 +37,11 @@
   bind:value={localName}
   on:blur={() => save()}
   on:keyup={keypress}
+  {...$$restProps}
 />
+
+<style lang="scss" global>
+  .encounter-name {
+    height: auto;
+  }
+</style>

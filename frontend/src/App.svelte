@@ -64,7 +64,7 @@
             bind:value={localName}
             on:blur={save}
             on:keyup={keypress}
-            style="height: 44px"
+            style="height: auto;"
             input$placeholder="Roster Name"
           />
         {/await}

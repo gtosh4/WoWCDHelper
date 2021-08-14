@@ -6,7 +6,8 @@
 
   import { createEventDispatcher } from "svelte";
   import EncounterCells from "./EncounterCells.svelte";
-  import { LoadingState, TeamStore } from "./team_store";
+  import { TeamStore } from "./team_store";
+  import { LoadingState } from "../store_helpers";
 
   export let memberId: number;
 

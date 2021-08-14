@@ -4,7 +4,8 @@
   import Button, { Icon } from "@smui/button/styled";
 
   import EncounterNameField from "./EncounterNameField.svelte";
-  import { LoadingState, TeamStore } from "./team_store";
+  import { TeamStore } from "./team_store";
+  import { LoadingState } from "../store_helpers";
 
   $: encounters = $TeamStore.Encounters;
 

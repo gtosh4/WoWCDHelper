@@ -1,16 +1,15 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gtosh4/WoWCDHelper/pkg/encounters"
-	"github.com/gtosh4/WoWCDHelper/pkg/teams"
-	"gorm.io/gorm"
 )
 
 func (s *Server) handleNewEvent(c *gin.Context) {
-	_, encId, err := encounterParams(c)
+	teamId, encId, err := encounterParams(c)
 	if err != nil {
 		s.log(c).Warnf("params err: %v", err)
 		return
@@ -22,7 +21,12 @@ func (s *Server) handleNewEvent(c *gin.Context) {
 		return
 	}
 	e.ID = 0 // make sure we generate a new id
-	e.EncounterID = uint(encId)
+	e.EncounterID = encId
+
+	for i := range e.Instances {
+		e.Instances[i].EventID = 0
+		e.Instances[i].ID = 0
+	}
 
 	err = s.db(c).
 		Create(&e).
@@ -32,15 +36,14 @@ func (s *Server) handleNewEvent(c *gin.Context) {
 		return
 	}
 
-	// c.Redirect(
-	// 	http.StatusCreated,
-	// 	fmt.Sprintf("/team/%s/encounter/%d/event/%d", teamId, e.EncounterID, e.ID),
-	// )
-	c.AbortWithStatus(http.StatusCreated)
+	c.Redirect(
+		http.StatusCreated,
+		fmt.Sprintf("/team/%s/encounter/%d/event/%d", teamId, e.EncounterID, e.ID),
+	)
 }
 
 func (s *Server) handleGetEvents(c *gin.Context) {
-	teamId, encId, err := encounterParams(c)
+	_, encId, err := encounterParams(c)
 	if err != nil {
 		s.log(c).Warnf("params err: %v", err)
 		return
@@ -48,9 +51,7 @@ func (s *Server) handleGetEvents(c *gin.Context) {
 
 	es := []encounters.Event{}
 	err = s.db(c).
-		Preload("Encounter").
-		Where(&teams.Team{ID: teamId}).
-		Where(&encounters.Encounter{ID: uint(encId)}).
+		Where(&encounters.Event{EncounterID: encId}).
 		Preload("Instances").
 		Find(&es).
 		Error
@@ -62,43 +63,47 @@ func (s *Server) handleGetEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, es)
 }
 
-func (s *Server) handleSetEvents(c *gin.Context) {
+func (s *Server) handleGetEvent(c *gin.Context) {
 	_, encId, err := encounterParams(c)
 	if err != nil {
 		s.log(c).Warnf("params err: %v", err)
 		return
 	}
 
-	events := []encounters.Event{}
-	err = c.Bind(&events)
-	if err != nil {
-		return
-	}
-	for i := range events {
-		events[i].EncounterID = uint(encId)
-	}
-	err = s.db(c).Transaction(func(tx *gorm.DB) error {
-		err := tx.
-			Preload("Encounter").
-			Where(&encounters.Encounter{ID: uint(encId)}).
-			Delete(&encounters.Event{}).
-			Error
-		if err != nil {
-			return err
-		}
+	var event encounters.Event
 
-		err = tx.
-			Create(&events).
-			Error
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
+	err = s.db(c).
+		Where(&encounters.Event{EncounterID: encId}).
+		Preload("Instances").
+		Find(&event).
+		Error
 	if err != nil {
 		s.errAbort(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, events)
+	c.JSON(http.StatusOK, event)
+}
+
+func (s *Server) handleSetEvent(c *gin.Context) {
+	_, encId, err := encounterParams(c)
+	if err != nil {
+		s.log(c).Warnf("params err: %v", err)
+		return
+	}
+
+	var event encounters.Event
+	err = c.Bind(&event)
+	if err != nil {
+		return
+	}
+	event.EncounterID = uint(encId)
+
+	err = s.db(c).
+		Save(&event).
+		Error
+	if err != nil {
+		s.errAbort(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, event)
 }

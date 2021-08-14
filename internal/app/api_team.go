@@ -39,8 +39,9 @@ func registerTeamApi(s *Server) {
 	encR.PUT("", s.handleSetEncounter)
 
 	encR.GET("/events", s.handleGetEvents)
-	encR.PUT("/events", s.handleSetEvents)
-	encR.POST("/event", s.handleNewEvent)
+	encR.POST("/events", s.handleNewEvent)
+	encR.GET("/event/:event", s.handleGetEvent)
+	encR.PUT("/event/:event", s.handleSetEvent)
 
 	rosterR := encR.Group("/roster")
 	rosterR.GET("", s.handleGetRoster)
@@ -49,7 +50,8 @@ func registerTeamApi(s *Server) {
 	rosterR.PUT("/:member", s.handleSetRosterMember)
 	rosterR.DELETE("/:member", s.handleDeleteRosterMember)
 
-	encR.GET("/assignments", s.handleGetAssignments)
+	encR.GET("/assignments/:eventinst", s.handleGetAssignments)
+	encR.PUT("/assignments/:eventinst", s.handleSetAssignments)
 }
 
 func (s *Server) handleCreateTeam(c *gin.Context) {

@@ -133,10 +133,19 @@ func (s *Server) handleGetAssignments(c *gin.Context) {
 		s.log(c).Warnf("params err: %v", err)
 		return
 	}
+	eiID, err := strconv.ParseUint(c.Param("eventinst"), 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
 
 	es := []encounters.Assignment{}
 	err = s.db(c).
+		Preload("EventInstance").
+		Preload("Event").
+		Preload("Encounter").
 		Where(&encounters.Encounter{ID: uint(encId)}).
+		Where(&encounters.EventInstance{ID: uint(eiID)}).
 		Find(&es).
 		Error
 
@@ -146,4 +155,51 @@ func (s *Server) handleGetAssignments(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, es)
+}
+
+func (s *Server) handleSetAssignments(c *gin.Context) {
+	_, _, err := encounterParams(c)
+	if err != nil {
+		s.log(c).Warnf("params err: %v", err)
+		return
+	}
+	eiID, err := strconv.ParseUint(c.Param("eventinst"), 10, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	var as []encounters.Assignment
+	err = c.Bind(&as)
+	if err != nil {
+		return
+	}
+	for _, a := range as {
+		a.EventInstanceID = uint(eiID)
+	}
+
+	err = s.db(c).Transaction(func(tx *gorm.DB) error {
+		err := tx.
+			Preload("EventInstance").
+			Where(&encounters.EventInstance{ID: uint(eiID)}).
+			Delete(&encounters.Assignment{}).
+			Error
+		if err != nil {
+			return err
+		}
+
+		err = tx.
+			Create(&as).
+			Error
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		s.errAbort(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, as)
 }
