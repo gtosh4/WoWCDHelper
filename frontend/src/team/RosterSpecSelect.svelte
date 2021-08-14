@@ -8,7 +8,7 @@
 
   import { classMap } from "@smui/common/classMap";
   import { CreateAnchor } from "../anchor";
-  import { TeamStore } from "./team_store";
+  import { LoadingState, TeamStore } from "./team_store";
   import type { RosterMember } from "./team_api";
 
   export let memberId: number;
@@ -21,6 +21,10 @@
   $: memberInfo = $TeamStore.row(memberId).member;
   $: cell = $TeamStore.cell(memberId, encounterId);
   $: rosterMember = cell.rosterMember;
+
+  $: if (rosterMember.state == LoadingState.Uninitialized) {
+    $TeamStore.row(memberId).encounterAPI.get();
+  }
 
   $: if ($memberInfo) {
     specs = $memberInfo.config.specs;
@@ -67,7 +71,7 @@
     menuOpen = false;
 
     if (id != null) {
-      cell.rosterMember.put(localMember());
+      cell.rosterMember.update(() => localMember());
     } else {
       cell.rosterMember.remove();
     }
@@ -92,13 +96,23 @@
         {#if $memberInfo == undefined}
           <CircularProgress indeterminate />
         {:else if $rosterMember}
-          <WowIcon
-            playerClass={$memberInfo.classId}
-            spec={selected && selected > 0 ? selected : undefined}
-            height={24}
-          />
+          <div>
+            <WowIcon
+              playerClass={$memberInfo.classId}
+              spec={selected && selected > 0 ? selected : undefined}
+              height={24}
+            />
+            <Icon class="material-icons spec-select-arrow">
+              arrow_drop_down
+            </Icon>
+          </div>
         {:else}
-          <Icon class="material-icons">check_box_outline_blank</Icon>
+          <div>
+            <Icon class="material-icons">check_box_outline_blank</Icon>
+            <Icon class="material-icons spec-select-arrow">
+              arrow_drop_down
+            </Icon>
+          </div>
         {/if}
       </Button>
 
@@ -165,6 +179,13 @@
 
     .spec-menu {
       min-width: 24px;
+    }
+
+    .spec-select-arrow {
+      border-left-width: 1px;
+      border-left-style: solid;
+      color: rgb(200, 200, 200);
+      height: 100%;
     }
   }
 </style>

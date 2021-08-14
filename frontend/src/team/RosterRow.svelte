@@ -50,7 +50,7 @@
   on:mouseenter={() => (hovered = true)}
   on:mouseleave={() => (hovered = false)}
 >
-  <Cell style="vertical-align: bottom;">
+  <Cell>
     <div class="roster-member">
       <div style="height: 100%; align-items: center; display: inline-flex">
         <WowIcon
@@ -93,6 +93,7 @@
     .roster-member {
       display: inline-flex;
       height: 100%;
+      vertical-align: bottom;
 
       .name {
         $width: 12em;

@@ -8,6 +8,7 @@ import type {
 } from "svelte/store";
 import { Encounter, Member, RosterMember, Team, TeamId } from "./team_api";
 import equal from "fast-deep-equal/es6";
+import { Classes, Spec } from "../wow/api";
 
 class apiResource<T> {
   url: string;
@@ -36,7 +37,7 @@ class apiResource<T> {
     }).then((r) => {
       const contentType = r.headers.get("content-type");
       if (contentType && contentType.indexOf("application/json") >= 0) {
-        const p = r.json().then((r) => r.json() as Promise<T>);
+        const p = r.json() as Promise<T>;
         p.then((v) => this.listener(v));
         return p;
       } else {
@@ -62,8 +63,8 @@ class resourceWritable<T> extends apiResource<T> implements Writable<T> {
   public state: LoadingState;
   private _w: Writable<T>;
 
-  constructor(url: string, w?: Writable<T>) {
-    super(url);
+  constructor(url: string, listener?: (v: T) => void, w?: Writable<T>) {
+    super(url, listener);
     if (w) {
       this._w = w;
     } else {
@@ -86,14 +87,18 @@ class resourceWritable<T> extends apiResource<T> implements Writable<T> {
   }
 
   put(v: T): Promise<T> {
+    this._w.set(v);
     return super.put(v).then((v2) => {
-      this._w.set(v2);
+      if (!equal(get(this._w), v2)) {
+        this._w.set(v2);
+      }
       return v2;
     });
   }
 
   remove(): Promise<void> {
-    return super.remove().then(() => this._w.set(undefined));
+    this._w.set(undefined);
+    return super.remove();
   }
 
   reload(): Promise<void> {
@@ -108,7 +113,7 @@ class resourceWritable<T> extends apiResource<T> implements Writable<T> {
   }
 
   set(value: T): void {
-    this.put(value).then((v) => this._w.set(v));
+    this.put(value);
   }
 
   update(updater: Updater<T>): void {
@@ -134,6 +139,7 @@ class cell {
     this._rosterMember = writable(undefined);
     this.rosterMember = new resourceWritable(
       `/team/${s.teamId}/encounter/${this.encounterId}/roster/${this.memberId}`,
+      undefined,
       this._rosterMember
     );
   }
@@ -197,6 +203,13 @@ class row {
     this._member = writable(undefined);
     this.member = new resourceWritable(
       `/team/${s.teamId}/member/${this.memberId}`,
+      (m) => {
+        // preload the class specs
+        Classes.then((cs) => {
+          const c = cs.get(m.classId);
+          c.specializations.forEach((spec) => Spec(spec.id));
+        });
+      },
       this._member
     );
 
@@ -205,11 +218,17 @@ class row {
     );
     this.encounterAPI = new apiResource(
       `/team/${s.teamId}/member/${this.memberId}/encounters`,
-      (rms) =>
-        rms &&
-        rms.forEach(
-          (m) => m && s.cell(m.member_id, m.encounter_id)._rosterMember.set(m)
-        )
+      (rms) => {
+        if (rms) {
+          rms.forEach((m) => {
+            if (m) {
+              const cell = s.cell(m.member_id, m.encounter_id);
+              cell._rosterMember.set(m);
+              cell.rosterMember.state = LoadingState.Loaded;
+            }
+          });
+        }
+      }
     );
   }
 }
@@ -229,6 +248,7 @@ class column {
     this._encounter = writable(undefined);
     this.encounter = new resourceWritable(
       `/team/${s.teamId}/encounter/${this.encounterId}`,
+      undefined,
       this._encounter
     );
 
@@ -237,11 +257,17 @@ class column {
     );
     this.memberAPI = new apiResource(
       `/team/${s.teamId}/encounter/${this.encounterId}/encounters`,
-      (rms) =>
-        rms &&
-        rms.forEach(
-          (m) => m && s.cell(m.member_id, m.encounter_id)._rosterMember.set(m)
-        )
+      (rms) => {
+        if (rms) {
+          rms.forEach((m) => {
+            if (m) {
+              const cell = s.cell(m.member_id, m.encounter_id);
+              cell._rosterMember.set(m);
+              cell.rosterMember.state = LoadingState.Loaded;
+            }
+          });
+        }
+      }
     );
   }
 }

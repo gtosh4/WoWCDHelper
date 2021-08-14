@@ -3,13 +3,14 @@
   import Dialog from "@smui/dialog/styled";
   import LinearProgress from "@smui/linear-progress/styled";
   import Button, { Icon, Label } from "@smui/button/styled";
+  import Lazy from "svelte-lazy";
   import MemberEdit from "./MemberEdit.svelte";
   import RosterRow from "./RosterRow.svelte";
   import EncounterHeaders from "./EncounterHeaders.svelte";
 
   import RoleRow from "./RoleRow.svelte";
   import { TeamStore } from "./team_store";
-  import { RoleMembers, SortMembers } from "./member_filter";
+  import { AllRoleMembers, SortMembers } from "./member_filter";
   import type { Member } from "./team_api";
 
   let open = false;
@@ -37,23 +38,13 @@
   }> = new Promise(() => {});
 
   $: if ($members) {
-    team = Promise.all([
-      RoleMembers($members, "TANK").then((ms) => ({
-        tanks: ms.sort(SortMembers),
-      })),
-      RoleMembers($members, "HEALER").then((ms) => ({
-        healers: ms.sort(SortMembers),
-      })),
-      RoleMembers($members, "DAMAGE").then((ms) => ({
-        dps: ms.sort(SortMembers),
-      })),
-    ]).then((roleMembers) => {
+    team = AllRoleMembers($members).then((roleMembers) => {
       teamLoaded = true;
 
-      return roleMembers.reduce((team, role) => ({ ...team, ...role }), {}) as {
-        tanks: Member[];
-        healers: Member[];
-        dps: Member[];
+      return {
+        tanks: (roleMembers.get("TANK") || []).sort(SortMembers),
+        healers: (roleMembers.get("HEALER") || []).sort(SortMembers),
+        dps: (roleMembers.get("DAMAGE") || []).sort(SortMembers),
       };
     });
   }
@@ -128,7 +119,9 @@
   <LinearProgress bind:closed={teamLoaded} indeterminate slot="progress" />
 </DataTable>
 <Dialog bind:open class="add-member" on:MDCDialog:closed={close}>
-  <MemberEdit on:close={close} memberId={editMemberId} />
+  <Lazy>
+    <MemberEdit on:close={close} memberId={editMemberId} />
+  </Lazy>
 </Dialog>
 
 <style lang="scss" global>

@@ -8,9 +8,9 @@
   const spec = Spec(specId);
 </script>
 
-<div {...$$restProps}>
+<div {...$$restProps} class="wow-spec">
   <WowIcon spec={specId} class="spec-icon" height={24} />
-  <span>
+  <span class="spec-name">
     {#await spec}
       ...
     {:then s}
@@ -18,3 +18,13 @@
     {/await}
   </span>
 </div>
+
+<style lang="scss" global>
+  .wow-spec {
+    display: flex;
+
+    .spec-name {
+      padding-left: 4px;
+    }
+  }
+</style>

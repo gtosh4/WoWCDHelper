@@ -62,7 +62,7 @@
   </Cell>
 
   {#each encounters as enc, i (i)}
-    <Cell style="overflow: visible">
+    <Cell class="member-encounter">
       <RosterSpecSelect {memberId} encounterId={enc.id} />
     </Cell>
   {/each}
@@ -72,13 +72,22 @@
 <style lang="scss" global>
   .member-encounter-all {
     padding-left: 2px;
-    padding-right: 2px;
+    padding-right: 16px;
 
     button.mdc-button {
       min-width: 24px;
+
+      .mdc-button__icon {
+        margin: 0;
+      }
     }
     .material-icons {
       font-size: 24px;
     }
+  }
+
+  .member-encounter {
+    overflow-y: visible;
+    padding: 0;
   }
 </style>

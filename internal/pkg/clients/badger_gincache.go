@@ -122,8 +122,10 @@ func (c *GinCache) Handle(ctx *gin.Context) {
 		value.Payload = cw.payload.Bytes()
 		value.Status = ctx.Writer.Status()
 
-		c.Set(key, &value)
-		log.Infof("set cache %s: %s", key, value)
+		if value.Status >= 200 && value.Status < 400 {
+			c.Set(key, &value)
+			log.Infof("set cache %s: %s", key, value)
+		}
 		return
 	}
 

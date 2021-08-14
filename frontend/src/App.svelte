@@ -6,6 +6,7 @@
   import CircularProgress from "@smui/circular-progress/styled";
   import Roster from "./team/Roster.svelte";
   import Assignments from "./assignments/Assignments.svelte";
+  import Lazy from "svelte-lazy";
 
   import { onMount } from "svelte";
   import { PathPart } from "./url";
@@ -81,7 +82,9 @@
 
   {#each tabs as { id, component } (id)}
     <div class="page-tab" class:active={active.id == id}>
-      <svelte:component this={component} />
+      <Lazy>
+        <svelte:component this={component} />
+      </Lazy>
     </div>
   {/each}
 </main>
@@ -94,6 +97,7 @@
   .team-bar {
     display: inline-flex;
     background-color: #333333;
+    margin-bottom: 4px;
   }
 
   .page-tab {

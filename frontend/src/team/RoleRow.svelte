@@ -1,10 +1,13 @@
 <script lang="ts">
   import { Row, Cell } from "@smui/data-table/styled";
-  import CircularProgress from "@smui/circular-progress/styled";
-  import { Encounters } from "./encounters_api";
+  import RoleCell from "./RoleCell.svelte";
+
+  import { TeamStore } from "./team_store";
 
   export let roleName = "";
   export let roleType = "";
+
+  $: encounters = $TeamStore.Encounters;
 </script>
 
 <Row class="role-row">
@@ -13,18 +16,10 @@
     <span class="role-count">(0)</span>
   </Cell>
 
-  {#await $Encounters}
-    <Cell>
-      <CircularProgress indeterminate />
-    </Cell>
-  {:then encounters}
-    <Cell />
-    {#each encounters as enc, i (i)}
-      <Cell>
-        <span>0</span>
-      </Cell>
-    {/each}
-  {/await}
+  <Cell />
+  {#each $encounters as enc, i (i)}
+    <RoleCell {roleType} encounterId={enc.id} />
+  {/each}
   <Cell />
 </Row>
 

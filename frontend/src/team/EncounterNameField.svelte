@@ -1,19 +1,19 @@
 <script lang="ts">
   import Textfield from "@smui/textfield/styled";
-  import { Encounters } from "./encounters_api";
+  import { TeamStore } from "./team_store";
 
   export let encounterId: number;
 
   let loadedEncounter: number | null = null;
   let localName = "";
 
-  $: encounter = Encounters.encounter(encounterId);
-  $: $encounter.then((e) => {
-    if (loadedEncounter != e.id) {
-      localName = e.name || "";
-      loadedEncounter = e.id;
-    }
-  });
+  $: column = $TeamStore.column(encounterId);
+  $: encounter = column.encounter;
+
+  $: if ($encounter && loadedEncounter != $encounter.id) {
+    localName = $encounter.name || "";
+    loadedEncounter = $encounter.id;
+  }
 
   function save() {
     encounter.update((e) => {

@@ -6,16 +6,17 @@
   import ClassSelect from "../wow/ClassSelect.svelte";
   import SpecSelect from "../wow/SpecSelect.svelte";
 
-  import { Members } from "./members_api";
   import { TeamId } from "./team_api";
   import type { Member } from "./team_api";
   import { createEventDispatcher } from "svelte";
+  import { TeamStore } from "./team_store";
 
   export let memberId: number | undefined = undefined;
 
   const dispatch = createEventDispatcher();
 
-  $: member = memberId ? Members.member(memberId) : undefined;
+  $: row = memberId ? $TeamStore.row(memberId) : undefined;
+  $: member = row ? row.member : undefined;
 
   let localId,
     localName = "",
@@ -39,17 +40,15 @@
   let specsClassId;
 
   $: if (memberId != undefined) {
-    $member.then((m) => {
-      if (localId != m.id) {
-        localId = m.id;
-        localName = m.name;
-        localClassId = m.classId;
-        localSpecs.length = 0;
-        m.config.specs.forEach((s) => localSpecs.push(s));
-        specsClassId = m.classId;
-        localPrimarySpec = m.config.primarySpec;
-      }
-    });
+    if (localId != $member.id) {
+      localId = $member.id;
+      localName = $member.name;
+      localClassId = $member.classId;
+      localSpecs.length = 0;
+      $member.config.specs.forEach((s) => localSpecs.push(s));
+      specsClassId = $member.classId;
+      localPrimarySpec = $member.config.primarySpec;
+    }
   }
 
   $: if (memberId == undefined) {
@@ -76,10 +75,10 @@
   function save() {
     const newMember = localMember();
 
-    if (member) {
-      member.set(newMember);
+    if ($member) {
+      $member = newMember;
     } else {
-      Members.addMember(newMember);
+      $TeamStore.newMember(newMember);
     }
     close();
   }

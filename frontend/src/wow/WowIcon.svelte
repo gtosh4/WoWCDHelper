@@ -2,6 +2,7 @@
   export let playerClass: string | number = "";
   export let spec: string | number = "";
   export let spellName: string | number = "";
+  export let height: number | string | undefined;
 
   let src: string;
   let alt: string;
@@ -25,4 +26,4 @@
   }
 </script>
 
-<img {src} {alt} class={typeClass} {...$$restProps} />
+<img {src} {alt} class={typeClass} {height} {...$$restProps} />

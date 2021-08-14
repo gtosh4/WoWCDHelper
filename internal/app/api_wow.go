@@ -15,7 +15,7 @@ import (
 func registerWoWApi(s *Server) {
 	r := s.router.Group("/wow")
 
-	cache := clients.NewGinCache(s.clients, "wow", time.Hour)
+	cache := clients.NewGinCache(s.clients, "wow", 24*time.Hour)
 	if err := cache.Flush(); err != nil {
 		s.Log.Sugar().Warnf("error flushing /wow cache: %v", err)
 	}
