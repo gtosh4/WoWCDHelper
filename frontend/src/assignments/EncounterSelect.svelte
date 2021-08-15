@@ -37,7 +37,7 @@
 >
   {#if isSelect}
     <div class={$anchor} use:Anchor={anchor} bind:this={anchorElem}>
-      <Button on:click={() => (menuOpen = true)} variant="outlined">
+      <Button on:click={() => (menuOpen = true)}>
         <Icon class="material-icons encounter-select-arrow">
           arrow_drop_down
         </Icon>
@@ -74,8 +74,14 @@
 
 <style lang="scss" global>
   .encounter-select {
+    display: inline-flex;
+
+    .encounter-select-arrow {
+      color: white;
+    }
+
     button.mdc-button {
-      min-width: auto;
+      min-width: unset;
       padding-left: 4px;
       padding-right: 4px;
     }

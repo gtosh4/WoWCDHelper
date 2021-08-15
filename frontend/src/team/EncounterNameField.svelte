@@ -15,8 +15,6 @@
     loadedEncounter = $encounter.id;
   }
 
-  $: console.info("enf", { encounterId, localName, loadedEncounter });
-
   function save() {
     encounter.update((e) => {
       if (e.name != localName) {

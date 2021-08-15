@@ -23,9 +23,7 @@
   $: cell = $TeamStore.cell(memberId, encounterId);
   $: rosterMember = cell.rosterMember;
 
-  $: if (rosterMember.state == LoadingState.Uninitialized) {
-    $TeamStore.row(memberId).encounterAPI.get();
-  }
+  $: rosterMember.init();
 
   $: if ($memberInfo) {
     specs = $memberInfo.config.specs;

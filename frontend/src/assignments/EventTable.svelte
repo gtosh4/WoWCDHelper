@@ -8,6 +8,8 @@
   $: column = $TeamStore.column(encounterId);
   $: events = column.events;
 
+  $: events.init();
+
   $: items = ($events || [])
     .flatMap((evt) => evt.instances.map((ei) => ({ event: evt, instance: ei })))
     .sort((a, b) => {
@@ -17,6 +19,8 @@
         return a.event.id - b.event.id;
       }
     });
+
+  $: console.info("event table", { events: $events, items: items });
 
   let open;
   function close() {}
@@ -34,3 +38,9 @@
   </Body>
 </DataTable>
 <Dialog bind:open class="add-member" on:MDCDialog:closed={close} />
+
+<style lang="scss" global>
+  .event-table {
+    height: 100%;
+  }
+</style>

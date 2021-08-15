@@ -1,4 +1,10 @@
-import { writable, derived, readable } from "svelte/store";
+import {
+  writable,
+  derived,
+  readable,
+  Unsubscriber,
+  Subscriber,
+} from "svelte/store";
 import type { Readable, Writable } from "svelte/store";
 import {
   Encounter,
@@ -12,16 +18,24 @@ import { Classes, Spec } from "../wow/api";
 import { apiResource, LoadingState, resourceWritable } from "../store_helpers";
 import { encounterEvent } from "../assignments/assignment_api";
 
-class cell {
-  memberId: number;
-  encounterId: number;
+export interface CellData {
+  member: Member;
+  encounter: Encounter;
+  rm: RosterMember;
+}
 
+class cell implements Readable<CellData> {
   rosterMember: resourceWritable<RosterMember>;
   _rosterMember: Writable<RosterMember>;
 
+  row: row;
+  column: column;
+
+  private _data: Readable<CellData>;
+
   constructor(s: store, r: row, c: column) {
-    this.memberId = r.memberId;
-    this.encounterId = c.encounterId;
+    this.row = r;
+    this.column = c;
 
     this._rosterMember = writable(undefined);
     this.rosterMember = new resourceWritable(
@@ -29,6 +43,26 @@ class cell {
       undefined,
       this._rosterMember
     );
+
+    this._data = derived(
+      [this.row.member, this.column.encounter, this.rosterMember],
+      ([member, encounter, rm]) => ({ member, encounter, rm })
+    );
+  }
+
+  get memberId() {
+    return this.row.memberId;
+  }
+
+  get encounterId() {
+    return this.column.encounterId;
+  }
+
+  subscribe(
+    run: Subscriber<CellData>,
+    invalidate?: (value?: CellData) => void
+  ): Unsubscriber {
+    return this._data.subscribe(run, invalidate);
   }
 }
 
@@ -89,9 +123,11 @@ class row {
   constructor(s: store, memberId: number) {
     this.memberId = memberId;
 
+    const memberRoot = `/team/${s.teamId}/member/${this.memberId}`;
+
     this._member = writable(undefined);
     this.member = new resourceWritable(
-      `/team/${s.teamId}/member/${this.memberId}`,
+      memberRoot,
       (m) => {
         // preload the class specs
         Classes.then((cs) => {
@@ -105,20 +141,17 @@ class row {
     this.encounters = rosterMembersDerived(s.Encounters, (es) =>
       es.map((e) => s.cell(this.memberId, e.id))
     );
-    this.encounterAPI = new apiResource(
-      `/team/${s.teamId}/member/${this.memberId}/encounters`,
-      (rms) => {
-        if (rms) {
-          rms.forEach((m) => {
-            if (m) {
-              const cell = s.cell(m.member_id, m.encounter_id);
-              cell._rosterMember.set(m);
-              cell.rosterMember.state = LoadingState.Loaded;
-            }
-          });
-        }
+    this.encounterAPI = new apiResource(`${memberRoot}/encounters`, (rms) => {
+      if (rms) {
+        rms.forEach((m) => {
+          if (m) {
+            const cell = s.cell(m.member_id, m.encounter_id);
+            cell._rosterMember.set(m);
+            cell.rosterMember.state = LoadingState.Loaded;
+          }
+        });
       }
-    );
+    });
   }
 }
 
@@ -141,9 +174,11 @@ class column {
     this.teamId = s.teamId;
     this.encounterId = encounterId;
 
+    const encounterRoot = `/team/${s.teamId}/encounter/${this.encounterId}`;
+
     this._encounter = writable(undefined);
     this.encounter = new resourceWritable(
-      `/team/${s.teamId}/encounter/${this.encounterId}`,
+      encounterRoot,
       undefined,
       this._encounter
     );
@@ -151,24 +186,21 @@ class column {
     this.members = rosterMembersDerived(s.Members, (ms) =>
       ms.map((m) => s.cell(m.id, this.encounterId))
     );
-    this.memberAPI = new apiResource(
-      `/team/${s.teamId}/encounter/${this.encounterId}/encounters`,
-      (rms) => {
-        if (rms) {
-          rms.forEach((m) => {
-            if (m) {
-              const cell = s.cell(m.member_id, m.encounter_id);
-              cell._rosterMember.set(m);
-              cell.rosterMember.state = LoadingState.Loaded;
-            }
-          });
-        }
+    this.memberAPI = new apiResource(`${encounterRoot}/encounters`, (rms) => {
+      if (rms) {
+        rms.forEach((m) => {
+          if (m) {
+            const cell = s.cell(m.member_id, m.encounter_id);
+            cell._rosterMember.set(m);
+            cell.rosterMember.state = LoadingState.Loaded;
+          }
+        });
       }
-    );
+    });
 
     this._events = writable(undefined);
     this.events = new resourceWritable(
-      `/team/${s.teamId}/envounter/${this.encounterId}/events`,
+      `${encounterRoot}/events`,
       undefined,
       this._events
     );
@@ -212,9 +244,11 @@ class store {
     this.rows = new Map();
     this.columns = new Map();
 
-    this.Team = new resourceWritable(`/team/${teamId}`);
+    const teamRoot = `/team/${teamId}`;
 
-    this.Members = new resourceWritable(`/team/${teamId}/members`);
+    this.Team = new resourceWritable(teamRoot);
+
+    this.Members = new resourceWritable(`${teamRoot}/members`);
     this.Members.subscribe((ms) => {
       if (!ms) return;
       ms.forEach((m) => {
@@ -223,7 +257,7 @@ class store {
       });
     });
 
-    this.Encounters = new resourceWritable(`/team/${teamId}/encounters`);
+    this.Encounters = new resourceWritable(`${teamRoot}/encounters`);
     this.Encounters.subscribe((es) => {
       if (!es) return;
       es.forEach((e) => {

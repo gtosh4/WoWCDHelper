@@ -96,7 +96,7 @@
 
   .team-bar {
     display: inline-flex;
-    background-color: #333333;
+    background-color: var(--mdc-theme-surface, #424242);
     margin-bottom: 4px;
   }
 

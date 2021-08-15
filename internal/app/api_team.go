@@ -13,9 +13,13 @@ import (
 
 func registerTeamApi(s *Server) {
 	logMW := clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel)
-	s.router.POST("/teams", logMW, s.handleCreateTeam)
+	nocache := gin.HandlerFunc(func(c *gin.Context) {
+		c.Header("Cache-Control", "no-store, max-age=0")
+		c.Next()
+	})
+	s.router.POST("/teams", logMW, nocache, s.handleCreateTeam)
 
-	teamR := s.router.Group("/team/:team", logMW)
+	teamR := s.router.Group("/team/:team", logMW, nocache)
 	teamR.GET("", s.handleGetTeam)
 	teamR.PUT("", s.handleSetTeam)
 

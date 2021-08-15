@@ -7,16 +7,13 @@
   import { createEventDispatcher } from "svelte";
   import EncounterCells from "./EncounterCells.svelte";
   import { TeamStore } from "./team_store";
-  import { LoadingState } from "../store_helpers";
 
   export let memberId: number;
 
   $: row = $TeamStore.row(memberId);
   $: member = row.member;
 
-  $: if (row.member.state == LoadingState.Uninitialized) {
-    row.member.reload();
-  }
+  $: row.member.init();
 
   let loadedId;
   let classId = 0;

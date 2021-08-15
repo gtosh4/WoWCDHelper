@@ -22,7 +22,9 @@ export class apiResource<T> {
   }
 
   get(): Promise<T> {
-    const p = fetch(this.url).then((r) => r.json() as Promise<T>);
+    const p = fetch(this.url)
+      .then((r) => (r.ok ? r : Promise.reject(r)))
+      .then((r) => r.json() as Promise<T>);
     p.then((v) => this.listener(v));
     return p;
   }
@@ -33,6 +35,8 @@ export class apiResource<T> {
       body: JSON.stringify(v),
       headers: { "Content-Type": "application/json" },
     }).then((r) => {
+      if (!r.ok) return Promise.reject(r);
+
       const contentType = r.headers.get("content-type");
       if (contentType && contentType.indexOf("application/json") >= 0) {
         const p = r.json() as Promise<T>;
@@ -58,7 +62,8 @@ export enum LoadingState {
 }
 
 export class resourceWritable<T> extends apiResource<T> implements Writable<T> {
-  public state: LoadingState;
+  state: LoadingState;
+
   private _w: Writable<T>;
 
   constructor(url: string, listener?: (v: T) => void, w?: Writable<T>) {
@@ -73,25 +78,43 @@ export class resourceWritable<T> extends apiResource<T> implements Writable<T> {
     this.state = LoadingState.Uninitialized;
   }
 
+  init() {
+    if (this.state == LoadingState.Uninitialized) this.reload();
+  }
+
   get(): Promise<T> {
     if (this.state == LoadingState.Uninitialized) {
       this.state = LoadingState.Loading;
     }
-    return super.get().then((v) => {
-      this._w.set(v);
-      this.state = LoadingState.Loaded;
-      return v;
-    });
+    return super
+      .get()
+      .then((v) => {
+        this._w.set(v);
+        this.state = LoadingState.Loaded;
+        return v;
+      })
+      .catch((e) => {
+        console.error("get err", { url: this.url, e });
+        return Promise.resolve(get(this._w));
+      });
   }
 
   put(v: T): Promise<T> {
+    const oldV = get(this._w);
     this._w.set(v);
-    return super.put(v).then((v2) => {
-      if (!equal(get(this._w), v2)) {
-        this._w.set(v2);
-      }
-      return v2;
-    });
+    return super
+      .put(v)
+      .then((v2) => {
+        if (!equal(get(this._w), v2)) {
+          this._w.set(v2);
+        }
+        return v2;
+      })
+      .catch((e) => {
+        console.error("put err", { url: this.url, v, e });
+        this._w.set(oldV);
+        return Promise.resolve(oldV);
+      });
   }
 
   remove(): Promise<void> {
