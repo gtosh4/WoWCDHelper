@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { Cell } from "@smui/data-table/styled";
-  import CircularProgress from "@smui/circular-progress/styled";
-  import Button, { Icon } from "@smui/button/styled";
-
+  import ProgressCircular from "smelte/src/components/ProgressCircular";
+  import Icon from "smelte/src/components/Icon";
   import RosterSpecSelect from "./RosterSpecSelect.svelte";
+
   import { TeamStore } from "./team_store";
 
   export let memberId: number;
@@ -14,6 +13,7 @@
   $: memberEncounters = storeRow.encounters;
 
   let selectAll: boolean | null = false;
+  const tdClass = "member-encounter relative px-3 font-normal text-right";
 
   $: {
     const rmCount = $memberEncounters ? $memberEncounters.length : 0;
@@ -49,45 +49,23 @@
 </script>
 
 {#await $encounters}
-  <Cell>
-    <CircularProgress indeterminate />
-  </Cell>
+  <td class={tdClass}>
+    <ProgressCircular />
+  </td>
 {:then encounters}
-  <Cell class="member-encounter-all">
-    <Button on:click={toggleAll}>
-      <Icon class="material-icons">
-        {icons.get(selectAll)}
-      </Icon>
-    </Button>
-  </Cell>
+  <td class={`${tdClass} member-encounter-all`}>
+    <Icon on:click={toggleAll} class="cursor-pointer">
+      {icons.get(selectAll)}
+    </Icon>
+  </td>
 
   {#each encounters as enc, i (i)}
-    <Cell class="member-encounter">
+    <td class={tdClass}>
       <RosterSpecSelect {memberId} encounterId={enc.id} />
-    </Cell>
+    </td>
   {/each}
 {/await}
-<Cell />
+<td />
 
 <style lang="scss" global>
-  .member-encounter-all {
-    padding-left: 2px;
-    padding-right: 16px;
-
-    button.mdc-button {
-      min-width: 24px;
-
-      .mdc-button__icon {
-        margin: 0;
-      }
-    }
-    .material-icons {
-      font-size: 24px;
-    }
-  }
-
-  .member-encounter {
-    overflow-y: visible;
-    padding: 0;
-  }
 </style>

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import DataTable, { Head, Body, Row, Cell } from "@smui/data-table/styled";
-  import Dialog from "@smui/dialog/styled";
-  import LinearProgress from "@smui/linear-progress/styled";
-  import Button, { Icon, Label } from "@smui/button/styled";
-  import Lazy from "svelte-lazy";
+  import Dialog from "smelte/src/components/Dialog";
+  import { slide } from "svelte/transition";
+  import ProgressLinear from "smelte/src/components/ProgressLinear";
+  import Button from "smelte/src/components/Button";
+  import Icon from "smelte/src/components/Icon";
   import MemberEdit from "./MemberEdit.svelte";
   import RosterRow from "./RosterRow.svelte";
   import EncounterHeaders from "./EncounterHeaders.svelte";
@@ -31,17 +31,17 @@
   $: members = $TeamStore.Members;
   $: encounters = $TeamStore.Encounters;
 
-  let team: Promise<{
+  let team: {
     tanks: Member[];
     healers: Member[];
     dps: Member[];
-  }> = new Promise(() => {});
+  } = { tanks: [], healers: [], dps: [] };
 
   $: if ($members) {
-    team = AllRoleMembers($members).then((roleMembers) => {
+    AllRoleMembers($members).then((roleMembers) => {
       teamLoaded = true;
 
-      return {
+      team = {
         tanks: (roleMembers.get("TANK") || []).sort(SortMembers),
         healers: (roleMembers.get("HEALER") || []).sort(SortMembers),
         dps: (roleMembers.get("DAMAGE") || []).sort(SortMembers),
@@ -54,74 +54,71 @@
   }
 </script>
 
-<DataTable class="roster">
-  <Head>
-    <Row>
-      <Cell />
+<table class="roster shadow relative text-sm overflow-x-auto dark:bg-dark-500">
+  <thead class="items-center">
+    <tr>
+      <th />
       <EncounterHeaders />
-    </Row>
-  </Head>
+    </tr>
+  </thead>
+  {#if !teamLoaded}
+    <div class="absolute w-full" transition:slide>
+      <ProgressLinear />
+    </div>
+  {/if}
 
-  <Body>
-    {#await team then team}
-      <RoleRow roleName="Tanks" roleType="TANK" />
-      {#each team.tanks as member (member.id)}
-        <RosterRow
-          memberId={member.id}
-          on:configure={() => showEdit(member.id)}
-        />
-      {/each}
-      <RoleRow roleName="Healers" roleType="HEALER" />
-      {#each team.healers as member (member.id)}
-        <RosterRow
-          memberId={member.id}
-          on:configure={() => showEdit(member.id)}
-        />
-      {/each}
-      <RoleRow roleName="DPS" roleType="DAMAGE" />
-      {#each team.dps as member (member.id)}
-        <RosterRow
-          memberId={member.id}
-          on:configure={() => showEdit(member.id)}
-        />
-      {/each}
-      <Row>
-        <Cell class="roster-new">
-          <Button on:click={() => showEdit(undefined)}>
-            <Icon class="material-icons">add</Icon>
-            <Label>Add Member</Label>
+  <tbody>
+    <RoleRow roleName="Tanks" roleType="TANK" />
+    {#each team.tanks || [] as member (member.id)}
+      <RosterRow
+        memberId={member.id}
+        on:configure={() => showEdit(member.id)}
+      />
+    {/each}
+    <RoleRow roleName="Healers" roleType="HEALER" />
+    {#each team.healers || [] as member (member.id)}
+      <RosterRow
+        memberId={member.id}
+        on:configure={() => showEdit(member.id)}
+      />
+    {/each}
+    <RoleRow roleName="DPS" roleType="DAMAGE" />
+    {#each team.dps || [] as member (member.id)}
+      <RosterRow
+        memberId={member.id}
+        on:configure={() => showEdit(member.id)}
+      />
+    {/each}
+    <tr
+      class="hover:bg-gray-50 dark-hover:bg-dark-400 border-gray-200 dark:border-gray-400 border-t border-b px-3"
+    >
+      <td class="roster-new">
+        <Button on:click={() => showEdit(undefined)}>
+          <Icon>add</Icon>
+          Add Member
+        </Button>
+      </td>
+
+      <td />
+      {#each $encounters || [] as enc, i (i)}
+        <td>
+          <Button
+            style="min-width: 32px"
+            on:click={() => removeEncounter(enc.id)}
+          >
+            <Icon class="material-icons" style="margin-right: 0; color: red">
+              remove_circle
+            </Icon>
           </Button>
-        </Cell>
+        </td>
+      {/each}
 
-        <Cell />
-        {#if $encounters}
-          {#each $encounters as enc, i (i)}
-            <Cell>
-              <Button
-                style="min-width: 32px"
-                on:click={() => removeEncounter(enc.id)}
-              >
-                <Icon
-                  class="material-icons"
-                  style="margin-right: 0; color: red"
-                >
-                  remove_circle
-                </Icon>
-              </Button>
-            </Cell>
-          {/each}
-        {/if}
-
-        <Cell />
-      </Row>
-    {/await}
-  </Body>
-  <LinearProgress bind:closed={teamLoaded} indeterminate slot="progress" />
-</DataTable>
-<Dialog bind:open class="add-member" on:MDCDialog:closed={close}>
-  <Lazy>
-    <MemberEdit on:close={close} memberId={editMemberId} />
-  </Lazy>
+      <td />
+    </tr>
+  </tbody>
+</table>
+<Dialog bind:value={open} class="add-member">
+  <MemberEdit on:close={close} memberId={editMemberId} />
 </Dialog>
 
 <style lang="scss" global>

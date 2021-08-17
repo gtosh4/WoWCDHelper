@@ -2,7 +2,10 @@
   export let playerClass: string | number = "";
   export let spec: string | number = "";
   export let spellName: string | number = "";
-  export let height: number | string | undefined;
+  export let height: number | undefined = 26;
+  export { extraClass as class };
+
+  let extraClass: string = "";
 
   let src: string;
   let alt: string;
@@ -26,4 +29,12 @@
   }
 </script>
 
-<img {src} {alt} class={typeClass} {height} {...$$restProps} />
+<img
+  {src}
+  {alt}
+  class={`${typeClass} ${extraClass}`}
+  {height}
+  width={height}
+  on:click
+  {...$$restProps}
+/>

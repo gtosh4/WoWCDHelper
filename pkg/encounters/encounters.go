@@ -18,7 +18,7 @@ type (
 		Encounter   Encounter    `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 		MemberID    uint         `json:"member_id" gorm:"primaryKey;foreignKey"`
 		Member      teams.Member `json:"-" gorm:"constraint:OnDelete:CASCADE"`
-		SpecID      int          `json:"spec"`
+		SpecID      *int         `json:"spec"`
 	}
 
 	Event struct {

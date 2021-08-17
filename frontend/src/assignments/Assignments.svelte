@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Card, { Content } from "@smui/card/styled";
+  import Card from "smelte/src/components/Card";
   import EncounterSelect from "./EncounterSelect.svelte";
   import EventTable from "./EventTable.svelte";
 
@@ -10,17 +10,17 @@
 </script>
 
 <div class="assignments">
-  <Card>
+  <Card.Card>
     <EncounterSelect />
-    <Content class="assignments-content">
+    <div class="assignments-content">
       <div style="flex-grow: 1; margin-right: 16px">
         <EventTable encounterId={+$encounterPath} />
       </div>
       <div style="flex-shrink: 1;">
         <AssignPalette encounterId={+$encounterPath} />
       </div>
-    </Content>
-  </Card>
+    </div>
+  </Card.Card>
 </div>
 
 <style lang="scss" global>

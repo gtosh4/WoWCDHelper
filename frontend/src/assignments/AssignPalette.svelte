@@ -11,28 +11,21 @@
   $: members = derived(memberList, (ms) =>
     ms ? ms.filter((m) => m != undefined) : []
   );
+
+  const itemClass =
+    "focus:bg-gray-50 dark-focus:bg-gray-700 hover:bg-gray-transDark relative overflow-hidden duration-100 p-2 cursor-pointer text-gray-700 dark:text-gray-100 flex items-center z-10";
 </script>
 
-<ul class="assign-palette mdc-list">
-  {#each $members || [] as member, i (member.member_id)}
-    <li class="assign-member">
-      <span class="mdc-list-item__content">
-        <Assign memberId={member.member_id} {encounterId} />
-      </span>
+<ul class="assign-palette py-2 rounded divide-y">
+  {#each $members || [] as member (member.member_id)}
+    <li class={itemClass}>
+      <Assign memberId={member.member_id} {encounterId} />
     </li>
-    {#if i < $members.length - 1}
-      <li class="mdc-list-divider member-divider" role="separator" />
-    {/if}
   {/each}
 </ul>
 
 <style lang="scss" global>
   .assign-palette {
     height: 100%;
-
-    .member-divider {
-      padding-top: 2px;
-      padding-bottom: 2px;
-    }
   }
 </style>

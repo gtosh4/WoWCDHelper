@@ -78,8 +78,11 @@ export class resourceWritable<T> extends apiResource<T> implements Writable<T> {
     this.state = LoadingState.Uninitialized;
   }
 
-  init() {
-    if (this.state == LoadingState.Uninitialized) this.reload();
+  init(): Promise<void> {
+    if (this.state == LoadingState.Uninitialized) {
+      return this.reload();
+    }
+    return Promise.resolve();
   }
 
   get(): Promise<T> {

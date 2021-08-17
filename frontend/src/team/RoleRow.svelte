@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Row, Cell } from "@smui/data-table/styled";
   import RoleCell from "./RoleCell.svelte";
 
   import { TeamStore } from "./team_store";
@@ -10,18 +9,20 @@
   $: encounters = $TeamStore.Encounters;
 </script>
 
-<Row class="role-row">
-  <Cell class="role-label">
+<tr
+  class="role-row hover:bg-gray-50 dark-hover:bg-dark-400 border-gray-200 dark:border-gray-400 border-t border-b px-3"
+>
+  <td class="role-label">
     <span class="role-name">{roleName}</span>
     <span class="role-count">(0)</span>
-  </Cell>
+  </td>
 
-  <Cell />
-  {#each $encounters as enc, i (i)}
+  <td />
+  {#each $encounters || [] as enc, i (i)}
     <RoleCell {roleType} encounterId={enc.id} />
   {/each}
-  <Cell />
-</Row>
+  <td />
+</tr>
 
 <style lang="scss" global>
   .roster-entry {

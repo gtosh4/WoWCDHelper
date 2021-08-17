@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { Cell } from "@smui/data-table/styled";
-  import CircularProgress from "@smui/circular-progress/styled";
+  import ProgressCircular from "smelte/src/components/ProgressCircular";
 
   import { RoleMembers } from "./member_filter";
   import { TeamStore } from "./team_store";
@@ -19,10 +18,10 @@
   }
 </script>
 
-<Cell class="role-count-cell">
+<td class="role-count-cell relative p-3 font-normal text-right">
   {#await count}
-    <CircularProgress indeterminate />
+    <ProgressCircular />
   {:then count}
     <span>{count}</span>
   {/await}
-</Cell>
+</td>

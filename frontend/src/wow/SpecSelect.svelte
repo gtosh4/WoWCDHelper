@@ -1,10 +1,9 @@
 <script lang="ts">
-  import DataTable, { Head, Body, Row, Cell } from "@smui/data-table";
-  import Radio from "@smui/radio/styled";
-  import Checkbox from "@smui/checkbox/styled";
-  import LinearProgress from "@smui/linear-progress/styled";
-
+  import RadioButton from "smelte/src/components/RadioButton";
+  import Checkbox from "smelte/src/components/Checkbox";
+  import ProgressLinear from "smelte/src/components/ProgressLinear";
   import Specilization from "./Specilization.svelte";
+  import { slide } from "svelte/transition";
 
   import { ClassSpecs } from "./class_specs";
 
@@ -39,6 +38,22 @@
     }
   });
 
+  const thClass =
+    "encounter-header capitalize duration-100 text-gray-600 text-xs hover:text-black dark-hover:text-white p-3 font-normal text-right";
+  const trClass =
+    "hover:bg-gray-50 dark-hover:bg-dark-400 border-gray-200 dark:border-gray-400 border-t border-b px-3";
+  const tdClass = "relative p-3 font-normal text-right";
+
+  function toggle(specId: number) {
+    const idx = specs.indexOf(specId);
+    if (idx >= 0) {
+      specs.splice(idx, 1);
+    } else {
+      specs.push(specId);
+    }
+    specs = specs;
+  }
+
   function toggleSelectAll() {
     if (selectedAll == null || selectedAll == true) {
       specs.length = 0;
@@ -48,54 +63,58 @@
         specs.push(...infos.map((i) => i.id));
       });
     }
+    specs = specs;
   }
 </script>
 
-<DataTable class="spec-select">
-  <Head>
-    <Row>
-      <Cell>
-        <Checkbox
-          bind:value={selectedAll}
-          indeterminate={selectedAll == null}
-          on:change={toggleSelectAll}
-        />
-      </Cell>
-      <Cell style="width: 100%" />
-      <Cell>Primary</Cell>
-    </Row>
-  </Head>
+<table
+  class="spec-select shadow relative text-sm overflow-x-auto dark:bg-dark-500"
+>
+  <thead>
+    <th class={thClass}>
+      <Checkbox
+        bind:selected={selectedAll}
+        indeterminate={selectedAll == null}
+        on:change={toggleSelectAll}
+      />
+    </th>
+    <th class={thClass + " w-full"} />
+    <th class={thClass}>Primary</th>
+  </thead>
+  {#if !loaded}
+    <div class="absolute w-full" transition:slide>
+      <ProgressLinear />
+    </div>
+  {/if}
 
-  <Body>
+  <tbody>
     {#await specInfo then classSpecs}
       {#each classSpecs as spec (spec.id)}
-        <Row>
-          <Cell>
+        <tr class={trClass}>
+          <td class={tdClass}>
             <Checkbox
-              bind:group={specs}
               checked={specs.indexOf(spec.id) >= 0}
-              value={spec.id}
+              on:change={() => toggle(spec.id)}
             />
-          </Cell>
-          <Cell>
+          </td>
+          <td class={tdClass}>
             <Specilization specId={spec.id} />
-          </Cell>
-          <Cell>
-            <Radio
+          </td>
+          <td>
+            <RadioButton
               bind:group={primarySpec}
               value={spec.id}
               disabled={specs.indexOf(spec.id) < 0}
             />
-          </Cell>
-        </Row>
+          </td>
+        </tr>
       {/each}
     {/await}
-  </Body>
-  <LinearProgress bind:closed={loaded} indeterminate slot="progress" />
-</DataTable>
+  </tbody>
+</table>
 
-<style lang="scss">
-  :global(.spec-select) {
+<style lang="scss" global>
+  .spec-select {
     width: 100%;
   }
 </style>

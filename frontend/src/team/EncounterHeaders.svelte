@@ -1,13 +1,16 @@
 <script lang="ts">
-  import { Cell } from "@smui/data-table/styled";
-  import CircularProgress from "@smui/circular-progress/styled";
-  import Button, { Icon } from "@smui/button/styled";
+  import ProgressCircular from "smelte/src/components/ProgressCircular";
+  import Button from "smelte/src/components/Button";
+  import Icon from "smelte/src/components/Icon";
 
   import EncounterNameField from "./EncounterNameField.svelte";
   import { TeamStore } from "./team_store";
   import { LoadingState } from "../store_helpers";
 
   $: encounters = $TeamStore.Encounters;
+
+  const thClass =
+    "encounter-header capitalize duration-100 text-gray-600 text-xs hover:text-black dark-hover:text-white p-3 font-normal text-right";
 
   function newEncounter() {
     $TeamStore.newEncounter({
@@ -18,26 +21,24 @@
 </script>
 
 {#if encounters.state == LoadingState.Loading}
-  <Cell class="encounter-header">
-    <CircularProgress indeterminate />
-  </Cell>
+  <th class={thClass}>
+    <ProgressCircular />
+  </th>
 {:else}
-  <Cell class="encounter-header" />
+  <th class={thClass} />
   {#each $encounters as enc, i (i)}
-    <Cell class="encounter-header">
+    <th class={thClass}>
       <div>
         <EncounterNameField encounterId={enc.id} />
       </div>
-    </Cell>
+    </th>
   {/each}
 {/if}
-<Cell style="vertical-align: bottom;">
-  <Button style="min-width: 32px" on:click={newEncounter}>
-    <Icon class="material-icons" style="margin-right: 0; color: green">
-      add
-    </Icon>
+<th class={thClass} style="vertical-align: bottom;">
+  <Button on:click={newEncounter}>
+    <Icon style="margin-right: 0; color: green">add</Icon>
   </Button>
-</Cell>
+</th>
 
 <style lang="scss" global>
   th.encounter-header {

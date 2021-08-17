@@ -10,10 +10,12 @@ import (
 	"github.com/gtosh4/WoWCDHelper/internal/pkg/clients"
 	"github.com/gtosh4/WoWCDHelper/pkg/wow"
 	"github.com/prometheus/client_golang/prometheus"
+	"go.uber.org/zap"
 )
 
 func registerWoWApi(s *Server) {
-	r := s.router.Group("/wow")
+	logMW := clients.Ginzap(s.Log, time.RFC3339, true, zap.InfoLevel)
+	r := s.router.Group("/wow", logMW)
 
 	cache := clients.NewGinCache(s.clients, "wow", 24*time.Hour)
 	if err := cache.Flush(); err != nil {

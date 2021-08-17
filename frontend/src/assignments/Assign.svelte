@@ -1,6 +1,4 @@
 <script lang="ts">
-  import Card from "@smui/card/styled";
-
   import { TeamStore } from "../team/team_store";
   import { ClassColors } from "../wow/class_colors";
 
@@ -23,10 +21,20 @@
   }
 
   let hovered = false;
+
+  function cardClass(): string {
+    let s = "rounded inline-flex flex-col overflow-hidden duration-200 ease-in"; // card
+    s += " shadow-sm hover:shadow"; // card.hover
+    s += " assign-member-item";
+    if (hovered) {
+      s += " hovered";
+    }
+    return s;
+  }
 </script>
 
-<Card
-  class={"assign-member-item" + (hovered ? " hovered" : "")}
+<div
+  class={cardClass()}
   {style}
   on:mouseenter={() => (hovered = true)}
   on:mouseleave={() => (hovered = false)}
@@ -36,7 +44,7 @@
   {#if assignId}
     <i class="material-icons close-icon">close</i>
   {/if}
-</Card>
+</div>
 
 <style lang="scss" global>
   .assign-member-item {

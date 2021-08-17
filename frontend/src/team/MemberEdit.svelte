@@ -1,8 +1,9 @@
 <script lang="ts">
-  import Card, { Actions, ActionButtons } from "@smui/card/styled";
-  import Textfield from "@smui/textfield/styled";
-  import Button, { Icon, Label } from "@smui/button/styled";
-  import LinearProgress from "@smui/linear-progress/styled";
+  import Card from "smelte/src/components/Card";
+  import Textfield from "smelte/src/components/TextField";
+  import Button from "smelte/src/components/Button";
+  import Icon from "smelte/src/components/Icon";
+  import ProgressLinear from "smelte/src/components/ProgressLinear";
   import ClassSelect from "../wow/ClassSelect.svelte";
   import SpecSelect from "../wow/SpecSelect.svelte";
 
@@ -100,9 +101,9 @@
     localPrimarySpec > 0;
 </script>
 
-<Card padded class="member-edit">
+<Card.Card padded class="member-edit">
   {#await $member}
-    <LinearProgress indeterminate />
+    <ProgressLinear />
   {/await}
 
   <Textfield
@@ -120,47 +121,33 @@
     bind:primarySpec={localPrimarySpec}
   />
 
-  <Actions>
-    <ActionButtons>
-      {#if member}
-        <Button on:click={remove}>
-          {#if $$slots.removeLabel}
-            <slot name="removeLabel" />
-          {:else}
-            <Icon class="material-icons" style="color: red">delete</Icon>
-            <Label>Remove</Label>
-          {/if}
-        </Button>
-      {/if}
-      <Button on:click={save} disabled={!saveEnabled}>
-        {#if $$slots.saveLabel}
-          <slot name="saveLabel" />
-        {:else}
-          <Icon class="material-icons" style="color: green">save</Icon>
-          <Label>Save</Label>
-        {/if}
+  <div slot="actions">
+    {#if member}
+      <Button on:click={remove}>
+        <Icon class="material-icons" style="color: red">delete</Icon>
+        <span>Remove</span>
       </Button>
-      <Button on:click={close}>
-        {#if $$slots.cancelLabel}
-          <slot name="cancelLabel" />
-        {:else}
-          <Label>Cancel</Label>
-        {/if}
-      </Button>
-    </ActionButtons>
-  </Actions>
-</Card>
+    {/if}
+    <Button on:click={save} disabled={!saveEnabled}>
+      <Icon class="material-icons" style="color: green">save</Icon>
+      <span>Save</span>
+    </Button>
+    <Button on:click={close}>
+      <span>Cancel</span>
+    </Button>
+  </div>
+</Card.Card>
 
-<style lang="scss">
-  :global(.member-edit) {
-    :global(.smui-select--standard.mdc-select--with-leading-icon
-        .mdc-select__anchor) {
-      padding-left: 0;
-    }
+<style lang="scss" global>
+  // :global(.member-edit) {
+  //   :global(.smui-select--standard.mdc-select--with-leading-icon
+  //       .mdc-select__anchor) {
+  //     padding-left: 0;
+  //   }
 
-    :global(.class-select) {
-      padding-top: 4px;
-      padding-bottom: 4px;
-    }
-  }
+  //   :global(.class-select) {
+  //     padding-top: 4px;
+  //     padding-bottom: 4px;
+  //   }
+  // }
 </style>

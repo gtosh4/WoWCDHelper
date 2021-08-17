@@ -5,8 +5,8 @@ import livereload from "rollup-plugin-livereload";
 import { terser } from "rollup-plugin-terser";
 import sveltePreprocess from "svelte-preprocess";
 import typescript from "@rollup/plugin-typescript";
-import postcss from "rollup-plugin-postcss";
 import dev from "rollup-plugin-dev";
+import smelte from "smelte/rollup-plugin-smelte";
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -52,17 +52,24 @@ export default {
       },
     }),
 
-    postcss({
-      extract: true,
-      minimize: production,
-      use: [
-        [
-          "sass",
-          {
-            includePaths: ["./src/theme", "./node_modules"],
-          },
-        ],
-      ],
+    smelte({
+      purge: production,
+      output: "public/global.css",
+      postcss: [],
+      whitelist: [],
+      whitelistPatterns: [],
+      tailwind: {
+        colors: {
+          primary: "#B39DDB",
+          secondary: "#c5db9d",
+          error: "#f44336",
+          success: "#4caf50",
+          alert: "#ff9800",
+          blue: "#2196f3",
+          dark: "#212121",
+        },
+        darkMode: true,
+      },
     }),
 
     // If you have external dependencies installed from

@@ -66,7 +66,7 @@ export interface Assignment {
 }
 
 export interface RosterMember {
-  encounter_id?: number;
+  encounter_id: number;
   member_id: number;
-  spec: number;
+  spec?: number;
 }

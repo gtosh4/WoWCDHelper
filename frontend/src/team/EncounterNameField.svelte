@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Textfield from "@smui/textfield/styled";
+  import Textfield from "smelte/src/components/TextField";
   import { TeamStore } from "./team_store";
 
   export let encounterId: number;
@@ -39,7 +39,7 @@
 />
 
 <style lang="scss" global>
-  .encounter-name {
-    height: auto;
-  }
+  // .encounter-name {
+  //   height: auto;
+  // }
 </style>

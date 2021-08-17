@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LinearProgress from "@smui/linear-progress/styled";
+  import ProgressLinear from "smelte/src/components/ProgressLinear";
   import WowIcon from "../wow/WowIcon.svelte";
   import { TeamStore } from "./team_store";
 
@@ -11,7 +11,7 @@
 
 <div class="member">
   {#if !$member}
-    <LinearProgress indeterminate />
+    <ProgressLinear />
   {:else}
     <WowIcon
       playerClass={$member.classId}
@@ -23,12 +23,12 @@
   {/if}
 </div>
 
-<style lang="scss">
+<style lang="scss" global>
   .member {
     max-width: 10em;
 
-    :global(.icon) {
-      padding-right: 4px;
+    .icon {
+      // padding-right: 4px;
     }
   }
 </style>

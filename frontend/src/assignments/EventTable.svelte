@@ -1,6 +1,6 @@
 <script lang="ts">
-  import DataTable, { Head, Body, Row, Cell } from "@smui/data-table/styled";
-  import Dialog from "@smui/dialog/styled";
+  import DataTable from "smelte/src/components/DataTable";
+  import type { Event, EventInstance } from "../team/team_api";
   import { TeamStore } from "../team/team_store";
 
   export let encounterId: number;
@@ -10,8 +10,15 @@
 
   $: events.init();
 
+  interface item {
+    event: Event;
+    instance: EventInstance;
+  }
+
   $: items = ($events || [])
-    .flatMap((evt) => evt.instances.map((ei) => ({ event: evt, instance: ei })))
+    .flatMap((evt): item[] =>
+      evt.instances.map((ei) => ({ event: evt, instance: ei }))
+    )
     .sort((a, b) => {
       if (a.instance.offset_sec != b.instance.offset_sec) {
         return a.instance.offset_sec - b.instance.offset_sec;
@@ -22,22 +29,19 @@
 
   $: console.info("event table", { events: $events, items: items });
 
-  let open;
-  function close() {}
+  const columns = [
+    { value: (i: item) => `${i.instance.offset_sec}` },
+    { value: (i: item) => `${i.event.label}` },
+  ];
 </script>
 
-<DataTable class="event-table">
-  <Body>
-    {#each items as item, i (i)}
-      <Row>
-        <Cell>{item.instance.offset_sec}</Cell>
-        <Cell>{item.event.label}</Cell>
-        <Cell />
-      </Row>
-    {/each}
-  </Body>
-</DataTable>
-<Dialog bind:open class="add-member" on:MDCDialog:closed={close} />
+<DataTable
+  class="event-table"
+  data={items}
+  {columns}
+  pagination={false}
+  sortable={false}
+/>
 
 <style lang="scss" global>
   .event-table {
