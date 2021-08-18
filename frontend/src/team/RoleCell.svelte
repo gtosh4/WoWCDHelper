@@ -20,7 +20,7 @@
 
 <td class="role-count-cell relative p-3 font-normal text-right">
   {#await count}
-    <ProgressCircular />
+    <ProgressCircular size={26} />
   {:then count}
     <span>{count}</span>
   {/await}

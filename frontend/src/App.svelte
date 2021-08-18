@@ -1,37 +1,26 @@
 <script lang="ts">
   import AppBar from "smelte/src/components/AppBar";
-  import { Tabs, Tab } from "smelte/src/components/Tabs";
+  import { Tabs } from "smelte/src/components/Tabs";
   import Textfield from "smelte/src/components/TextField";
   import ProgressCircular from "smelte/src/components/ProgressCircular";
   import Roster from "./team/Roster.svelte";
   import Assignments from "./assignments/Assignments.svelte";
 
-  import { onMount } from "svelte";
   import { PathPart } from "./url";
   import { TeamStore } from "./team/team_store";
 
   const tabs = [
-    { id: "roster", path: "", text: "Roster" },
+    { id: "roster", text: "Roster" },
     {
       id: "assignments",
-      path: "assignments",
       text: "Assignments",
     },
   ];
 
-  let selected = tabs[0].id;
-
   const TabPath = PathPart(1);
 
-  let mounted = false;
-  onMount(() => {
-    const tab = tabs.filter((t) => t.id == $TabPath || t.path == $TabPath);
-    if (tab && tab.length > 0) selected = tab[0].id;
-    mounted = true;
-  });
-
-  $: if (mounted) {
-    TabPath.set(selected);
+  $: if ($TabPath == "") {
+    $TabPath = "roster";
   }
 
   const team = $TeamStore.Team;
@@ -55,10 +44,12 @@
 </script>
 
 <main>
-  <AppBar class="team-bar static inline-flex">
+  <header
+    class="static top-0 left-0 inline-flex w-full z-30 h-16 p-0 bg-primary-300 dark:bg-dark-600"
+  >
     <section class="flex-initial">
       {#await $team}
-        <ProgressCircular />
+        <ProgressCircular size={26} />
       {:then _team}
         <Textfield
           bind:value={localName}
@@ -71,15 +62,17 @@
     </section>
 
     <section class="flex-initial">
-      <Tabs items={tabs} bind:active={selected} class="w-56" />
+      <Tabs items={tabs} bind:selected={$TabPath} class="w-56" />
     </section>
-  </AppBar>
+  </header>
 
-  {#if selected == "roster"}
-    <Roster />
-  {:else if selected == "assignments"}
-    <Assignments />
-  {/if}
+  <div>
+    {#if $TabPath == "roster"}
+      <Roster />
+    {:else if $TabPath == "assignments"}
+      <Assignments />
+    {/if}
+  </div>
 </main>
 
 <style lang="scss" global>

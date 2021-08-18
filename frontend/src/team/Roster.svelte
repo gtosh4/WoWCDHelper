@@ -54,7 +54,7 @@
   }
 </script>
 
-<table class="roster shadow relative text-sm overflow-x-auto dark:bg-dark-500">
+<table class="roster shadow text-sm overflow-x-auto dark:bg-dark-500">
   <thead class="items-center">
     <tr>
       <th />
@@ -89,11 +89,15 @@
         on:configure={() => showEdit(member.id)}
       />
     {/each}
-    <tr
-      class="hover:bg-gray-50 dark-hover:bg-dark-400 border-gray-200 dark:border-gray-400 border-t border-b px-3"
-    >
+    <tr class="border-gray-200 dark:border-gray-400 border-t border-b px-3">
       <td class="roster-new">
-        <Button on:click={() => showEdit(undefined)}>
+        <Button
+          on:click={() => showEdit(undefined)}
+          class="flex items-center"
+          text
+          block
+          outlined
+        >
           <Icon>add</Icon>
           Add Member
         </Button>
@@ -102,14 +106,11 @@
       <td />
       {#each $encounters || [] as enc, i (i)}
         <td>
-          <Button
-            style="min-width: 32px"
+          <Icon
+            class="cursor-pointer"
+            style="margin-right: 0; color: red"
             on:click={() => removeEncounter(enc.id)}
-          >
-            <Icon class="material-icons" style="margin-right: 0; color: red">
-              remove_circle
-            </Icon>
-          </Button>
+          />
         </td>
       {/each}
 

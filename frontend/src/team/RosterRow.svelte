@@ -25,12 +25,13 @@
   }
 
   function save() {
-    if ($member) {
-      row.member.put({
-        ...$member,
-        name,
-      });
-    }
+    row.member.update((m) => {
+      console.info("save", { m, name });
+      if (m) {
+        return { ...m, name };
+      }
+      return m;
+    });
   }
 
   function keypress(e) {
@@ -68,7 +69,6 @@
       <div class="relative text-gray-600 dark:text-gray-100">
         <input
           class={`name rounded-t text-black dark:text-gray-100 caret-primary w-full ${nameFocusedClass} ${nameHoveredClass}`}
-          on:blur
           bind:value={name}
           on:blur={save}
           on:keyup={keypress}
@@ -96,6 +96,8 @@
     height: 36px;
 
     .roster-member {
+      $config-size: 34px;
+
       .name {
         $width: 12em;
 
@@ -103,13 +105,12 @@
         // height: auto;
 
         &.name--hovered {
-          width: calc(#{$width} - 18px - 8px - 8px);
+          width: calc(#{$width} - #{$config-size});
         }
       }
       .configure {
         display: none;
-        min-width: unset;
-        width: calc(18px+8px+8px);
+        width: $config-size;
         height: 100%;
 
         &.configure--active {

@@ -50,7 +50,7 @@
 
 {#await $encounters}
   <td class={tdClass}>
-    <ProgressCircular />
+    <ProgressCircular size={26} />
   </td>
 {:then encounters}
   <td class={`${tdClass} member-encounter-all`}>

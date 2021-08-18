@@ -52,7 +52,7 @@
 
 <div class="cursor-pointer relative flex items-center">
   {#if !$memberInfo}
-    <ProgressCircular />
+    <ProgressCircular size={26} />
   {:else}
     {#if spec == null}
       <Icon on:click={toggle}>check_box_outline_blank</Icon>

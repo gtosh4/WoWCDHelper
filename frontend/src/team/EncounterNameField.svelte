@@ -3,6 +3,9 @@
   import { TeamStore } from "./team_store";
 
   export let encounterId: number;
+  export { extraClass as class };
+
+  let extraClass = "";
 
   let loadedEncounter: number | null = null;
   let localName = "";
@@ -31,7 +34,7 @@
 </script>
 
 <Textfield
-  class="encounter-name"
+  class={`encounter-name ${extraClass}`}
   bind:value={localName}
   on:blur={() => save()}
   on:keyup={keypress}
@@ -39,7 +42,4 @@
 />
 
 <style lang="scss" global>
-  // .encounter-name {
-  //   height: auto;
-  // }
 </style>
