@@ -12,17 +12,18 @@
 
   function select(id) {
     value = id;
+    showList = false;
   }
 
   let showList = false;
 </script>
 
-<div class="class-select">
+<div>
   {#await ClassList}
     <ProgressLinear />
   {:then cs}
     <Select dense autocomplete {showList}>
-      <Button slot="select" on:click={() => (showList = true)}>
+      <Button slot="select" on:click={() => (showList = !showList)}>
         <PlayerClass playerClass={value} />
       </Button>
       <div
@@ -45,9 +46,4 @@
 </div>
 
 <style lang="scss" global>
-  .class-select {
-    .class-icon {
-      padding-right: 4px;
-    }
-  }
 </style>

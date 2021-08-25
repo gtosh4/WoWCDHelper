@@ -1,11 +1,15 @@
 <script lang="ts">
   import RadioButton from "smelte/src/components/RadioButton";
   import Checkbox from "smelte/src/components/Checkbox";
+  import Icon from "smelte/src/components/Icon";
   import ProgressLinear from "smelte/src/components/ProgressLinear";
   import Specilization from "./Specilization.svelte";
+  import Ripple from "smelte/src/components/Ripple";
+  import Label from "smelte/src/components/Checkbox/Label.svelte";
   import { slide } from "svelte/transition";
 
   import { ClassSpecs } from "./class_specs";
+  import PrimarySpecRadio from "./PrimarySpecRadio.svelte";
 
   export let classId: number = 0;
   export let specs: number[] = [];
@@ -65,6 +69,19 @@
     }
     specs = specs;
   }
+  const icons = new Map([
+    [true, "check_box"],
+    [false, "check_box_outline_blank"],
+    [null, "indeterminate_check_box"],
+  ]);
+
+  $: console.info("spec sel", {
+    specInfo,
+    loaded,
+    selectedAll,
+    specs,
+    primarySpec,
+  });
 </script>
 
 <table
@@ -72,11 +89,9 @@
 >
   <thead>
     <th class={thClass}>
-      <Checkbox
-        bind:selected={selectedAll}
-        indeterminate={selectedAll == null}
-        on:change={toggleSelectAll}
-      />
+      <Icon on:click={toggleSelectAll} class="cursor-pointer">
+        {icons.get(selectedAll)}
+      </Icon>
     </th>
     <th class={thClass + " w-full"} />
     <th class={thClass}>Primary</th>
@@ -101,11 +116,7 @@
             <Specilization specId={spec.id} />
           </td>
           <td>
-            <RadioButton
-              bind:group={primarySpec}
-              value={spec.id}
-              disabled={specs.indexOf(spec.id) < 0}
-            />
+            <PrimarySpecRadio bind:primarySpec bind:specs thisSpec={spec.id} />
           </td>
         </tr>
       {/each}

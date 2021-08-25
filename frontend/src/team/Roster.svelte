@@ -118,7 +118,7 @@
     </tr>
   </tbody>
 </table>
-<Dialog bind:value={open} class="add-member">
+<Dialog bind:value={open} class="overflow-y-visible">
   <MemberEdit on:close={close} memberId={editMemberId} />
 </Dialog>
 
@@ -136,13 +136,6 @@
       td.mdc-data-table__cell {
         height: $line-height;
       }
-    }
-  }
-  .add-member {
-    overflow-y: visible;
-
-    .mdc-dialog__surface {
-      overflow-y: visible;
     }
   }
 </style>

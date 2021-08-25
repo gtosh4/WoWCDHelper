@@ -11,6 +11,7 @@
   import type { Member } from "./team_api";
   import { createEventDispatcher } from "svelte";
   import { TeamStore } from "./team_store";
+  import { LoadingState } from "../store_helpers";
 
   export let memberId: number | undefined = undefined;
 
@@ -18,6 +19,8 @@
 
   $: row = memberId ? $TeamStore.row(memberId) : undefined;
   $: member = row ? row.member : undefined;
+
+  $: console.log("edit", { row, member, m: $member, lm: localMember() });
 
   let localId,
     localName = "",
@@ -101,17 +104,14 @@
     localPrimarySpec > 0;
 </script>
 
-<Card.Card padded class="member-edit">
-  {#await $member}
-    <ProgressLinear />
-  {/await}
+<Card.Card class="overflow-y-visible">
+  <div slot="title">
+    <Textfield class="w-full" bind:value={localName} label="Name" />
+  </div>
 
-  <Textfield
-    style="width: 100%;"
-    helperLine$style="width: 100%;"
-    bind:value={localName}
-    label="Name"
-  />
+  {#if member.state != LoadingState.Loaded}
+    <ProgressLinear />
+  {/if}
 
   <ClassSelect bind:value={localClassId} />
 
@@ -123,31 +123,21 @@
 
   <div slot="actions">
     {#if member}
-      <Button on:click={remove}>
-        <Icon class="material-icons" style="color: red">delete</Icon>
-        <span>Remove</span>
+      <Button small on:click={remove}>
+        <Icon small color="red">delete</Icon>
+        Remove
       </Button>
     {/if}
-    <Button on:click={save} disabled={!saveEnabled}>
-      <Icon class="material-icons" style="color: green">save</Icon>
-      <span>Save</span>
+    <Button small on:click={save} disabled={!saveEnabled}>
+      <Icon small color="green">save</Icon>
+      Save
     </Button>
-    <Button on:click={close}>
-      <span>Cancel</span>
+    <Button small on:click={close}>
+      <Icon small>undo</Icon>
+      Cancel
     </Button>
   </div>
 </Card.Card>
 
 <style lang="scss" global>
-  // :global(.member-edit) {
-  //   :global(.smui-select--standard.mdc-select--with-leading-icon
-  //       .mdc-select__anchor) {
-  //     padding-left: 0;
-  //   }
-
-  //   :global(.class-select) {
-  //     padding-top: 4px;
-  //     padding-bottom: 4px;
-  //   }
-  // }
 </style>
