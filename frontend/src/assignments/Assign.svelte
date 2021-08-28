@@ -2,9 +2,12 @@
   import { TeamStore } from "../team/team_store";
   import { ClassColors } from "../wow/class_colors";
 
+  let classes = "";
+
   export let memberId: number;
   export let encounterId: number;
   export let assignId: number | undefined = undefined;
+  export { classes as class };
 
   $: cell = $TeamStore.cell(memberId, encounterId);
 
@@ -25,10 +28,11 @@
   function cardClass(): string {
     let s = "rounded inline-flex flex-col overflow-hidden duration-200 ease-in"; // card
     s += " shadow-sm hover:shadow"; // card.hover
-    s += " assign-member-item";
+    s += " flex justify-start";
     if (hovered) {
       s += " hovered";
     }
+    s += ` ${classes}`;
     return s;
   }
 </script>
@@ -47,22 +51,22 @@
 </div>
 
 <style lang="scss" global>
-  .assign-member-item {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    padding-top: 1px;
-    padding-bottom: 1px;
+  // .assign-member-item {
+  //   display: flex;
+  //   flex-direction: row;
+  //   flex-wrap: nowrap;
+  //   align-items: center;
+  //   padding-top: 1px;
+  //   padding-bottom: 1px;
 
-    .close-icon {
-      display: none;
-    }
+  //   .close-icon {
+  //     display: none;
+  //   }
 
-    &.hovered {
-      .close-icon {
-        display: unset;
-      }
-    }
-  }
+  //   &.hovered {
+  //     .close-icon {
+  //       display: unset;
+  //     }
+  //   }
+  // }
 </style>

@@ -27,14 +27,31 @@
     }
     return c;
   }
+
+  let showList = false;
+  function toggleList() {
+    showList = !showList;
+  }
 </script>
 
-<div class="encounter-select">
+<div class="py-4">
   {#if isSelect}
-    <Select dense>
-      <Button slot="select">
-        <Icon class="encounter-select-arrow">arrow_drop_down</Icon>
-      </Button>
+    <Select dense bind:showList>
+      <div slot="select" class="flex">
+        <Button small class="mr-2" on:click={toggleList}>
+          <Icon small>arrow_drop_down</Icon>
+        </Button>
+        <EncounterNameField
+          encounterId={+$encounterPath}
+          placeholder="Encounter"
+          replace={{
+            "w-full": `w-${32}`,
+            "\\S*bg-\\S*": "bg-transparent",
+            "p[xt]-\\d+": "",
+          }}
+          classes="relative text-gray-600 dark:text-gray-100"
+        />
+      </div>
 
       <div
         slot="options"
@@ -49,33 +66,19 @@
         </ul>
       </div>
     </Select>
+  {:else}
+    <EncounterNameField
+      encounterId={+$encounterPath}
+      placeholder="Encounter"
+      replace={{
+        "w-full": `w-${32}`,
+        "\\S*bg-\\S*": "bg-transparent",
+        "p[xt]-\\d+": "",
+      }}
+      classes="relative text-gray-600 dark:text-gray-100"
+    />
   {/if}
-  <EncounterNameField
-    encounterId={+$encounterPath}
-    input$placeholder="Encounter"
-  />
 </div>
 
 <style lang="scss" global>
-  .encounter-select {
-    display: inline-flex;
-
-    // .encounter-select-arrow {
-    //   color: white;
-    // }
-
-    // button.mdc-button {
-    //   min-width: unset;
-    //   padding-left: 4px;
-    //   padding-right: 4px;
-    // }
-
-    // .material-icons {
-    //   font-size: 24px;
-    // }
-
-    // .mdc-select__anchor {
-    //   width: unset;
-    // }
-  }
 </style>

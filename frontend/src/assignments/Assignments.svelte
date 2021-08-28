@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Card from "smelte/src/components/Card";
   import EncounterSelect from "./EncounterSelect.svelte";
   import EventTable from "./EventTable.svelte";
 
@@ -7,26 +6,22 @@
   import AssignPalette from "./AssignPalette.svelte";
 
   $: encounterPath = PathPart(2);
+  $: encounterId = +$encounterPath;
 </script>
 
-<div class="assignments">
-  <Card.Card>
+<div class="w-full">
+  <div class="grid w-full justify-items-center">
     <EncounterSelect />
-    <div class="assignments-content">
-      <div style="flex-grow: 1; margin-right: 16px">
-        <EventTable encounterId={+$encounterPath} />
-      </div>
-      <div style="flex-shrink: 1;">
-        <AssignPalette encounterId={+$encounterPath} />
-      </div>
+  </div>
+  <div class="flex">
+    <div class="flex-grow pr-4">
+      <EventTable {encounterId} />
     </div>
-  </Card.Card>
+    <div class="flex-shrink">
+      <AssignPalette {encounterId} />
+    </div>
+  </div>
 </div>
 
 <style lang="scss" global>
-  .assignments {
-    .assignments-content {
-      display: inline-flex;
-    }
-  }
 </style>

@@ -186,7 +186,7 @@ class column {
     this.members = rosterMembersDerived(s.Members, (ms) =>
       ms.map((m) => s.cell(m.id, this.encounterId))
     );
-    this.memberAPI = new apiResource(`${encounterRoot}/encounters`, (rms) => {
+    this.memberAPI = new apiResource(`${encounterRoot}/roster`, (rms) => {
       if (rms) {
         rms.forEach((m) => {
           if (m) {

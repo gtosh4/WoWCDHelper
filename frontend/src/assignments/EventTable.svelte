@@ -1,7 +1,7 @@
 <script lang="ts">
-  import DataTable from "smelte/src/components/DataTable";
   import type { Event, EventInstance } from "../team/team_api";
   import { TeamStore } from "../team/team_store";
+  import EventAssignRow from "./EventAssignRow.svelte";
 
   export let encounterId: number;
 
@@ -29,22 +29,15 @@
 
   $: console.info("event table", { events: $events, items: items });
 
-  const columns = [
-    { value: (i: item) => `${i.instance.offset_sec}` },
-    { value: (i: item) => `${i.event.label}` },
-  ];
+  const tclass =
+    "shadow relative text-sm coverflow-x-auto dark:bg-dark-500 w-full";
 </script>
 
-<DataTable
-  class="event-table"
-  data={items}
-  {columns}
-  pagination={false}
-  sortable={false}
-/>
+<table class={tclass}>
+  {#each items as item, i (i)}
+    <EventAssignRow event={item.event} instance={item.instance} />
+  {/each}
+</table>
 
 <style lang="scss" global>
-  .event-table {
-    height: 100%;
-  }
 </style>

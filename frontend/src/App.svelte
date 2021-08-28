@@ -1,5 +1,4 @@
 <script lang="ts">
-  import AppBar from "smelte/src/components/AppBar";
   import { Tabs } from "smelte/src/components/Tabs";
   import Textfield from "smelte/src/components/TextField";
   import ProgressCircular from "smelte/src/components/ProgressCircular";
@@ -47,7 +46,7 @@
   <header
     class="static top-0 left-0 inline-flex w-full z-30 h-16 p-0 bg-primary-300 dark:bg-dark-600"
   >
-    <section class="flex-initial">
+    <section class="flex-initial mr-4">
       {#await $team}
         <ProgressCircular size={26} />
       {:then _team}
