@@ -15,7 +15,7 @@
     "core-js": "^3.8.1",
     "d3": "^5.16.0",
     "json-url": "^2.6.0",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "moment-duration-format": "^2.3.2",
     "vue": "^2.6.12",
     "vue-resource": "^1.5.1",
